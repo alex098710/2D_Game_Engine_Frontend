@@ -27,17 +27,21 @@
     <!-- Login / register: the only thing shown until the user is in -->
     <section id="login-screen" class="login" hidden>
       <div id="login-art" class="login-art">
-        <div class="ground" aria-hidden="true"></div>
-        <div class="logo">
-          <div class="emblem-wrap"><img id="login-emblem" class="emblem" src="/brand/emblem.png" alt="" width="240" /></div>
-          <div class="wordmark-wrap"><img class="wordmark" src="/brand/wordmark.png" alt="PixelForge · 2D Game Engine" width="420" /><i class="sweep" aria-hidden="true"></i></div>
+        <canvas id="login-battle" class="battle" aria-hidden="true"></canvas>
+        <div class="scrim" aria-hidden="true"></div>
+        <div class="hero-copy">
+          <div class="logo">
+            <div class="emblem-wrap"><img id="login-emblem" class="emblem" src="/brand/emblem.png" alt="" width="240" height="168" /></div>
+            <div class="wordmark-wrap"><img class="wordmark" src="/brand/wordmark.png" alt="PixelForge · 2D Game Engine" width="420" height="76" /><i class="sweep" aria-hidden="true"></i></div>
+          </div>
+          <h1 class="hero-title">Crea mundos 2D y <em>juégalos</em> al instante.</h1>
+          <p class="hero-sub">Editor visual, armas de fuego, mapas de batalla y una IA que ajusta la dificultad a cómo juegas.</p>
+          <ul class="hero-chips" aria-label="Lo que incluye">
+            <li><img src="/textures/rifle.png" alt="" />15 armas</li>
+            <li><img src="/textures/tank.png" alt="" />Ejércitos y tanques</li>
+            <li><img src="/textures/explosive.png" alt="" />Física y explosiones</li>
+          </ul>
         </div>
-        <ul class="features">
-          <li><img src="/textures/hero-wizard.png" alt="" />Héroes con armas y habilidades propias</li>
-          <li><img src="/textures/chest.png" alt="" />Cofres, pociones y armas para recoger</li>
-          <li><img src="/textures/brute.png" alt="" />Una IA que adapta los enemigos a cómo juegas</li>
-        </ul>
-        <div id="login-actors" class="actors" aria-hidden="true"></div>
         <canvas id="login-fx" class="fx" aria-hidden="true"></canvas>
       </div>
 

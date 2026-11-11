@@ -15,10 +15,17 @@ export const EFFECTS = [
   "bounce", "coin", "potion", "pickup", "chest", "mimic", "hurt", "dash", "enemy-shot", "enemy-cast", "boss",
   "fireball", "splash", "block", "step-0", "step-1", "step-2",
 ] as const;
+/**
+ * Effects of the firearms and explosions, made by tools/make_sounds.py (our own
+ * synthesis, no third-party audio). They are WAV, which every browser plays.
+ */
+export const SYNTH_EFFECTS = [
+  "gun-pistol", "gun-rifle", "gun-shotgun", "gun-smg", "gun-sniper", "rocket", "cannon", "explosion", "reload",
+] as const;
 /** Jingles at the end of a run, played at the music volume. */
 export const JINGLES = ["win", "lose"] as const;
 
-export type Effect = (typeof EFFECTS)[number];
+export type Effect = (typeof EFFECTS)[number] | (typeof SYNTH_EFFECTS)[number];
 export type Jingle = (typeof JINGLES)[number];
 
 const volumes = { effects: 0.8, music: 0.7 };
@@ -39,6 +46,9 @@ export function currentVolumes(): { effects: number; music: number } {
 export function loadSounds(scene: Phaser.Scene): void {
   for (const key of [...EFFECTS, ...JINGLES]) {
     if (!scene.cache.audio.exists(key)) scene.load.audio(key, [`${SOUND_BASE}${key}.ogg`, `${SOUND_BASE}${key}.mp3`]);
+  }
+  for (const key of SYNTH_EFFECTS) {
+    if (!scene.cache.audio.exists(key)) scene.load.audio(key, `${SOUND_BASE}${key}.wav`);
   }
 }
 

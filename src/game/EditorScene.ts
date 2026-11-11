@@ -286,6 +286,9 @@ export class EditorScene extends Phaser.Scene {
   }
 
   private drawSelection(): void {
+    // A project can be opened while the scene is still loading its textures:
+    // create() draws the selection once it is ready.
+    if (this.selection === undefined) return;
     this.selection.clear();
     if (this.selectedId === null) return;
     const image = this.drawnImages().find((i) => i.getData("objectId") === this.selectedId);

@@ -1,4 +1,4 @@
-"""Turn the Kenney "Tiny Dungeon" and "Tiny Town" packs into the engine's textures.
+"""Turn the Kenney "Tiny Dungeon", "Tiny Town" and "Tiny Battle" packs into the engine's textures.
 
 Usage:  pip install pillow
         python tools/import_kenney.py
@@ -15,11 +15,13 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "assets-src" / "kenney"
 OUT = ROOT / "public" / "textures"
 TILE = 16
-COLUMNS = 12
 SCALE = 2
 
 DUNGEON = "tiny-dungeon"
 TOWN = "tiny-town"
+BATTLE = "tiny-battle"
+# Tiles per row of each packed sheet.
+COLUMNS = {DUNGEON: 12, TOWN: 12, BATTLE: 18}
 
 # texture name -> (pack, tile index). Indexes follow the sheets, left to right, top to bottom.
 SINGLE_TILES = {
@@ -67,6 +69,25 @@ SINGLE_TILES = {
     "hammer": (DUNGEON, 117),
     "spear": (DUNGEON, 131),
     "staff": (DUNGEON, 129),
+    # war (Tiny Battle): the red army is the enemy, the blue army is on your side
+    "soldier": (BATTLE, 160),
+    "grenadier": (BATTLE, 161),
+    "tank": (BATTLE, 152),
+    "artillery": (BATTLE, 153),
+    "ally": (BATTLE, 142),
+    "barricade": (BATTLE, 25),
+    "hedgehog": (BATTLE, 23),
+    "bunker": (BATTLE, 9),
+    "tower": (BATTLE, 13),
+    "flag": (BATTLE, 52),
+    "banner": (BATTLE, 70),
+    "rock": (BATTLE, 5),
+    "road": (BATTLE, 130),
+    "medkit": (BATTLE, 195),
+    "jeep-blue": (BATTLE, 131),
+    "tank-blue": (BATTLE, 134),
+    "plane-blue": (BATTLE, 136),
+    "plane-red": (BATTLE, 154),
     # ground
     "grass": (TOWN, 0),
     "path": (TOWN, 109),  # light stone: reads as a street, a square or a stone path
@@ -77,6 +98,7 @@ SINGLE_TILES = {
 RECOLORED = {
     "marksman": (DUNGEON, 112, ["2a1d3d", "5b3f7a", "9b86b8", "e9e4d8"]),     # dark archer: purple and bone
     "necromancer": (DUNGEON, 84, ["10241a", "1f5a3a", "54b37c", "d8f5c4"]),  # necromancer: sickly green
+    "explosive": (DUNGEON, 82, ["3a0d0d", "a3201c", "e8452c", "ffd166"]),     # red powder keg: it blows up
 }
 
 # Buildings made of several tiles: rows of (pack, tile index).
@@ -90,11 +112,11 @@ COMPOSITES = {
 
 
 def load_sheets() -> dict:
-    return {pack: Image.open(SOURCE / pack / "tilemap_packed.png").convert("RGBA") for pack in (DUNGEON, TOWN)}
+    return {pack: Image.open(SOURCE / pack / "tilemap_packed.png").convert("RGBA") for pack in COLUMNS}
 
 
 def tile(sheets: dict, pack: str, index: int) -> Image.Image:
-    column, row = index % COLUMNS, index // COLUMNS
+    column, row = index % COLUMNS[pack], index // COLUMNS[pack]
     return sheets[pack].crop((column * TILE, row * TILE, (column + 1) * TILE, (row + 1) * TILE))
 
 

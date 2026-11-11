@@ -3,11 +3,11 @@ import type { RunResultDto } from "../api/client";
 import { isCharacter, isEnemy, isGround, isWeapon, WORLD_HEIGHT, WORLD_WIDTH, type GameObject, type Kind } from "../model/GameObject";
 import type { SceneModel } from "../model/SceneModel";
 import {
-  aimAngle, chargePower, enemyStats, healthColor, heroById, inSwing, leadAngle, POTION_HEAL, rangedIntent, ringAngles,
+  aimAngle, BARREL_BLAST, chargePower, enemyStats, healthColor, heroById, inSwing, isFirearm, leadAngle, MEDKIT_HEAL, POTION_HEAL, rangedIntent, ringAngles,
   rollLoot, speedFor, WEAPONS,
   type EnemyStats, type Hero, type ProjectileSpec, type Weapon, type WeaponId,
 } from "./combat";
-import { loadSounds, playEffect, playJingle } from "./audio";
+import { loadSounds, playEffect, playJingle, type Effect } from "./audio";
 import { touch } from "./touchInput";
 import { approach, fanAngles, launch, screenAngle, step, type Flight } from "./projectiles";
 import { RunTracker } from "./RunTracker";
@@ -118,6 +118,18 @@ type Sprite = Phaser.Physics.Arcade.Sprite;
 const ITEM_NAMES: Partial<Record<Kind, string>> = {
   sword: "una espada", axe: "un hacha", wand: "una varita", bow: "un arco", potion: "una poción",
   dagger: "unas dagas", hammer: "un martillo", spear: "una lanza", staff: "un báculo",
+  medkit: "un botiquín", pistol: "una pistola", rifle: "un fusil", shotgun: "una escopeta", smg: "un subfusil",
+  sniper: "un rifle de francotirador", launcher: "un lanzacohetes", grenade: "granadas",
+};
+
+/** Sound of each firearm when it shoots. */
+const GUN_SOUNDS: Partial<Record<WeaponId, Effect>> = {
+  pistol: "gun-pistol", rifle: "gun-rifle", shotgun: "gun-shotgun", smg: "gun-smg", sniper: "gun-sniper", launcher: "rocket", grenade: "throw",
+};
+/** How hard each gun kicks: the push back on the hero and the camera shake. */
+const RECOIL: Partial<Record<WeaponId, { push: number; shake: number }>> = {
+  pistol: { push: 50, shake: 0.002 }, smg: { push: 28, shake: 0.0015 }, rifle: { push: 90, shake: 0.004 },
+  shotgun: { push: 230, shake: 0.008 }, sniper: { push: 200, shake: 0.007 }, launcher: { push: 260, shake: 0.006 },
 };
 
 /**
@@ -149,6 +161,8 @@ export class PlayScene extends Phaser.Scene {
   private spikes!: Phaser.Physics.Arcade.StaticGroup;
   private coins!: Phaser.Physics.Arcade.StaticGroup;
   private chests!: Phaser.Physics.Arcade.StaticGroup;
+  /** Powder kegs: solid until something hits them, then they blow up. */
+  private explosives!: Phaser.Physics.Arcade.StaticGroup;
   private items!: Phaser.Physics.Arcade.Group;
   private boxes!: Phaser.Physics.Arcade.Group;
   private enemies!: Phaser.Physics.Arcade.Group;
@@ -217,6 +231,10 @@ export class PlayScene extends Phaser.Scene {
     this.spikes = this.physics.add.staticGroup();
     this.coins = this.physics.add.staticGroup();
     this.chests = this.physics.add.staticGroup();
+    this.explosives = this.physics.add.staticGroup();
+    if (!this.anims.exists("explode")) {
+      this.anims.create({ key: "explode", frames: [1, 2, 3, 4, 5].map((n) => ({ key: `explosion-${n}` })), frameRate: 18, hideOnComplete: true });
+    }
     this.items = this.physics.add.group();
     this.boxes = this.physics.add.group();
     this.enemies = this.physics.add.group();
@@ -265,7 +283,7 @@ export class PlayScene extends Phaser.Scene {
       bob(this, character);
       return;
     }
-    if (isWeapon(object.kind) || object.kind === "potion") {
+    if (isWeapon(object.kind) || object.kind === "potion" || object.kind === "medkit") {
       this.spawnItem(object.kind, object.x, object.y);
       return;
     }
@@ -275,8 +293,21 @@ export class PlayScene extends Phaser.Scene {
       case "tree":
       case "bush":
       case "fence":
+      case "sandbag":
+      case "barricade":
+      case "hedgehog":
+      case "bunker":
+      case "tower":
+      case "flag":
+      case "banner":
+      case "rock":
         this.solids.create(object.x, object.y, key).setDepth(depth);
         break;
+      case "explosive": {
+        const keg = this.explosives.create(object.x, object.y, key) as Sprite;
+        keg.setDepth(depth).setData("kind", "explosive");
+        break;
+      }
       case "spike":
         this.spikes.create(object.x, object.y, key).setDepth(-1);
         break;
@@ -304,7 +335,7 @@ export class PlayScene extends Phaser.Scene {
   private spawnEnemy(kind: Kind, x: number, y: number): void {
     const stats = enemyStats(kind);
     const enemy = this.enemies.create(x, y, stats.texture) as Sprite;
-    const mass = { brute: 4, demon: 12 }[kind as string] ?? 1.5;
+    const mass = { brute: 4, demon: 12, tank: 14, captain: 4 }[kind as string] ?? 1.5;
     enemy.setDepth(y / WORLD_HEIGHT).setBounce(0.2).setCollideWorldBounds(true).setMass(mass).setScale(stats.scale);
     (enemy.body as Body).setSize(22, 20).setOffset(5, 10);
     enemy.setData("kind", kind);
@@ -315,6 +346,8 @@ export class PlayScene extends Phaser.Scene {
     enemy.setData("aim", this.add.graphics().setDepth(34));
     enemy.setData("nextShotAt", this.time.now + 900 + Math.random() * 900);
     enemy.setData("volleys", 0);
+    if (stats.speed === 0) (enemy.body as Body).setImmovable(true); // artillery is bolted to the ground
+    if (kind === "tank") (enemy.body as Body).setSize(28, 22).setOffset(2, 6);
     if (stats.behavior === "ambush") {
       // A mimic sleeps disguised as a chest until the player comes close.
       enemy.setTexture("chest").setData("awake", false);
@@ -358,6 +391,15 @@ export class PlayScene extends Phaser.Scene {
     physics.collider(this.boxes, this.water);
     physics.collider(this.characters, this.water);
     physics.collider(this.enemies, this.water, undefined, blocksEnemy);
+    physics.collider(this.player, this.explosives);
+    physics.collider(this.enemies, this.explosives, undefined, blocksEnemy);
+    physics.collider(this.characters, this.explosives);
+    physics.collider(this.boxes, this.explosives);
+    physics.collider(this.arrows, this.explosives, (shadow, keg) => {
+      const shot = this.shotOf(shadow as Sprite);
+      if (shot) this.endShot(shot, true);
+      this.detonate(keg as Sprite);
+    });
     // 2D characters are solid people: nobody walks through them, they cannot be pushed.
     physics.collider(this.characters, this.solids);
     physics.collider(this.characters, this.boxes);
@@ -709,7 +751,7 @@ export class PlayScene extends Phaser.Scene {
   private telegraph(enemy: Sprite, stats: EnemyStats, aim: Phaser.GameObjects.Graphics, time: number, until: number): void {
     const attack = stats.attack!;
     const t = Phaser.Math.Clamp(1 - (until - time) / attack.windupMs, 0, 1);
-    if (stats.attack!.projectile.texture === "arrow") {
+    if (stats.attack!.projectile.texture === "arrow" || stats.attack!.projectile.texture === "bullet") {
       const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
       const length = Math.min(attack.range, Phaser.Math.Distance.Between(enemy.x, enemy.y, this.player.x, this.player.y));
       aim.lineStyle(1, 0xff4d6d, 0.25 + 0.6 * t).lineBetween(enemy.x, enemy.y, enemy.x + Math.cos(angle) * length, enemy.y + Math.sin(angle) * length);
@@ -752,7 +794,12 @@ export class PlayScene extends Phaser.Scene {
       });
     }
     this.tweens.add({ targets: enemy, scaleX: stats.scale * 0.9, scaleY: stats.scale * 1.08, duration: 80, yoyo: true });
-    playEffect(this, stats.behavior === "boss" ? "fireball" : spec.texture === "arrow" ? "enemy-shot" : "enemy-cast", { volume: 0.6 });
+    const sound: Effect = spec.texture === "bullet" ? "gun-smg" : spec.texture === "shell" ? (kind === "grenadier" ? "throw" : "cannon")
+      : stats.behavior === "boss" ? "fireball" : spec.texture === "arrow" ? "enemy-shot" : "enemy-cast";
+    playEffect(this, sound, { volume: 0.6 });
+    if (spec.texture === "bullet" || (spec.texture === "shell" && kind !== "grenadier")) {
+      this.muzzleFlash(enemy.x, enemy.y, angles[0], 12 * Math.min(stats.scale, 1.6), spec.texture === "shell");
+    }
   }
 
   /** A mimic stops pretending: it jumps up, shows its teeth and gives chase. */
@@ -879,16 +926,17 @@ export class PlayScene extends Phaser.Scene {
   private pickUp(item: Sprite): void {
     if (!item.active || !item.body?.enable) return;
     const kind = item.getData("kind") as Kind;
-    if (kind === "potion") {
-      this.tracker.pickUp("potion", POTION_HEAL);
+    if (kind === "potion" || kind === "medkit") {
+      const heal = kind === "medkit" ? MEDKIT_HEAL : POTION_HEAL;
+      this.tracker.pickUp(kind, heal);
       playEffect(this, "potion", { volume: 0.7 });
-      this.floatText(this.player.x, this.player.y - 20, `+${POTION_HEAL} ♥`, "#33e0a1");
-      this.sparkle(item.x, item.y, 0x33e0a1);
+      this.floatText(this.player.x, this.player.y - 20, `+${heal} ♥`, "#33e0a1");
+      this.sparkle(item.x, item.y, 0x33e0a1, kind === "medkit" ? 14 : 8);
     } else if (isWeapon(kind)) {
       this.weapon = WEAPONS[kind as WeaponId];
       this.held.setTexture(this.weapon.id);
       this.tracker.pickUp(kind);
-      playEffect(this, "pickup");
+      playEffect(this, isFirearm(this.weapon.id) ? "reload" : "pickup");
       this.sparkle(item.x, item.y, 0x2d8cff);
       this.floatText(this.player.x, this.player.y - 20, this.weapon.name, "#7cc4ff");
     }
@@ -996,6 +1044,10 @@ export class PlayScene extends Phaser.Scene {
         if (!enemy.body?.enable) continue;
         if (inSwing(enemy.x - this.player.x, enemy.y - this.player.y, aim, weapon)) this.damageEnemy(enemy, weapon.damage, aim, weapon.knockback);
       }
+      for (const child of [...this.explosives.getChildren()]) {
+        const keg = child as Sprite;
+        if (inSwing(keg.x - this.player.x, keg.y - this.player.y, aim, weapon)) this.detonate(keg);
+      }
       if (this.tracker.isOver()) this.end(this.tracker.outcome()!);
     });
   }
@@ -1040,12 +1092,23 @@ export class PlayScene extends Phaser.Scene {
     for (const angle of fanAngles(aim, spec.count, spec.fanDeg)) this.spawnShot(weapon, spec, startX, startY, angle, power);
     // Letting go pushes the hero back a little and makes the weapon kick.
     const body = this.player.body as Body;
-    body.velocity.x -= Math.cos(aim) * 70 * power;
-    body.velocity.y -= Math.sin(aim) * 70 * power;
+    const recoil = RECOIL[weapon.id];
+    const kick = recoil?.push ?? 70;
+    body.velocity.x -= Math.cos(aim) * kick * power;
+    body.velocity.y -= Math.sin(aim) * kick * power;
     this.tweens.add({ targets: this.player, scaleX: 0.92, scaleY: 1.06, duration: 70, yoyo: true });
     if (weapon.id === "bow") this.twang(aim);
-    playEffect(this, weapon.id === "bow" ? "bow-release" : weapon.id === "dagger" ? "throw" : "cast", { volume: 0.8 });
-    if (spec.splash > 0) this.cameras.main.flash(60, 45, 140, 255, false);
+    if (isFirearm(weapon.id)) {
+      playEffect(this, GUN_SOUNDS[weapon.id]!, { volume: weapon.id === "smg" ? 0.55 : 0.85 });
+      if (weapon.id !== "grenade") this.muzzleFlash(this.player.x, this.player.y, aim, 18, weapon.id === "launcher" || weapon.id === "shotgun");
+      if (recoil) this.cameras.main.shake(70, recoil.shake);
+      if (spec.texture === "bullet") this.ejectCasing(this.player.x, this.player.y, aim);
+      // The gun jerks back in the hand.
+      this.tweens.add({ targets: this.held, scaleX: 0.6, duration: 50, yoyo: true });
+    } else {
+      playEffect(this, weapon.id === "bow" ? "bow-release" : weapon.id === "dagger" ? "throw" : "cast", { volume: 0.8 });
+      if (spec.splash > 0) this.cameras.main.flash(60, 45, 140, 255, false);
+    }
   }
 
   /** The string of the bow snaps forward and shakes for a moment after the shot. */
@@ -1090,6 +1153,8 @@ export class PlayScene extends Phaser.Scene {
     if (spec.texture === "orb" || spec.texture === "spark") sprite.setBlendMode(Phaser.BlendModes.ADD);
     if (launchInfo.tint !== undefined && launchInfo.tint !== 0xffffff) sprite.setTint(launchInfo.tint);
     if (spec.texture === "fireball") sprite.setScale(1.3);
+    if (spec.texture === "grenade") sprite.setScale(0.6);
+    if (spec.texture === "bullet") sprite.setBlendMode(Phaser.BlendModes.ADD);
     const shot: Shot = {
       sprite, shadow, flight, spec,
       damage: launchInfo.damage, knockback: launchInfo.knockback, range: launchInfo.range * power,
@@ -1131,6 +1196,12 @@ export class PlayScene extends Phaser.Scene {
       sprite.setPosition(shadow.x, shadow.y - flight.z).setRotation(screenAngle(flight));
       sprite.setDepth(shadow.y / WORLD_HEIGHT + 0.01);
       shadow.setScale(1 - Math.min(0.5, flight.z / 80));
+      if (time >= shot.trailAt && (spec.texture === "rocket" || spec.texture === "shell")) {
+        // Rockets and shells leave a trail of smoke.
+        shot.trailAt = time + (spec.texture === "rocket" ? 25 : 45);
+        const puff = this.add.circle(sprite.x, sprite.y, 3, spec.texture === "rocket" ? 0xc9ced6 : 0x8a9099, 0.6).setDepth(sprite.depth - 0.001);
+        this.tweens.add({ targets: puff, scale: 2.4, alpha: 0, duration: 420, onComplete: () => puff.destroy() });
+      }
       if (time >= shot.trailAt && (spec.texture === "orb" || spec.texture === "spark" || spec.texture === "fireball")) {
         shot.trailAt = time + 30;
         const dot = this.add.image(sprite.x, sprite.y, spec.texture).setScale(0.5).setAlpha(0.5).setBlendMode(Phaser.BlendModes.ADD).setDepth(sprite.depth - 0.001);
@@ -1220,10 +1291,21 @@ export class PlayScene extends Phaser.Scene {
     sprite.destroy();
     if (!burst) return;
     this.sparkle(x, y - shot.flight.z, spec.color, 10);
-    if (spec.splash <= 0 || shot.hostile) return;
-    playEffect(this, "explode", { volume: 0.8 });
-    const ring = this.add.circle(x, y, 6, spec.color, 0.35).setStrokeStyle(2, 0xffffff, 0.9).setBlendMode(Phaser.BlendModes.ADD).setDepth(40);
-    this.tweens.add({ targets: ring, radius: spec.splash, alpha: 0, duration: 260, ease: "Cubic.easeOut", onComplete: () => ring.destroy() });
+    if (spec.splash <= 0) return;
+    const fiery = spec.texture === "shell" || spec.texture === "rocket" || spec.texture === "grenade";
+    if (fiery) this.boom(x, y, spec.splash);
+    else {
+      playEffect(this, "explode", { volume: 0.8 });
+      const ring = this.add.circle(x, y, 6, spec.color, 0.35).setStrokeStyle(2, 0xffffff, 0.9).setBlendMode(Phaser.BlendModes.ADD).setDepth(40);
+      this.tweens.add({ targets: ring, radius: spec.splash, alpha: 0, duration: 260, ease: "Cubic.easeOut", onComplete: () => ring.destroy() });
+    }
+    this.blastKegs(x, y, spec.splash);
+    if (shot.hostile) {
+      // Enemy grenades and shells hurt the hero when they land close, unless dashing.
+      const near = Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) <= spec.splash;
+      if (near && this.time.now >= this.dashUntil && !this.finished) this.hurt(shot.source, shadow, shot.damage);
+      return;
+    }
     for (const child of [...this.enemies.getChildren()]) {
       const enemy = child as Sprite;
       if (!enemy.body?.enable) continue;
@@ -1246,7 +1328,7 @@ export class PlayScene extends Phaser.Scene {
     const stats = enemy.getData("stats") as EnemyStats;
     const hp = (enemy.getData("hp") as number) - damage;
     enemy.setData("hp", hp);
-    const heavy = { brute: 2, demon: 6 }[enemy.getData("kind") as string] ?? 1;
+    const heavy = { brute: 2, demon: 6, tank: 8, captain: 2, artillery: 99 }[enemy.getData("kind") as string] ?? 1;
     const push = knockback / heavy;
     enemy.setVelocity(Math.cos(angle) * push, Math.sin(angle) * push);
     enemy.setData("knockedUntil", this.time.now + 140);
@@ -1262,6 +1344,110 @@ export class PlayScene extends Phaser.Scene {
       enemy.disableBody(false, false);
       this.tweens.add({ targets: enemy, alpha: 0, scale: 0.2, angle: 180, duration: 260, onComplete: () => enemy.destroy() });
     }
+  }
+
+  /** A bright flash at the muzzle of a gun or a cannon. */
+  private muzzleFlash(x: number, y: number, angle: number, distance: number, big: boolean): void {
+    const fx = x + Math.cos(angle) * distance;
+    const fy = y + Math.sin(angle) * distance - 4;
+    const core = this.add.circle(fx, fy, big ? 7 : 4, 0xfff3c4, 1).setDepth(44).setBlendMode(Phaser.BlendModes.ADD);
+    const glow = this.add.circle(fx, fy, big ? 16 : 9, 0xffa53c, 0.55).setDepth(43).setBlendMode(Phaser.BlendModes.ADD);
+    this.tweens.add({
+      targets: [core, glow], scale: 1.6, alpha: 0, duration: big ? 140 : 80, ease: "Cubic.easeOut",
+      onComplete: () => {
+        core.destroy();
+        glow.destroy();
+      },
+    });
+    if (big) this.smoke(fx, fy, 3);
+  }
+
+  /** A brass casing jumps out of the gun, falls with gravity, bounces once and fades. */
+  private ejectCasing(x: number, y: number, aim: number): void {
+    const side = aim + (Math.PI / 2) * (Math.cos(aim) >= 0 ? -1 : 1);
+    const casing = this.add.rectangle(x, y - 6, 3, 2, 0xd9a441).setDepth(this.player.depth + 0.001);
+    const landX = x + Math.cos(side) * 14 - Math.cos(aim) * 6;
+    const landY = y + 8 + Math.random() * 6;
+    this.tweens.add({ targets: casing, x: landX, duration: 320 });
+    this.tweens.add({
+      targets: casing, y: y - 20, duration: 130, ease: "Quad.easeOut",
+      onComplete: () => this.tweens.add({
+        targets: casing, y: landY, angle: 540, duration: 190, ease: "Bounce.easeOut",
+        onComplete: () => this.tweens.add({ targets: casing, alpha: 0, delay: 700, duration: 300, onComplete: () => casing.destroy() }),
+      }),
+    });
+  }
+
+  /** Puffs of grey smoke that rise and spread. */
+  private smoke(x: number, y: number, count: number): void {
+    for (let i = 0; i < count; i++) {
+      const puff = this.add.circle(x + (Math.random() - 0.5) * 10, y + (Math.random() - 0.5) * 6, 4 + Math.random() * 4, 0x9aa3ad, 0.55).setDepth(42);
+      this.tweens.add({ targets: puff, y: puff.y - 18 - Math.random() * 14, scale: 2.2, alpha: 0, duration: 600 + Math.random() * 400, ease: "Cubic.easeOut", onComplete: () => puff.destroy() });
+    }
+  }
+
+  /**
+   * A real explosion: the animated fireball (16x16 Explosion, CC0), a shockwave
+   * ring, flying debris, smoke, a scorch mark on the ground and a camera shake
+   * that grows with the radius.
+   */
+  private boom(x: number, y: number, radius: number): void {
+    playEffect(this, radius >= 60 ? "explosion" : "explode", { volume: 0.95 });
+    const fireball = this.add.sprite(x, y - 6, "explosion-1").setScale(Math.max(1.4, radius / 16)).setDepth(46);
+    fireball.play("explode");
+    fireball.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => fireball.destroy());
+    const ring = this.add.circle(x, y, 6, 0xffffff, 0).setStrokeStyle(3, 0xffd8a8, 0.9).setDepth(45);
+    this.tweens.add({ targets: ring, radius, alpha: 0, duration: 280, ease: "Cubic.easeOut", onComplete: () => ring.destroy() });
+    const light = this.add.circle(x, y, radius * 1.3, 0xffa53c, 0.25).setDepth(44).setBlendMode(Phaser.BlendModes.ADD);
+    this.tweens.add({ targets: light, alpha: 0, duration: 220, onComplete: () => light.destroy() });
+    for (let i = 0; i < 10; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const bit = this.add.rectangle(x, y, 3, 3, Math.random() < 0.5 ? 0x3b2f1c : 0x6e5a35).setDepth(45);
+      const reach = radius * (0.5 + Math.random() * 0.6);
+      this.tweens.add({ targets: bit, x: x + Math.cos(angle) * reach, duration: 420, ease: "Cubic.easeOut" });
+      this.tweens.add({ targets: bit, y: y + Math.sin(angle) * reach * 0.6, angle: 360, alpha: 0, duration: 480, ease: "Quad.easeIn", onComplete: () => bit.destroy() });
+    }
+    this.smoke(x, y - 4, 5);
+    const scorch = this.add.ellipse(x, y + 2, radius * 0.9, radius * 0.5, 0x1b1712, 0.45).setDepth(-2);
+    this.tweens.add({ targets: scorch, alpha: 0, delay: 2500, duration: 1500, onComplete: () => scorch.destroy() });
+    this.cameras.main.shake(180 + radius * 2, Math.min(0.02, 0.004 + radius / 6000));
+    this.buzz(Math.min(90, 30 + radius));
+  }
+
+  /** Kegs caught in a blast go off too (a little later, so chains ripple). */
+  private blastKegs(x: number, y: number, radius: number): void {
+    for (const child of [...this.explosives.getChildren()]) {
+      const keg = child as Sprite;
+      if (keg.active && Phaser.Math.Distance.Between(x, y, keg.x, keg.y) <= radius + 16) this.time.delayedCall(90, () => this.detonate(keg));
+    }
+  }
+
+  /** A powder keg blows up: it hurts enemies and the hero, and throws boxes away. */
+  private detonate(keg: Sprite): void {
+    if (!keg.active || keg.getData("gone")) return;
+    keg.setData("gone", true);
+    const { x, y } = keg;
+    const { damage, radius } = BARREL_BLAST;
+    keg.destroy();
+    this.boom(x, y, radius);
+    for (const child of [...this.enemies.getChildren()]) {
+      const enemy = child as Sprite;
+      if (enemy.body?.enable && Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y) <= radius) {
+        this.damageEnemy(enemy, damage, Phaser.Math.Angle.Between(x, y, enemy.x, enemy.y), 560);
+      }
+    }
+    for (const child of this.boxes.getChildren()) {
+      const box = child as Sprite;
+      if (Phaser.Math.Distance.Between(x, y, box.x, box.y) <= radius * 1.3) {
+        const a = Phaser.Math.Angle.Between(x, y, box.x, box.y);
+        box.setVelocity(Math.cos(a) * 420, Math.sin(a) * 420);
+      }
+    }
+    if (!this.finished && Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) <= radius && this.time.now >= this.dashUntil) {
+      this.hurt("explosive", this.player, 2);
+    }
+    this.blastKegs(x, y, radius);
+    if (this.tracker.isOver()) this.end(this.tracker.outcome()!);
   }
 
   /** Paint a sprite in one solid colour for a moment: the "hit" flash. */

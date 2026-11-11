@@ -1,0 +1,4 @@
+16x16 Explosion, by BitingChaos
+https://opengameart.org/node/156434
+License: CC0 (public domain). Credit is not required; given here as thanks.
+Used in PixelForge: the five frames of the grenade and shell explosion.

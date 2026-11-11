@@ -14,7 +14,8 @@ export const KIND_TEXTURE: Record<Kind, { key: string }> = Object.fromEntries(
 /** Textures that are not a kind: heroes, their weapons, projectiles, the open chest and the ground. */
 export const EXTRA_TEXTURES = [
   "hero-knight", "hero-wizard", "hero-archer", "hero-barbarian", "hero-rogue", "hero-viking", "hero-lancer", "hero-druid",
-  "arrow", "dagger-flying", "orb", "spark", "fireball", "shadow",
+  "arrow", "dagger-flying", "orb", "spark", "fireball", "shadow", "bullet", "shell",
+  "explosion-1", "explosion-2", "explosion-3", "explosion-4", "explosion-5",
   "chest-open", "grass", "path",
 ] as const;
 

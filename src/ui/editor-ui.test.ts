@@ -12,7 +12,7 @@ test("every kind is in exactly one library category", () => {
 });
 
 test("2D characters are friendly kinds with a size", () => {
-  expect(CHARACTER_KINDS).toEqual(["villager", "knight", "wizard"]);
+  expect(CHARACTER_KINDS).toEqual(["villager", "knight", "wizard", "ally", "guard"]);
   expect(isCharacter("knight")).toBe(true);
   expect(isCharacter("enemy")).toBe(false);
   for (const kind of CHARACTER_KINDS) expect(SIZES[kind]).toEqual([24, 28]);

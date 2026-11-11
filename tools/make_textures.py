@@ -229,7 +229,74 @@ def fireball() -> list:
     return from_grid(FIREBALL, {"r": "b8321f", "R": "8a2414", "o": "f2702a", "y": "ffc547", "w": "fff6d6"})
 
 
+# A rifle bullet pointing right: brass case, copper tip, with a short tracer.
+BULLET = [
+    "tt.bbbc.",
+    "ttbbbbcc",
+    "tt.bbbc.",
+]
+
+# An artillery shell: dark iron with a red band and a hot glow at the back.
+SHELL = [
+    "..kkkk..",
+    ".kKKKKk.",
+    "okKrrKKk",
+    "okKrrKKk",
+    ".kKKKKk.",
+    "..kkkk..",
+]
+
+# A wall of stacked sandbags, two rows, with seams between the bags.
+SANDBAG = [
+    "................",
+    "................",
+    "................",
+    "..dsssd.dsssd...",
+    ".dsLLssddsLLssd.",
+    ".dssssssdssssssd",
+    ".ddddddddddddddd",
+    "dsssddsssddsssd.",
+    "dsLLsddsLLsddsLd",
+    "dssssddssssddssd",
+    "dssssddssssddssd",
+    "ddddddddddddddd.",
+    "kkkkkkkkkkkkkkkk",
+    "................",
+    "................",
+    "................",
+]
+
+
+# A rocket pointing right: flame at the back, olive body, red warhead.
+ROCKET = [
+    "....ff.......",
+    "oyyfggggggrr.",
+    "oyyfGGGGGGrrr",
+    "....ff.......",
+]
+
+
+def rocket() -> list:
+    return from_grid(ROCKET, {"o": "ff7a2a", "y": "ffd166", "f": "3d4a2b", "g": "6b7b45", "G": "556336", "r": "d64545"})
+
+
+def bullet() -> list:
+    return from_grid(BULLET, {"t": "ffe7a3", "b": "d9a441", "c": "b8642e"})
+
+
+def shell() -> list:
+    return from_grid(SHELL, {"k": "2b2f38", "K": "56606f", "r": "d64545", "o": "ff9a3c"})
+
+
+def sandbag() -> list:
+    return from_grid(SANDBAG, {"d": "6e5a35", "s": "c7ab72", "L": "e3cc96", "k": "3b2f1c"})
+
+
 SPRITES = {
+    "bullet": bullet,
+    "rocket": rocket,
+    "shell": shell,
+    "sandbag": sandbag,
     "water": water,
     "sand": sand,
     "bridge": bridge,

@@ -43,7 +43,7 @@ export class LoginScreen {
 
   constructor(onLoggedIn: (user: UserDto) => Promise<void>) {
     this.onLoggedIn = onLoggedIn;
-    this.living = new LivingLogo(byId("login-art"), byId("login-actors"), byId<HTMLCanvasElement>("login-fx"), byId("login-emblem"));
+    this.living = new LivingLogo(byId("login-art"), byId<HTMLCanvasElement>("login-battle"), byId<HTMLCanvasElement>("login-fx"), byId("login-emblem"));
     byId("tab-login").addEventListener("click", () => this.setMode("login"));
     byId("tab-register").addEventListener("click", () => this.setMode("register"));
     byId("auth-switch").addEventListener("click", () => this.setMode(this.mode === "login" ? "register" : "login"));

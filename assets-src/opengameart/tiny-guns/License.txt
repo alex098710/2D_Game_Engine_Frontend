@@ -1,0 +1,5 @@
+Tiny gun icons (16x16), collected by congusbongus (art by Snabisch, Sogomn, Marxous and others)
+https://opengameart.org/node/44244
+License: CC0 (public domain). Credit is not required; given here as thanks.
+Used in PixelForge: pistol (desert_hawk), rifle (poshlinov), shotgun (sg1),
+submachine gun (m500), sniper rifle (snp6plus) and rocket launcher (x90).

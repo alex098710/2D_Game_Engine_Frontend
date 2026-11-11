@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, test } from "vitest";
 import { ENEMY_KINDS } from "../model/GameObject";
 import {
   aimAngle, chargePower, distanceToSegment, ENEMIES, enemyStats, healthColor, heroById, HEROES, inSwing, leadAngle, LOOT, rangedIntent,
-  ringAngles, rollLoot, speedFor, WEAPONS,
+  ringAngles, rollLoot, speedFor, WEAPONS, isFirearm, MEDKIT_HEAL, POTION_HEAL,
 } from "./combat";
 
 describe("heroes and weapons", () => {
@@ -132,4 +132,34 @@ describe("enemies that shoot", () => {
     expect(ring).toHaveLength(4);
     expect(ring[1] - ring[0]).toBeCloseTo(Math.PI / 2);
   });
+});
+
+test("every firearm shoots something and the guns are told apart from the old weapons", () => {
+  for (const id of ["pistol", "rifle", "shotgun", "smg", "sniper", "launcher", "grenade"] as const) {
+    expect(isFirearm(id)).toBe(true);
+    expect(WEAPONS[id].style).toBe("projectile");
+    expect(WEAPONS[id].projectile).toBeDefined();
+  }
+  expect(isFirearm("sword")).toBe(false);
+  expect(isFirearm("bow")).toBe(false);
+  // The shotgun spreads, the sniper pierces, the explosives hurt an area.
+  expect(WEAPONS.shotgun.projectile!.count).toBeGreaterThan(1);
+  expect(WEAPONS.sniper.projectile!.pierce).toBeGreaterThan(0);
+  expect(WEAPONS.launcher.projectile!.splash).toBeGreaterThan(0);
+  expect(WEAPONS.grenade.projectile!.gravity).toBeGreaterThan(0);
+});
+
+test("chests can drop guns, potions and medkits", () => {
+  for (const kind of ["pistol", "rifle", "grenade", "potion", "medkit"] as const) expect(LOOT).toContain(kind);
+  expect(rollLoot(() => 0)).toBe(LOOT[0]);
+  expect(rollLoot(() => 0.9999)).toBe(LOOT[LOOT.length - 1]);
+  expect(MEDKIT_HEAL).toBeGreaterThan(POTION_HEAL);
+});
+
+test("war enemies: artillery never moves, the tank is a boss, soldiers shoot", () => {
+  expect(enemyStats("artillery").speed).toBe(0);
+  expect(enemyStats("tank").behavior).toBe("boss");
+  expect(enemyStats("soldier").attack?.projectile.texture).toBe("bullet");
+  expect(enemyStats("grenadier").attack?.projectile.splash).toBeGreaterThan(0);
+  expect(enemyStats("legionary").behavior).toBe("chase");
 });
