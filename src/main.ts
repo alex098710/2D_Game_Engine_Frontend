@@ -19,7 +19,7 @@ import {
 } from "./api/client";
 import { forgetAll } from "./api/cache";
 import type { Tool } from "./game/EditorScene";
-import { GameHost } from "./game/GameHost";
+import type { GameHost } from "./game/GameHost";
 import { CHARACTER_KINDS, ENEMY_KINDS, isKind, KIND_INFO, type Kind } from "./model/GameObject";
 import { countByKind, hasPlayer, nextObjectId, SceneModel } from "./model/SceneModel";
 import { AiPanel } from "./ui/AiPanel";
@@ -148,7 +148,25 @@ function applyTool(tool: Tool): void {
   refreshEmptyState();
 }
 
-const host = new GameHost(
+/**
+ * The game engine (Phaser, the biggest part of the app) is loaded only when it
+ * is needed: the access screen shows without it, and it is fetched in the
+ * background while the user types (see prefetchHost), so it is usually ready
+ * by the time they log in.
+ */
+let host!: GameHost;
+let hostLoading: Promise<GameHost> | null = null;
+function loadHost(): Promise<GameHost> {
+  hostLoading ??= import("./game/GameHost").then(({ GameHost }) => (host = createHost(GameHost)));
+  return hostLoading;
+}
+function prefetchHost(): void {
+  const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback;
+  if (idle) idle(() => void loadHost());
+  else window.setTimeout(() => void loadHost(), 1200);
+}
+
+const createHost = (Host: typeof GameHost): GameHost => new Host(
   byId("game"),
   model,
   {
@@ -169,7 +187,7 @@ const host = new GameHost(
     onNotice: (text) => toast(text, "success", 2200),
   },
 );
-initTouchControls(byId("game").parentElement!, () => host.quitPlay());
+initTouchControls(byId("game").parentElement!, () => host?.quitPlay());
 
 function placeObject(kind: Kind, x: number, y: number): void {
   if (projectId === null) {
@@ -258,7 +276,7 @@ function watchModel(): void {
     byId("status-objects").textContent =
       `${model.size()} objetos · ${counts.coin ?? 0} monedas · ${total(ENEMY_KINDS)} enemigos · ${total(CHARACTER_KINDS)} personajes`;
     library.setPlayerAvailable(!hasPlayer(model));
-    const selected = host.editor.selectedId;
+    const selected = host?.editor.selectedId ?? null;
     inspector.show(selected === null ? undefined : model.find(selected));
     byId<HTMLButtonElement>("btn-undo").disabled = !model.canUndo();
     byId<HTMLButtonElement>("btn-redo").disabled = !model.canRedo();
@@ -468,7 +486,7 @@ setupTabs();
 byId("status-tool").textContent = TOOL_NAMES.select;
 
 const settings = new SettingsPanel((value) =>
-  host.setEditorOptions({ showGrid: value.show_grid, snapToGrid: value.snap_to_grid, gridSize: value.grid_size }),
+  host?.setEditorOptions({ showGrid: value.show_grid, snapToGrid: value.snap_to_grid, gridSize: value.grid_size }),
 );
 
 const security = new SecurityPanel(
@@ -537,6 +555,7 @@ async function enterApp(user: UserDto, withIntro: boolean): Promise<void> {
   byId("user-avatar").textContent = user.username.slice(0, 1).toUpperCase();
   // The workspace loads while the intro plays; the menu opens when both are done.
   const ready = (async () => {
+    await loadHost();
     host.start();
     await settings.load();
     getCharacterLines()
@@ -630,6 +649,7 @@ async function boot(): Promise<void> {
   setStage("auth");
   login.show();
   hideLoader();
+  prefetchHost();
 }
 
 void boot();
