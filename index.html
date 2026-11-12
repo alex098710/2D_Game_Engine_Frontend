@@ -118,17 +118,29 @@
     <!-- Intro: plays once after logging in or registering, before the menu -->
     <section id="intro" class="intro" hidden aria-label="Intro de PixelForge">
       <div class="intro-floor" aria-hidden="true"></div>
+      <div class="intro-beam" aria-hidden="true"></div>
+      <canvas id="intro-pixels" class="intro-pixels" aria-hidden="true"></canvas>
       <canvas id="intro-fx" class="fx" aria-hidden="true"></canvas>
       <div class="intro-logo">
-        <div class="emblem-wrap"><img id="intro-emblem" class="emblem" src="/brand/emblem.png" alt="" width="300" /></div>
-        <div class="wordmark-wrap"><img class="wordmark" src="/brand/wordmark.png" alt="PixelForge · 2D Game Engine" width="560" /><i class="glint" aria-hidden="true"></i></div>
+        <div class="emblem-wrap"><img id="intro-emblem" class="emblem" src="/brand/emblem.png" alt="" width="300" height="211" /><i class="intro-ring" aria-hidden="true"></i></div>
+        <div class="wordmark-wrap"><img class="wordmark" src="/brand/wordmark.png" alt="PixelForge · 2D Game Engine" width="560" height="101" /><i class="glint" aria-hidden="true"></i></div>
+        <p class="intro-tagline">Crea <b>·</b> Juega <b>·</b> Conquista</p>
       </div>
+      <div class="intro-parade" aria-hidden="true">
+        <img src="/textures/hero-knight.png" alt="" /><img src="/textures/ally.png" alt="" /><img src="/textures/guard.png" alt="" />
+        <img src="/textures/tank-blue.png" alt="" class="is-big" /><img src="/textures/hero-wizard.png" alt="" /><img src="/textures/hero-archer.png" alt="" />
+        <img src="/textures/jeep-blue.png" alt="" class="is-big" /><img src="/textures/flag.png" alt="" />
+      </div>
+      <ol id="intro-log" class="intro-log" aria-hidden="true">
+        <li>Motor de físicas</li><li>Texturas y sonidos</li><li>Ejércitos y armas</li><li>Inteligencia artificial</li>
+      </ol>
       <button id="intro-skip" class="btn btn-ghost intro-skip" type="button">Saltar ›</button>
       <div class="intro-boot">
-        <div class="intro-bar"><i></i></div>
-        <div class="intro-row"><span id="intro-text">Forjando el mundo…</span><span>Cualquier tecla para saltar</span></div>
+        <div class="intro-bar"><i id="intro-bar"></i></div>
+        <div class="intro-row"><span id="intro-text">Forjando el mundo…</span><span id="intro-percent">0%</span></div>
       </div>
-      <div class="intro-scan" aria-hidden="true"></div>
+      <div class="intro-flash" aria-hidden="true"></div>
+      <div class="intro-vignette" aria-hidden="true"></div>
     </section>
 
     <!-- Home: the menu of the engine, only after the intro -->
@@ -336,11 +348,14 @@
         <section class="dock-panel" role="tabpanel" data-panel="ai" hidden>
           <div class="panel-head"><span>Describe lo que quieres</span></div>
           <form id="ai-form" class="form form-compact">
-            <textarea id="ai-prompt" rows="3" maxlength="500" placeholder="Ej.: un mago, 3 monedas y una casa en 400 300"></textarea>
+            <textarea id="ai-prompt" rows="3" maxlength="500" placeholder="Ej.: 3 tanques y 2 fusileros · borra los enemigos · elimina todo y pon 5 monedas"></textarea>
             <div class="chips" id="ai-examples">
               <button type="button" class="chip" data-prompt="un aldeano, un caballero y un mago">Personajes</button>
               <button type="button" class="chip" data-prompt="5 monedas y 2 enemigos">Monedas y enemigos</button>
               <button type="button" class="chip" data-prompt="3 casas y 4 árboles">Aldea</button>
+              <button type="button" class="chip" data-prompt="2 tanques, 4 fusileros y 3 barriles explosivos">Batalla</button>
+              <button type="button" class="chip" data-prompt="borra los enemigos">Borrar enemigos</button>
+              <button type="button" class="chip" data-prompt="elimina todo">Vaciar mapa</button>
             </div>
             <button class="btn btn-block" type="submit">Pedir a la IA</button>
           </form>

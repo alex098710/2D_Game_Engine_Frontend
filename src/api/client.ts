@@ -22,6 +22,8 @@ export interface ProjectDto {
   name: string;
   scene: GameObject[];
   updated_at: string;
+  /** Only in the answer of askAi: how many objects the AI removed and added. */
+  ai?: { added: number; removed: number };
 }
 
 export interface TemplateDto {

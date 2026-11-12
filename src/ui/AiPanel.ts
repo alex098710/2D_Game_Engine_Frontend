@@ -39,7 +39,7 @@ export class AiPanel {
     const prompt = byId<HTMLTextAreaElement>("ai-prompt");
     if (id === null) return;
     if (prompt.value.trim() === "") {
-      toast("Escribe qué debe crear la IA.", "error");
+      toast("Escribe qué debe crear o borrar la IA.", "error");
       return;
     }
     await this.busy(byId<HTMLFormElement>("ai-form").querySelector("button")!, async () => {
@@ -47,7 +47,7 @@ export class AiPanel {
       const project = await askAi(id, prompt.value.trim());
       this.onScene(project);
       prompt.value = "";
-      toast("La IA actualizó la escena.", "success");
+      toast(aiSummary(project.ai), project.ai && project.ai.added + project.ai.removed === 0 ? "info" : "success");
     });
   }
 
@@ -106,4 +106,15 @@ export class AiPanel {
     if (id === null) toast("Crea o abre un proyecto primero.", "error");
     return id;
   }
+}
+
+/** What the AI changed, in words: "La IA quitó 12 objetos y añadió 3." */
+export function aiSummary(change?: { added: number; removed: number }): string {
+  if (!change) return "La IA actualizó la escena.";
+  const n = (count: number) => `${count} objeto${count === 1 ? "" : "s"}`;
+  const parts = [];
+  if (change.removed > 0) parts.push(`quitó ${n(change.removed)}`);
+  if (change.added > 0) parts.push(`añadió ${n(change.added)}`);
+  if (parts.length === 0) return "La IA no encontró nada que cambiar con esa petición.";
+  return `La IA ${parts.join(" y ")}.`;
 }
