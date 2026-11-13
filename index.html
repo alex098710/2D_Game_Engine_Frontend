@@ -214,16 +214,75 @@
           </div>
         </div>
 
-        <div class="section-head"><h2 class="eyebrow">Accesos rápidos</h2></div>
+        <div class="section-head">
+          <div><h2 class="eyebrow">Accesos rápidos</h2><p class="section-sub">Todo lo que necesitas para crear, jugar y ajustar tu forja.</p></div>
+        </div>
+        <!-- Bento grid: the editor is the featured card; every card follows the
+             pointer with a spotlight and a slight 3D tilt (HomeScreen sets --mx/--my/--rx/--ry). -->
         <div class="menu">
-          <button class="option is-primary" type="button" data-go="editor"><span class="option-num" aria-hidden="true">01</span><span class="option-icons"><img src="/textures/house.png" alt="" class="is-wide" /><img src="/textures/tree.png" alt="" /></span><h3>Abrir el editor</h3><p>Construye niveles con la Biblioteca, la Escena y el Inspector.</p><span class="go"><span id="option-editor-go">Continuar</span><i aria-hidden="true">→</i></span></button>
-          <button class="option" type="button" data-go="play"><span class="option-num" aria-hidden="true">02</span><span class="option-icons"><img src="/textures/hero-wizard.png" alt="" /><img src="/textures/wand.png" alt="" class="is-small" /></span><h3>Jugar</h3><p>Elige héroe y prueba tu nivel. La IA ajusta la dificultad.</p><span class="go"><span>Elegir héroe</span><i aria-hidden="true">→</i></span></button>
-          <button class="option" type="button" data-go="projects"><span class="option-num" aria-hidden="true">03</span><span class="option-icons"><img src="/textures/chest.png" alt="" /><img src="/textures/coin.png" alt="" class="is-small" /></span><h3>Mis proyectos</h3><p>Crea uno nuevo desde una plantilla o abre otro.</p><span class="go"><span id="option-projects-go">Ver proyectos</span><i aria-hidden="true">→</i></span></button>
-          <button class="option" type="button" data-go="settings"><span class="option-num" aria-hidden="true">04</span><span class="option-icons"><img src="/textures/knight.png" alt="" /><img src="/textures/potion.png" alt="" class="is-small" /></span><h3>Ajustes</h3><p>Tema claro u oscuro, cuadrícula, sonido y seguridad.</p><span class="go"><span>Abrir ajustes</span><i aria-hidden="true">→</i></span></button>
+          <button class="option option-feature tone-blue" type="button" data-go="editor">
+            <span class="option-glow" aria-hidden="true"></span>
+            <span class="feature-stage" aria-hidden="true">
+              <span class="stage-floor"></span>
+              <span class="stage-select"></span>
+              <img class="sprite s-house" src="/textures/house.png" alt="" />
+              <img class="sprite s-tree" src="/textures/tree.png" alt="" />
+              <img class="sprite s-tree2" src="/textures/tree.png" alt="" />
+              <img class="sprite s-hero" src="/textures/hero-knight.png" alt="" />
+              <img class="sprite s-slime" src="/textures/enemy-slime.png" alt="" />
+              <img class="sprite s-coin" src="/textures/coin.png" alt="" />
+              <img class="sprite s-chest" src="/textures/chest.png" alt="" />
+              <svg class="stage-cursor" viewBox="0 0 24 24"><path d="M5 3l14 8-6.2 1.8L11 19z" /></svg>
+            </span>
+            <span class="option-body">
+              <span class="option-tag"><i></i>Recomendado</span>
+              <h3>Abrir el editor</h3>
+              <p>Construye niveles con la Biblioteca, la Escena y el Inspector, y deja que la IA te ayude.</p>
+              <span class="go go-pill"><span id="option-editor-go">Continuar</span><i aria-hidden="true">→</i></span>
+            </span>
+          </button>
+
+          <button class="option option-wide tone-green" type="button" data-go="play">
+            <span class="option-glow" aria-hidden="true"></span>
+            <span class="option-art" aria-hidden="true">
+              <img src="/textures/hero-wizard.png" alt="" /><img src="/textures/hero-archer.png" alt="" /><img src="/textures/hero-viking.png" alt="" />
+            </span>
+            <span class="option-body">
+              <span class="option-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg></span>
+              <h3>Jugar</h3>
+              <p>Elige héroe y prueba tu nivel. La IA ajusta la dificultad.</p>
+              <span class="go"><span>Elegir héroe</span><i aria-hidden="true">→</i></span>
+            </span>
+          </button>
+
+          <button class="option tone-gold" type="button" data-go="projects">
+            <span class="option-glow" aria-hidden="true"></span>
+            <span class="option-art is-corner" aria-hidden="true"><img src="/textures/chest.png" alt="" /><img class="is-small" src="/textures/coin.png" alt="" /></span>
+            <span class="option-body">
+              <span class="option-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span>
+              <h3>Mis proyectos</h3>
+              <p>Crea uno desde una plantilla o abre otro.</p>
+              <span class="go"><span id="option-projects-go">Ver proyectos</span><i aria-hidden="true">→</i></span>
+            </span>
+          </button>
+
+          <button class="option tone-violet" type="button" data-go="settings">
+            <span class="option-glow" aria-hidden="true"></span>
+            <span class="option-art is-corner" aria-hidden="true"><img src="/textures/potion.png" alt="" /></span>
+            <span class="option-body">
+              <span class="option-icon is-gear"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg></span>
+              <h3>Ajustes</h3>
+              <p>Tema, cuadrícula, sonido y seguridad.</p>
+              <span class="go"><span>Abrir ajustes</span><i aria-hidden="true">→</i></span>
+            </span>
+          </button>
         </div>
 
         <div class="recent">
-          <div class="section-head"><h2 class="eyebrow">Recientes</h2><button class="link" type="button" data-go="projects">Ver todos →</button></div>
+          <div class="section-head">
+            <div><h2 class="eyebrow">Recientes <span id="recent-count" class="count-badge">0</span></h2><p class="section-sub">Retoma donde lo dejaste.</p></div>
+            <button class="btn-outline" type="button" data-go="projects">Ver todos <i aria-hidden="true">→</i></button>
+          </div>
           <ul id="recent-projects" class="recent-list"></ul>
         </div>
       </div>

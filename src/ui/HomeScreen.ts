@@ -37,6 +37,37 @@ export class HomeScreen {
       if (target !== null) onGo(target.dataset.go as Destination);
     });
     byId("home-logout").addEventListener("click", onLogout);
+    this.followPointer();
+  }
+
+  /**
+   * Cards and recent rows light up where the pointer is (--mx/--my) and the
+   * cards tilt a few degrees towards it (--rx/--ry). Skipped for touch and
+   * for people who asked the system for less motion.
+   */
+  private followPointer(): void {
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    this.screen.addEventListener("pointermove", (event) => {
+      if (event.pointerType !== "mouse") return;
+      const target = (event.target as HTMLElement).closest<HTMLElement>(".option, .recent-row");
+      if (target === null) return;
+      const box = target.getBoundingClientRect();
+      const x = (event.clientX - box.left) / box.width;
+      const y = (event.clientY - box.top) / box.height;
+      target.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
+      target.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
+      if (target.classList.contains("option") && !still.matches) {
+        const tilt = target.classList.contains("option-feature") ? 3 : 6;
+        target.style.setProperty("--rx", `${((0.5 - y) * tilt).toFixed(2)}deg`);
+        target.style.setProperty("--ry", `${((x - 0.5) * tilt).toFixed(2)}deg`);
+      }
+    });
+    this.screen.addEventListener("pointerout", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>(".option");
+      if (target === null || target.contains(event.relatedTarget as Node | null)) return;
+      target.style.setProperty("--rx", "0deg");
+      target.style.setProperty("--ry", "0deg");
+    });
   }
 
   show(user: UserDto, projects: ProjectDto[]): void {
@@ -67,12 +98,25 @@ export class HomeScreen {
   private renderRecent(projects: ProjectDto[]): void {
     const list = byId("recent-projects");
     list.replaceChildren();
-    if (projects.length === 0) {
-      list.append(make("li", "recent-empty", "Aún no tienes proyectos. Abre el editor para crear el primero."));
+    const recent = projects.slice(0, 4);
+    byId("recent-count").textContent = String(projects.length);
+    if (recent.length === 0) {
+      const empty = make("li", "recent-empty");
+      const image = make("img");
+      image.src = iconUrl("chest");
+      image.alt = "";
+      const go = make("button", "btn-outline", "Crear mi primer nivel →");
+      go.type = "button";
+      go.dataset.go = "editor";
+      empty.append(image, make("b", "", "Aún no tienes proyectos"), make("span", "", "Abre el editor y crea el primero en segundos."), go);
+      list.append(empty);
       return;
     }
-    for (const project of projects.slice(0, 4)) {
+    // The size bar compares each project with the biggest one in the list.
+    const biggest = Math.max(1, ...recent.map((project) => project.scene.length));
+    recent.forEach((project, index) => {
       const row = make("li");
+      row.classList.add(`row-${index + 1}`);
       const button = make("button", "recent-row");
       button.type = "button";
       const thumb = make("span", "recent-thumb");
@@ -84,11 +128,19 @@ export class HomeScreen {
       const name = make("b", "", project.name);
       name.title = project.name;
       text.append(name, make("small", "", `Editado ${relativeTime(project.updated_at)}`));
-      button.append(thumb, text, make("span", "recent-chip", objectCount(project.scene.length)), make("span", "recent-arrow", "→"));
+      const size = make("span", "recent-size");
+      const bar = make("span", "recent-bar");
+      const fill = make("i");
+      fill.style.width = `${Math.max(4, (project.scene.length / biggest) * 100)}%`;
+      bar.append(fill);
+      size.append(make("small", "", objectCount(project.scene.length)), bar);
+      const open = make("span", "recent-open");
+      open.append(make("span", "", "Abrir"), make("i", "", "→"));
+      button.append(make("span", "recent-index", String(index + 1).padStart(2, "0")), thumb, text, size, open);
       button.addEventListener("click", () => this.onGo("editor", project));
       row.append(button);
       list.append(row);
-    }
+    });
   }
 
   private async loadNumbers(): Promise<void> {
