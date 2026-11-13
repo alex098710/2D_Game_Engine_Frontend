@@ -46,8 +46,8 @@ export class HomeScreen {
     byId("home-user").textContent = user.username;
     byId("welcome-title").textContent = `Bienvenido, ${user.username}`;
     byId("kpi-projects").textContent = String(projects.length);
-    byId("option-editor-go").textContent = projects[0] ? `Continuar con “${projects[0].name}” ›` : "Crear mi primer nivel ›";
-    byId("option-projects-go").textContent = projects.length > 0 ? `Ver los ${projects.length} proyectos ›` : "Crear un proyecto ›";
+    byId("option-editor-go").textContent = projects[0] ? `Continuar con “${projects[0].name}”` : "Crear mi primer nivel";
+    byId("option-projects-go").textContent = projects.length > 0 ? `Ver los ${projects.length} proyectos` : "Crear un proyecto";
     this.renderRecent(projects);
     this.screen.hidden = false;
     this.screen.classList.remove("is-entering");
@@ -75,10 +75,16 @@ export class HomeScreen {
       const row = make("li");
       const button = make("button", "recent-row");
       button.type = "button";
+      const thumb = make("span", "recent-thumb");
       const icon = make("img");
       icon.src = iconUrl(projectIcon(project));
       icon.alt = "";
-      button.append(icon, make("b", "", project.name), make("small", "", objectCount(project.scene.length)), make("small", "", relativeTime(project.updated_at)));
+      thumb.append(icon);
+      const text = make("span", "recent-text");
+      const name = make("b", "", project.name);
+      name.title = project.name;
+      text.append(name, make("small", "", `Editado ${relativeTime(project.updated_at)}`));
+      button.append(thumb, text, make("span", "recent-chip", objectCount(project.scene.length)), make("span", "recent-arrow", "→"));
       button.addEventListener("click", () => this.onGo("editor", project));
       row.append(button);
       list.append(row);

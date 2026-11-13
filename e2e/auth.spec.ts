@@ -77,7 +77,7 @@ test("the menu bar never cuts its options off", async ({ page }) => {
     const box = (await tab.boundingBox())!;
     expect(box.x + box.width).toBeLessThanOrEqual(width);
   }
-  await page.locator('.nav-tab[data-go="editor"]').click();
+  await page.locator('.option[data-go="editor"]').click();
   await expect(page.locator("#app")).toBeVisible();
   await page.locator("#btn-home").click();
   await expect(page.locator("#home")).toBeVisible();

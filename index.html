@@ -185,34 +185,45 @@
     <section id="home" class="home" hidden>
       <header class="topnav">
         <div class="mark"><img src="/brand/emblem.png" alt="" width="36" /><b><span class="mark-pixel">PIXEL</span><span class="mark-forge">FORGE</span></b></div>
-        <nav class="topnav-tabs" aria-label="Opciones del motor">
-          <button class="nav-tab" type="button" data-go="home" aria-current="page">Inicio</button>
-          <button class="nav-tab" type="button" data-go="editor">Editor</button>
-          <button class="nav-tab" type="button" data-go="play">Jugar</button>
-          <button class="nav-tab" type="button" data-go="projects">Proyectos</button>
-          <button class="nav-tab" type="button" data-go="settings">Ajustes</button>
+        <nav class="topnav-tabs" aria-label="Navegación">
+          <button class="nav-tab nav-home" type="button" data-go="home" aria-current="page">
+            <span class="nav-home-ring" aria-hidden="true"></span>
+            <svg class="nav-home-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 9.5V20h13V9.5" /><path d="M10 20v-5.5h4V20" /></svg>
+            <span class="nav-home-label">Inicio</span>
+            <span class="nav-home-spark" aria-hidden="true"></span>
+          </button>
         </nav>
-        <div class="userchip"><span class="avatar" id="home-avatar" aria-hidden="true">?</span><span id="home-user"></span><button id="home-logout" class="btn btn-ghost btn-small" type="button">Salir</button></div>
+        <div class="userchip"><span class="avatar" id="home-avatar" aria-hidden="true">?</span><span id="home-user" class="userchip-name"></span><button id="home-logout" class="btn btn-ghost btn-small" type="button">Salir</button></div>
       </header>
       <div class="home-body">
         <div class="welcome">
-          <span class="avatar avatar-big" id="welcome-avatar" aria-hidden="true">?</span>
-          <div class="welcome-text"><h1 id="welcome-title">Bienvenido</h1><p id="welcome-sub">Tu forja está lista.</p></div>
+          <div class="welcome-aurora" aria-hidden="true"></div>
+          <div class="welcome-main">
+            <span class="avatar-ring"><span class="avatar avatar-big" id="welcome-avatar" aria-hidden="true">?</span></span>
+            <div class="welcome-text">
+              <p class="eyebrow">Panel principal</p>
+              <h1 id="welcome-title">Bienvenido</h1>
+              <p id="welcome-sub">Tu forja está lista.</p>
+            </div>
+          </div>
           <div class="kpis">
-            <div class="kpi"><b id="kpi-projects">0</b><span>Proyectos</span></div>
-            <div class="kpi"><b id="kpi-games">0</b><span>Partidas</span></div>
-            <div class="kpi"><b id="kpi-best">0</b><span>Mejor puntuación</span></div>
-            <div class="kpi"><b id="kpi-achievements">0/5</b><span>Logros</span></div>
+            <div class="kpi"><span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span><div><b id="kpi-projects">0</b><span>Proyectos</span></div></div>
+            <div class="kpi"><span class="kpi-icon is-green"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg></span><div><b id="kpi-games">0</b><span>Partidas</span></div></div>
+            <div class="kpi"><span class="kpi-icon is-gold"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6" /></svg></span><div><b id="kpi-best">0</b><span>Mejor puntuación</span></div></div>
+            <div class="kpi"><span class="kpi-icon is-violet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg></span><div><b id="kpi-achievements">0/5</b><span>Logros</span></div></div>
           </div>
         </div>
+
+        <div class="section-head"><h2 class="eyebrow">Accesos rápidos</h2></div>
         <div class="menu">
-          <button class="option is-primary" type="button" data-go="editor"><span class="option-icons"><img src="/textures/house.png" alt="" class="is-wide" /><img src="/textures/tree.png" alt="" /></span><h3>Abrir el editor</h3><p>Construye niveles con la Biblioteca, la Escena y el Inspector.</p><span class="go" id="option-editor-go">Continuar ›</span></button>
-          <button class="option" type="button" data-go="play"><span class="option-icons"><img src="/textures/hero-wizard.png" alt="" /><img src="/textures/wand.png" alt="" class="is-small" /></span><h3>Jugar</h3><p>Elige héroe y prueba tu nivel. La IA ajusta la dificultad.</p><span class="go">Elegir héroe ›</span></button>
-          <button class="option" type="button" data-go="projects"><span class="option-icons"><img src="/textures/chest.png" alt="" /><img src="/textures/coin.png" alt="" class="is-small" /></span><h3>Mis proyectos</h3><p>Crea uno nuevo desde una plantilla o abre otro.</p><span class="go" id="option-projects-go">Ver proyectos ›</span></button>
-          <button class="option" type="button" data-go="settings"><span class="option-icons"><img src="/textures/knight.png" alt="" /><img src="/textures/potion.png" alt="" class="is-small" /></span><h3>Ajustes</h3><p>Tema claro u oscuro, cuadrícula, sonido y seguridad.</p><span class="go">Abrir ajustes ›</span></button>
+          <button class="option is-primary" type="button" data-go="editor"><span class="option-num" aria-hidden="true">01</span><span class="option-icons"><img src="/textures/house.png" alt="" class="is-wide" /><img src="/textures/tree.png" alt="" /></span><h3>Abrir el editor</h3><p>Construye niveles con la Biblioteca, la Escena y el Inspector.</p><span class="go"><span id="option-editor-go">Continuar</span><i aria-hidden="true">→</i></span></button>
+          <button class="option" type="button" data-go="play"><span class="option-num" aria-hidden="true">02</span><span class="option-icons"><img src="/textures/hero-wizard.png" alt="" /><img src="/textures/wand.png" alt="" class="is-small" /></span><h3>Jugar</h3><p>Elige héroe y prueba tu nivel. La IA ajusta la dificultad.</p><span class="go"><span>Elegir héroe</span><i aria-hidden="true">→</i></span></button>
+          <button class="option" type="button" data-go="projects"><span class="option-num" aria-hidden="true">03</span><span class="option-icons"><img src="/textures/chest.png" alt="" /><img src="/textures/coin.png" alt="" class="is-small" /></span><h3>Mis proyectos</h3><p>Crea uno nuevo desde una plantilla o abre otro.</p><span class="go"><span id="option-projects-go">Ver proyectos</span><i aria-hidden="true">→</i></span></button>
+          <button class="option" type="button" data-go="settings"><span class="option-num" aria-hidden="true">04</span><span class="option-icons"><img src="/textures/knight.png" alt="" /><img src="/textures/potion.png" alt="" class="is-small" /></span><h3>Ajustes</h3><p>Tema claro u oscuro, cuadrícula, sonido y seguridad.</p><span class="go"><span>Abrir ajustes</span><i aria-hidden="true">→</i></span></button>
         </div>
+
         <div class="recent">
-          <h2 class="eyebrow">Recientes</h2>
+          <div class="section-head"><h2 class="eyebrow">Recientes</h2><button class="link" type="button" data-go="projects">Ver todos →</button></div>
           <ul id="recent-projects" class="recent-list"></ul>
         </div>
       </div>
