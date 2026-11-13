@@ -376,52 +376,56 @@
     <!-- The editor: laid out like a 2D engine (toolbar, left and right docks, viewport, status bar) -->
     <div id="app" class="app" hidden>
       <header class="topbar">
-        <button id="btn-home" class="brand brand-small" type="button" title="Volver al inicio">
-          <img src="/brand/emblem.png" alt="" width="30" />
-          <strong><span class="mark-pixel">PIXEL</span><span class="mark-forge">FORGE</span></strong>
-        </button>
-        <div class="project-field">
-          <svg class="icon" aria-hidden="true"><use href="#i-folder" /></svg>
-          <input id="project-name" class="project-name" type="text" maxlength="30" placeholder="Sin proyecto" aria-label="Nombre del proyecto (máximo 30 caracteres)" aria-describedby="project-name-count" disabled />
-          <span id="project-name-count" class="name-count" aria-live="polite">0/30</span>
+        <!-- Three zones: the centre (tools, Jugar, history) sits exactly in the middle. -->
+        <div class="topbar-left">
+          <button id="btn-home" class="brand brand-small" type="button" title="Volver al inicio">
+            <img src="/brand/emblem.png" alt="" width="30" />
+            <strong><span class="mark-pixel">PIXEL</span><span class="mark-forge">FORGE</span></strong>
+          </button>
+          <div class="project-field">
+            <svg class="icon" aria-hidden="true"><use href="#i-folder" /></svg>
+            <input id="project-name" class="project-name" type="text" maxlength="30" placeholder="Sin proyecto" aria-label="Nombre del proyecto (máximo 30 caracteres)" aria-describedby="project-name-count" disabled />
+            <span id="project-name-count" class="name-count" aria-live="polite">0/30</span>
+          </div>
         </div>
-
-        <div class="toolgroup" role="toolbar" aria-label="Herramientas">
-          <button class="tool is-active" data-tool="select" title="Seleccionar y mover (V)" aria-label="Seleccionar" aria-pressed="true"><svg class="icon"><use href="#i-select" /></svg></button>
-          <button class="tool" data-tool="hand" title="Mano: mover la vista (H)" aria-label="Mano" aria-pressed="false"><svg class="icon"><use href="#i-hand" /></svg></button>
-          <button class="tool" data-tool="brush" title="Pincel: colocar el objeto elegido (B)" aria-label="Pincel" aria-pressed="false"><svg class="icon"><use href="#i-brush" /></svg></button>
-          <button class="tool" data-tool="erase" title="Borrar objetos (E)" aria-label="Borrar" aria-pressed="false"><svg class="icon"><use href="#i-erase" /></svg></button>
+        <div class="topbar-center">
+          <div class="toolgroup" role="toolbar" aria-label="Herramientas">
+            <span class="tool-pill" aria-hidden="true"></span>
+            <button class="tool is-active" data-tool="select" title="Seleccionar y mover (V)" aria-label="Seleccionar" aria-pressed="true"><svg class="icon"><use href="#i-select" /></svg></button>
+            <button class="tool" data-tool="hand" title="Mano: mover la vista (H)" aria-label="Mano" aria-pressed="false"><svg class="icon"><use href="#i-hand" /></svg></button>
+            <button class="tool" data-tool="brush" title="Pincel: colocar el objeto elegido (B)" aria-label="Pincel" aria-pressed="false"><svg class="icon"><use href="#i-brush" /></svg></button>
+            <button class="tool" data-tool="erase" title="Borrar objetos (E)" aria-label="Borrar" aria-pressed="false"><svg class="icon"><use href="#i-erase" /></svg></button>
+          </div>
+          <div class="play-controls">
+            <button id="btn-play" class="btn btn-play" title="Probar el nivel (P)"><svg class="icon"><use href="#i-play" /></svg><span>Jugar</span></button>
+            <button id="btn-stop" class="btn btn-stop" title="Detener la partida (Esc)" hidden><svg class="icon"><use href="#i-stop" /></svg><span>Detener</span></button>
+          </div>
+          <div class="toolgroup" role="toolbar" aria-label="Historial">
+            <button id="btn-undo" class="tool" title="Deshacer (Ctrl+Z)" aria-label="Deshacer"><svg class="icon"><use href="#i-undo" /></svg></button>
+            <button id="btn-redo" class="tool" title="Rehacer (Ctrl+Y)" aria-label="Rehacer"><svg class="icon"><use href="#i-redo" /></svg></button>
+          </div>
         </div>
-        <div class="toolgroup" role="toolbar" aria-label="Historial">
-          <button id="btn-undo" class="tool" title="Deshacer (Ctrl+Z)" aria-label="Deshacer"><svg class="icon"><use href="#i-undo" /></svg></button>
-          <button id="btn-redo" class="tool" title="Rehacer (Ctrl+Y)" aria-label="Rehacer"><svg class="icon"><use href="#i-redo" /></svg></button>
-        </div>
-
-        <span class="spacer"></span>
-        <div class="play-controls">
-          <button id="btn-play" class="btn btn-play" title="Probar el nivel (P)"><svg class="icon"><use href="#i-play" /></svg><span>Jugar</span></button>
-          <button id="btn-stop" class="btn btn-stop" title="Detener la partida (Esc)" hidden><svg class="icon"><use href="#i-stop" /></svg><span>Detener</span></button>
-        </div>
-        <span class="spacer"></span>
-
-        <span id="save-state" class="save-state" data-state="clean">Guardado</span>
-        <button id="btn-save" class="btn btn-save" title="Guardar (Ctrl+S)">
-          <span class="btn-spinner" aria-hidden="true"></span>
-          <svg class="icon"><use href="#i-save" /></svg><span>Guardar</span>
-        </button>
-        <button id="btn-settings" class="tool gear" title="Ajustes" aria-label="Ajustes">
-          <svg viewBox="0 0 24 24" class="icon icon-filled" aria-hidden="true"><path d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.5.42l-.36 2.54c-.58.24-1.12.55-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.39 1.04.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.8c.25 0 .45-.18.5-.42l.36-2.54c.58-.24 1.12-.55 1.62-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" /></svg>
-        </button>
-        <div class="user">
-          <span class="avatar" id="user-avatar" aria-hidden="true">?</span>
-          <span id="user-name" class="user-name"></span>
-          <button id="btn-logout" class="btn btn-ghost btn-small">Salir</button>
+        <div class="topbar-right">
+          <span id="save-state" class="save-state" data-state="clean">Guardado</span>
+          <button id="btn-save" class="btn btn-save" title="Guardar (Ctrl+S)">
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <svg class="icon"><use href="#i-save" /></svg><span>Guardar</span>
+          </button>
+          <button id="btn-settings" class="tool gear" title="Ajustes" aria-label="Ajustes">
+            <svg viewBox="0 0 24 24" class="icon icon-filled" aria-hidden="true"><path d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.5.42l-.36 2.54c-.58.24-1.12.55-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.39 1.04.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.8c.25 0 .45-.18.5-.42l.36-2.54c.58-.24 1.12-.55 1.62-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" /></svg>
+          </button>
+          <div class="user">
+            <span class="avatar" id="user-avatar" aria-hidden="true">?</span>
+            <span id="user-name" class="user-name"></span>
+            <button id="btn-logout" class="btn btn-ghost btn-small">Salir</button>
+          </div>
         </div>
       </header>
 
       <div id="dock-backdrop" class="dock-backdrop" hidden></div>
       <aside id="dock-left" class="dock dock-left" data-tabs>
         <nav class="dock-tabs" role="tablist" aria-label="Panel izquierdo">
+          <span class="tab-pill" aria-hidden="true"></span>
           <button class="dock-tab is-active" role="tab" aria-selected="true" data-tab="library"><svg class="icon"><use href="#i-library" /></svg>Biblioteca</button>
           <button class="dock-tab" role="tab" aria-selected="false" data-tab="scene"><svg class="icon"><use href="#i-layers" /></svg>Escena</button>
           <button class="dock-tab" role="tab" aria-selected="false" data-tab="projects"><svg class="icon"><use href="#i-folder" /></svg>Proyectos</button>
@@ -455,10 +459,24 @@
 
       <main class="stage">
         <div id="game" class="game"></div>
+        <!-- A HUD-like frame over the viewport: corners that draw in and a label. -->
+        <div class="stage-frame" aria-hidden="true">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span class="stage-label"><i></i>Vista de escena · 1600 × 960</span>
+        </div>
         <div id="drop-zone" class="drop-zone" hidden>Suelta para colocar</div>
 
         <div id="empty-state" class="empty-state" hidden>
           <div class="empty-card">
+            <div class="empty-art" aria-hidden="true">
+              <span class="empty-floor"></span>
+              <img class="ea ea-house" src="/textures/house.png" alt="" />
+              <img class="ea ea-tree" src="/textures/tree.png" alt="" />
+              <img class="ea ea-hero" src="/textures/player.png" alt="" />
+              <img class="ea ea-coin" src="/textures/coin.png" alt="" />
+              <img class="ea ea-slime" src="/textures/enemy-slime.png" alt="" />
+              <span class="ea-plus">+</span>
+            </div>
             <h2 id="empty-title">Tu escena está vacía</h2>
             <ol class="steps">
               <li><span class="step-n">1</span><div><strong>Coloca un jugador</strong><small>Arrástralo desde la Biblioteca: es el punto de inicio.</small></div></li>
@@ -508,6 +526,7 @@
 
       <aside id="dock-right" class="dock dock-right" data-tabs>
         <nav class="dock-tabs" role="tablist" aria-label="Panel derecho">
+          <span class="tab-pill" aria-hidden="true"></span>
           <button class="dock-tab is-active" role="tab" aria-selected="true" data-tab="inspector"><svg class="icon"><use href="#i-sliders" /></svg>Inspector</button>
           <button class="dock-tab" role="tab" aria-selected="false" data-tab="ai"><svg class="icon"><use href="#i-spark" /></svg>IA</button>
           <button class="dock-tab" role="tab" aria-selected="false" data-tab="progress"><svg class="icon"><use href="#i-trophy" /></svg>Progreso</button>

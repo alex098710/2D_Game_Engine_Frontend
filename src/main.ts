@@ -24,6 +24,7 @@ import { CHARACTER_KINDS, ENEMY_KINDS, isKind, KIND_INFO, type Kind } from "./mo
 import { countByKind, hasPlayer, nextObjectId, SceneModel } from "./model/SceneModel";
 import { AiPanel } from "./ui/AiPanel";
 import { bindNameCounter, byId, errorText } from "./ui/dom";
+import { initEditorFx } from "./ui/editorFx";
 import { chooseHero } from "./ui/HeroDialog";
 import { HomeScreen, type Destination } from "./ui/HomeScreen";
 import { setHudVisible, showHud } from "./ui/Hud";
@@ -486,6 +487,7 @@ window.addEventListener("beforeunload", (event) => {
 });
 
 setupTabs();
+initEditorFx();
 byId("status-tool").textContent = TOOL_NAMES.select;
 
 const settings = new SettingsPanel((value) =>

@@ -48,3 +48,10 @@ test("one-letter keys pick the editor tools", () => {
   expect(key("f")).toBe("focus");
   expect(key("e", true)).toBeNull();
 });
+
+test("a button title is split into its tip and its shortcut", async () => {
+  const { splitShortcut } = await import("./editorFx");
+  expect(splitShortcut("Borrar objetos (E)")).toEqual({ tip: "Borrar objetos", key: "E" });
+  expect(splitShortcut("Deshacer (Ctrl+Z)")).toEqual({ tip: "Deshacer", key: "Ctrl+Z" });
+  expect(splitShortcut("Ajustes")).toEqual({ tip: "Ajustes", key: "" });
+});
