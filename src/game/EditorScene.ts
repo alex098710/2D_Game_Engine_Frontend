@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { isCharacter, isEnemy, isGround, SIZES, WORLD_HEIGHT, WORLD_WIDTH, type GameObject, type Kind } from "../model/GameObject";
-import { clampToWorld, coverZoom, fitZoom, snap } from "../model/geometry";
+import { clampToWorld, containZoom, fitZoom, snap, viewMargins } from "../model/geometry";
 import type { SceneModel } from "../model/SceneModel";
 import { variantTint } from "./balance";
 import { bob, KIND_TEXTURE, loadTextures } from "./textures";
@@ -20,6 +20,8 @@ export interface EditorEvents {
   onErase: (id: string) => void;
   onPointer: (x: number, y: number) => void;
   onZoom: (zoom: number) => void;
+  /** Where the world is drawn on the canvas, in screen pixels (for the frame around it). */
+  onView?: (left: number, top: number, width: number, height: number) => void;
 }
 
 const MIN_ZOOM = 0.25;
@@ -59,6 +61,10 @@ export class EditorScene extends Phaser.Scene {
   create(): void {
     this.drawnVersion = -1; // the scene starts again when we come back from Play
     this.ghost = null;
+    // Outside the map the terrain goes on, dim and dark, so the empty room around
+    // the frame reads as the world continuing instead of black bands.
+    this.add.tileSprite(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH * 5, WORLD_HEIGHT * 5, "grass")
+      .setDepth(-12).setTint(0x6a8aa0).setAlpha(0.6);
     this.add.tileSprite(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, "grass").setDepth(-10);
     this.add.rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT).setStrokeStyle(4, 0x0b0f14, 0.9).setDepth(-5);
     this.grid = this.add.graphics().setDepth(-4);
@@ -73,8 +79,6 @@ export class EditorScene extends Phaser.Scene {
   private setupCamera(): void {
     const camera = this.cameras.main;
     camera.setBackgroundColor("rgba(0,0,0,0)");
-    // Panning stops at the edges of the world, so no empty band shows while it fills the view.
-    camera.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.fitView();
     // The scale manager belongs to the whole game: stop listening when this scene
     // shuts down, or a resize while playing would touch a camera that no longer exists.
@@ -83,11 +87,13 @@ export class EditorScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, onResize));
   }
 
-  /** Zoom so the world fills the whole frame (no empty bands) and centre it. */
+  /** Zoom so the whole world fills the free room as much as it can, nothing cut, and centre it there. */
   fitView(): void {
     const camera = this.cameras.main;
-    camera.setZoom(Phaser.Math.Clamp(coverZoom(this.scale.width, this.scale.height), MIN_ZOOM, MAX_ZOOM));
-    camera.centerOn(WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
+    const margins = viewMargins(this.scale.width);
+    camera.setZoom(Phaser.Math.Clamp(containZoom(this.scale.width, this.scale.height, margins), 0.1, MAX_ZOOM));
+    // Centre in the free room (the bottom band holds the label and the zoom).
+    camera.centerOn(WORLD_WIDTH / 2, WORLD_HEIGHT / 2 + (margins.bottom - margins.top) / 2 / camera.zoom);
     this.drawGrid();
     this.events_.onZoom(camera.zoom);
   }
@@ -256,10 +262,23 @@ export class EditorScene extends Phaser.Scene {
     for (let y = size; y < WORLD_HEIGHT; y += size) this.grid.lineBetween(0, y, WORLD_WIDTH, y);
   }
 
+  private lastView = "";
+
   update(): void {
     if (this.drawnVersion !== this.model.version) {
       this.redraw();
       this.drawnVersion = this.model.version;
+    }
+    // Tell the page where the world is on screen, so the frame hugs its edges.
+    const camera = this.cameras.main;
+    const left = Math.round((0 - camera.worldView.x) * camera.zoom);
+    const top = Math.round((0 - camera.worldView.y) * camera.zoom);
+    const width = Math.round(WORLD_WIDTH * camera.zoom);
+    const height = Math.round(WORLD_HEIGHT * camera.zoom);
+    const view = `${left},${top},${width},${height}`;
+    if (view !== this.lastView) {
+      this.lastView = view;
+      this.events_.onView?.(left, top, width, height);
     }
   }
 

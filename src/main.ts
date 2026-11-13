@@ -187,6 +187,7 @@ const createHost = (Host: typeof GameHost): GameHost => new Host(
     onErase: (id) => removeObject(id),
     onPointer: (x, y) => (byId("status-pointer").textContent = `x ${x} · y ${y}`),
     onZoom: (zoom) => (byId("zoom-value").textContent = `${Math.round(zoom * 100)}%`),
+    onView: (left, top, width, height) => placeFrame(left, top, width, height),
   },
   {
     onHud: showHud,
@@ -196,6 +197,22 @@ const createHost = (Host: typeof GameHost): GameHost => new Host(
   },
 );
 initTouchControls(byId("game").parentElement!, () => host?.quitPlay());
+
+/** The blue corners follow the map's edges; when the map is larger than the view they stay at the view's edge. */
+function placeFrame(left: number, top: number, width: number, height: number): void {
+  const frame = document.querySelector<HTMLElement>(".stage-frame");
+  const stage = frame?.parentElement;
+  if (!frame || !stage) return;
+  const inset = 6;
+  const x0 = Math.max(inset, left);
+  const y0 = Math.max(inset, top);
+  const x1 = Math.min(stage.clientWidth - inset, left + width);
+  const y1 = Math.min(stage.clientHeight - inset, top + height);
+  frame.style.setProperty("--frame-left", `${x0}px`);
+  frame.style.setProperty("--frame-top", `${y0}px`);
+  frame.style.setProperty("--frame-width", `${Math.max(0, x1 - x0)}px`);
+  frame.style.setProperty("--frame-height", `${Math.max(0, y1 - y0)}px`);
+}
 
 function placeObject(kind: Kind, x: number, y: number, variant?: number): void {
   if (projectId === null) {

@@ -23,10 +23,17 @@ export function fitZoom(viewWidth: number, viewHeight: number, margin = 24): num
   return Math.max(0.1, Math.round(zoom * 100) / 100);
 }
 
-/** Zoom at which the world fills the whole view (no empty bands); the rest is reached by panning. */
-export function coverZoom(viewWidth: number, viewHeight: number): number {
-  const zoom = Math.max(viewWidth / WORLD_WIDTH, viewHeight / WORLD_HEIGHT);
-  return Math.max(0.1, Math.ceil(zoom * 100) / 100);
+/** Room kept free around the map: sides, top (panel buttons on phones) and bottom (label and zoom). */
+export interface ViewMargins { side: number; top: number; bottom: number }
+
+export function viewMargins(viewWidth: number): ViewMargins {
+  return viewWidth < 700 ? { side: 10, top: 64, bottom: 64 } : { side: 20, top: 20, bottom: 68 };
+}
+
+/** The largest zoom that shows the whole world inside the free room, nothing cut. */
+export function containZoom(viewWidth: number, viewHeight: number, margins: ViewMargins = viewMargins(viewWidth)): number {
+  const zoom = Math.min((viewWidth - margins.side * 2) / WORLD_WIDTH, (viewHeight - margins.top - margins.bottom) / WORLD_HEIGHT);
+  return Math.max(0.1, Math.floor(zoom * 1000) / 1000);
 }
 
 /** True when two objects' boxes intersect. */

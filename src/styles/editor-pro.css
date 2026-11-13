@@ -493,3 +493,29 @@
 @media (max-width: 640px) {
   .stage-label { left: 22px; bottom: 0; padding: 6px 10px; font-size: 8px; }
 }
+
+/* The frame takes the map's real rectangle (set by main.ts from the camera):
+   the blue corners sit on the map's corners and move with it. */
+.stage-frame {
+  inset: auto;
+  left: var(--frame-left, 12px);
+  top: var(--frame-top, 12px);
+  width: var(--frame-width, calc(100% - 24px));
+  height: var(--frame-height, calc(100% - 24px));
+  transition: none;
+}
+.stage-frame .corner { width: 26px; height: 26px; border-width: 3px; }
+.stage-frame .corner.tl { left: -3px; top: -3px; }
+.stage-frame .corner.tr { right: -3px; top: -3px; }
+.stage-frame .corner.bl { left: -3px; bottom: -3px; }
+.stage-frame .corner.br { right: -3px; bottom: -3px; }
+/* The label lives in the band under the map, level with the zoom controls. */
+.stage > .stage-label { position: absolute; z-index: 3; left: 14px; bottom: 14px; top: auto; transform: none; padding: 9px 14px; font-size: 9.5px; }
+.app.is-playing .stage > .stage-label { display: none; }
+@media (max-width: 640px) {
+  .stage > .stage-label { left: 10px; bottom: 10px; padding: 7px 10px; font-size: 8px; }
+}
+/* Phones: the bottom band is the zoom's; the label goes centred under the panel buttons. */
+@media (max-width: 640px) {
+  .stage > .stage-label { left: 50%; bottom: auto; top: 104px; transform: translateX(-50%); white-space: nowrap; }
+}
