@@ -1,25 +1,38 @@
-import { aiModel, aiObstacles, askAi, type AiModelDto, type ProjectDto } from "../api/client";
+import { aiModel, aiObstacles, askAi, setAiDifficulty, type AiModelDto, type DifficultyLevel, type ProjectDto } from "../api/client";
 import { byId, errorText, make } from "./dom";
 import { toast } from "./toast";
 
-/** "Fácil", "Normal"... for a difficulty between 0 and 1. */
+/** The four levels the player can choose, with the value the backend stores. */
+export const DIFFICULTIES: readonly { level: DifficultyLevel; name: string; value: number }[] = [
+  { level: "easy", name: "Fácil", value: 0.2 },
+  { level: "medium", name: "Medio", value: 0.45 },
+  { level: "hard", name: "Difícil", value: 0.7 },
+  { level: "extreme", name: "Extremo", value: 0.95 },
+];
+
+/** The level a difficulty between 0 and 1 falls in: the nearest of the four. */
+export function levelOf(value: number): DifficultyLevel {
+  return DIFFICULTIES.reduce((best, item) => (Math.abs(item.value - value) < Math.abs(best.value - value) ? item : best)).level;
+}
+
+/** "Fácil", "Medio", "Difícil" or "Extremo" for a difficulty between 0 and 1. */
 export function difficultyLabel(value: number): string {
-  if (value < 0.3) return "Fácil";
-  if (value < 0.55) return "Normal";
-  if (value < 0.8) return "Difícil";
-  return "Muy difícil";
+  return DIFFICULTIES.find((item) => item.level === levelOf(value))!.name;
 }
 
 /**
  * Two ways to use the AI: describe objects in words, or let the model that
- * learned from your runs place new obstacles. The model summary shows what
- * it has learned so far.
+ * learned from your runs place new obstacles. The player also chooses the
+ * difficulty. Only one AI request runs at a time: while it works, every AI
+ * control is disabled and the pressed button shows a spinning wheel.
  */
 export class AiPanel {
   private readonly getProjectId: () => number | null;
   private readonly onScene: (project: ProjectDto) => void;
   private readonly beforeRequest: () => Promise<void>;
   private readonly count = byId<HTMLInputElement>("ai-count");
+  private working = false;
+  private level: DifficultyLevel = "medium";
 
   /** beforeRequest saves pending edits: the AI works on the scene stored in the backend. */
   constructor(getProjectId: () => number | null, onScene: (project: ProjectDto) => void, beforeRequest: () => Promise<void>) {
@@ -32,17 +45,23 @@ export class AiPanel {
       void this.ask();
     });
     byId("btn-ai-obstacles").addEventListener("click", () => void this.obstacles());
+    for (const button of byId("ai-difficulty").querySelectorAll<HTMLButtonElement>("[data-level]")) {
+      button.addEventListener("click", () => void this.choose(button.dataset.level as DifficultyLevel));
+    }
+    this.showLevel(this.level);
   }
 
   private async ask(): Promise<void> {
+    if (this.working) return;
     const id = this.requireProject();
     const prompt = byId<HTMLTextAreaElement>("ai-prompt");
     if (id === null) return;
     if (prompt.value.trim() === "") {
       toast("Escribe qué debe crear o borrar la IA.", "error");
+      prompt.focus();
       return;
     }
-    await this.busy(byId<HTMLFormElement>("ai-form").querySelector("button")!, async () => {
+    await this.busy(byId<HTMLButtonElement>("btn-ai-ask"), "Pensando…", "La IA está creando lo que pediste", async () => {
       await this.beforeRequest();
       const project = await askAi(id, prompt.value.trim());
       this.onScene(project);
@@ -52,14 +71,35 @@ export class AiPanel {
   }
 
   private async obstacles(): Promise<void> {
+    if (this.working) return;
     const id = this.requireProject();
     if (id === null) return;
-    await this.busy(byId<HTMLButtonElement>("btn-ai-obstacles"), async () => {
+    await this.busy(byId<HTMLButtonElement>("btn-ai-obstacles"), "Colocando obstáculos…", "La IA está colocando obstáculos", async () => {
       await this.beforeRequest();
       const result = await aiObstacles(id, Number(this.count.value));
       this.onScene(result);
       toast(`La IA colocó ${result.added} obstáculos (${difficultyLabel(result.difficulty)}).`, "success");
       await this.refresh(id);
+    });
+  }
+
+  /** Pick one of the four levels; shown at once, then saved. */
+  private async choose(level: DifficultyLevel): Promise<void> {
+    if (this.working || level === this.level) return;
+    const id = this.requireProject();
+    if (id === null) return;
+    const previous = this.level;
+    this.showLevel(level);
+    const button = byId("ai-difficulty").querySelector<HTMLButtonElement>(`[data-level="${level}"]`)!;
+    await this.busy(button, null, "Guardando la dificultad", async () => {
+      try {
+        const model = await setAiDifficulty(id, level);
+        this.showModel(model);
+        toast(`Dificultad: ${difficultyLabel(model.difficulty)}. La IA seguirá aprendiendo desde aquí.`, "success");
+      } catch (error) {
+        this.showLevel(previous);
+        throw error;
+      }
     });
   }
 
@@ -76,28 +116,61 @@ export class AiPanel {
       root.replaceChildren(make("span", "", "La IA aún no está disponible."));
       return;
     }
+    this.showModel(model);
+  }
+
+  private showModel(model: AiModelDto): void {
+    this.showLevel(model.level ?? levelOf(model.difficulty));
     const meter = make("span", "meter");
     const fill = make("span");
     fill.style.width = `${Math.round(model.difficulty * 100)}%`;
     meter.append(fill);
-    const line = make("span");
-    line.append("Dificultad: ", make("strong", "", difficultyLabel(model.difficulty)));
+    const line = make("span", "ai-model-line");
+    line.append("Dificultad actual: ", make("strong", "", `${difficultyLabel(model.difficulty)} · ${Math.round(model.difficulty * 100)}%`));
     const runs = make("span", "", model.samples_seen === 0
       ? "Juega una partida para que la IA empiece a aprender."
       : `Aprendió de ${model.samples_seen} partida${model.samples_seen === 1 ? "" : "s"}.`);
-    root.replaceChildren(line, meter, runs);
+    byId("ai-model").replaceChildren(line, meter, runs);
   }
 
-  private async busy(button: HTMLButtonElement, work: () => Promise<void>): Promise<void> {
+  private showLevel(level: DifficultyLevel): void {
+    this.level = level;
+    const root = byId("ai-difficulty");
+    root.dataset.level = level;
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-level]")) {
+      const chosen = button.dataset.level === level;
+      button.classList.toggle("is-active", chosen);
+      button.setAttribute("aria-checked", String(chosen));
+    }
+    byId("ai-level-name").textContent = DIFFICULTIES.find((item) => item.level === level)!.name;
+  }
+
+  /** Locks every AI control, spins the wheel on the pressed button, unlocks at the end. */
+  private async busy(button: HTMLButtonElement, working: string | null, status: string, work: () => Promise<void>): Promise<void> {
+    this.working = true;
+    const panel = button.closest<HTMLElement>(".dock-panel")!;
+    const label = button.querySelector(".btn-label");
+    const idle = label?.textContent ?? "";
+    if (label && working) label.textContent = working;
     button.classList.add("is-loading");
-    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    panel.classList.add("is-ai-working");
+    const controls = [...panel.querySelectorAll<HTMLButtonElement | HTMLTextAreaElement | HTMLInputElement>("button, textarea, input")];
+    for (const control of controls) control.disabled = true;
+    byId("ai-working-text").textContent = status;
+    byId("ai-working").hidden = false;
     try {
       await work();
     } catch (error) {
       toast(errorText(error), "error");
     } finally {
+      this.working = false;
+      if (label) label.textContent = idle;
       button.classList.remove("is-loading");
-      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      panel.classList.remove("is-ai-working");
+      for (const control of controls) control.disabled = false;
+      byId("ai-working").hidden = true;
     }
   }
 

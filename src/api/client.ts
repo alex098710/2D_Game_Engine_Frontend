@@ -115,11 +115,19 @@ export function restoreVersion(id: number, version: number): Promise<ProjectDto>
   return http.request<ProjectDto>(`/projects/${id}/versions/${version}/restore`, { method: "POST" });
 }
 
+export type DifficultyLevel = "easy" | "medium" | "hard" | "extreme";
+
 export interface AiModelDto {
   samples_seen: number;
   version: number;
   difficulty: number;
+  level?: DifficultyLevel;
   parameters: Record<string, unknown>;
+}
+
+/** Choose the difficulty of a level by hand; the AI keeps learning from there. */
+export function setAiDifficulty(id: number, level: DifficultyLevel): Promise<AiModelDto> {
+  return http.request<AiModelDto>(`/projects/${id}/ai/difficulty`, { method: "PUT", body: JSON.stringify({ level }) });
 }
 
 export function askAi(id: number, prompt: string): Promise<ProjectDto> {

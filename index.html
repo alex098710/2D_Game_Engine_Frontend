@@ -548,28 +548,56 @@
         </section>
 
         <section class="dock-panel" role="tabpanel" data-panel="ai" hidden>
-          <div class="panel-head"><span>Describe lo que quieres</span></div>
-          <form id="ai-form" class="form form-compact">
-            <textarea id="ai-prompt" rows="3" maxlength="500" placeholder="Ej.: 3 tanques y 2 fusileros · borra los enemigos · elimina todo y pon 5 monedas"></textarea>
-            <div class="chips" id="ai-examples">
-              <button type="button" class="chip" data-prompt="un aldeano, un caballero y un mago">Personajes</button>
-              <button type="button" class="chip" data-prompt="5 monedas y 2 enemigos">Monedas y enemigos</button>
-              <button type="button" class="chip" data-prompt="3 casas y 4 árboles">Aldea</button>
-              <button type="button" class="chip" data-prompt="2 tanques, 4 fusileros y 3 barriles explosivos">Batalla</button>
-              <button type="button" class="chip" data-prompt="borra los enemigos">Borrar enemigos</button>
-              <button type="button" class="chip" data-prompt="elimina todo">Vaciar mapa</button>
+          <!-- Only one AI request at a time: while it works, every AI control is off. -->
+          <div id="ai-working" class="ai-working" role="status" aria-live="polite" hidden>
+            <span class="ai-orb" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span><b id="ai-working-text">La IA está trabajando</b><small>Espera a que termine para pedir otra cosa.</small></span>
+          </div>
+
+          <div class="ai-card">
+            <div class="panel-head"><span>Pedir a la IA</span><span class="ai-badge">Texto</span></div>
+            <form id="ai-form" class="form form-compact">
+              <textarea id="ai-prompt" rows="3" maxlength="500" placeholder="Ej.: 3 tanques y 2 fusileros · borra los enemigos · elimina todo y pon 5 monedas"></textarea>
+              <div class="chips" id="ai-examples">
+                <button type="button" class="chip" data-prompt="un aldeano, un caballero y un mago">Personajes</button>
+                <button type="button" class="chip" data-prompt="5 monedas y 2 enemigos">Monedas y enemigos</button>
+                <button type="button" class="chip" data-prompt="3 casas y 4 árboles">Aldea</button>
+                <button type="button" class="chip" data-prompt="2 tanques, 4 fusileros y 3 barriles explosivos">Batalla</button>
+                <button type="button" class="chip" data-prompt="borra los enemigos">Borrar enemigos</button>
+                <button type="button" class="chip" data-prompt="elimina todo">Vaciar mapa</button>
+              </div>
+              <button id="btn-ai-ask" class="btn btn-ai btn-block" type="submit">
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <svg class="icon" aria-hidden="true"><use href="#i-spark" /></svg>
+                <span class="btn-label">Pedir a la IA</span>
+              </button>
+            </form>
+          </div>
+
+          <div class="ai-card">
+            <div class="panel-head"><span>Dificultad</span><span id="ai-level-name" class="ai-badge">Medio</span></div>
+            <div id="ai-difficulty" class="levels" role="radiogroup" aria-label="Dificultad de la IA">
+              <button type="button" class="level" role="radio" aria-checked="false" data-level="easy"><span class="level-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>Fácil</b><small>Suave</small></button>
+              <button type="button" class="level" role="radio" aria-checked="false" data-level="medium"><span class="level-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>Medio</b><small>Justo</small></button>
+              <button type="button" class="level" role="radio" aria-checked="false" data-level="hard"><span class="level-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>Difícil</b><small>Intenso</small></button>
+              <button type="button" class="level" role="radio" aria-checked="false" data-level="extreme"><span class="level-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>Extremo</b><small>Brutal</small></button>
             </div>
-            <button class="btn btn-block" type="submit">Pedir a la IA</button>
-          </form>
-          <div class="divider"></div>
-          <div class="panel-head"><span>Obstáculos aprendidos</span></div>
-          <label class="field-inline">
-            <span>Cantidad</span>
-            <input id="ai-count" type="range" min="1" max="30" value="6" />
-            <output id="ai-count-value">6</output>
-          </label>
-          <button id="btn-ai-obstacles" class="btn btn-primary btn-block">La IA crea obstáculos</button>
-          <div id="ai-model" class="ai-model"></div>
+            <div id="ai-model" class="ai-model"></div>
+          </div>
+
+          <div class="ai-card">
+            <div class="panel-head"><span>Obstáculos aprendidos</span></div>
+            <label class="field-inline">
+              <span>Cantidad</span>
+              <input id="ai-count" type="range" min="1" max="30" value="6" />
+              <output id="ai-count-value">6</output>
+            </label>
+            <button id="btn-ai-obstacles" class="btn btn-primary btn-ai btn-block" type="button">
+              <span class="btn-spinner" aria-hidden="true"></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-spark" /></svg>
+              <span class="btn-label">La IA crea obstáculos</span>
+            </button>
+          </div>
         </section>
 
         <section class="dock-panel" role="tabpanel" data-panel="progress" hidden>
