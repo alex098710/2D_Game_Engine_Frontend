@@ -6,7 +6,7 @@ import { byId, make } from "./dom";
 
 const STORAGE_KEY = "pixelforge-hero";
 
-function remembered(): string | null {
+export function remembered(): string | null {
   try {
     return localStorage.getItem(STORAGE_KEY);
   } catch {
@@ -14,7 +14,7 @@ function remembered(): string | null {
   }
 }
 
-function remember(id: string): void {
+export function remember(id: string): void {
   try {
     localStorage.setItem(STORAGE_KEY, id);
   } catch {

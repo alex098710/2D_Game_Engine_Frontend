@@ -600,6 +600,7 @@ const intro = new Intro();
 const home = new HomeScreen(
   (to, project) => void attempt(async () => go(to, project)),
   () => void leaveApp(true),
+  settings,
 );
 
 /** Stage of the page: only the access screen before login, the intro, then the engine. */

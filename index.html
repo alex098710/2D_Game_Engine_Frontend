@@ -275,66 +275,94 @@
         <div class="section-head">
           <div><h2 class="eyebrow">Accesos rápidos</h2><p class="section-sub">Todo lo que necesitas para crear, jugar y ajustar tu forja.</p></div>
         </div>
-        <!-- Bento grid: the editor is the featured card; every card follows the
-             pointer with a spotlight and a slight 3D tilt (HomeScreen sets --mx/--my/--rx/--ry). -->
-        <div class="menu">
-          <button class="option option-feature tone-blue" type="button" data-go="editor">
-            <span class="option-glow" aria-hidden="true"></span>
-            <span class="feature-stage" aria-hidden="true">
-              <span class="stage-floor"></span>
-              <span class="stage-select"></span>
-              <img class="sprite s-house" src="/textures/house.png" alt="" />
-              <img class="sprite s-tree" src="/textures/tree.png" alt="" />
-              <img class="sprite s-tree2" src="/textures/tree.png" alt="" />
-              <img class="sprite s-hero" src="/textures/hero-wizard-idle.png" alt="" />
-              <img class="sprite s-slime" src="/textures/enemy-slime.png" alt="" />
-              <img class="sprite s-coin" src="/textures/coin.png" alt="" />
-              <img class="sprite s-chest" src="/textures/chest.png" alt="" />
-              <svg class="stage-cursor" viewBox="0 0 24 24"><path d="M5 3l14 8-6.2 1.8L11 19z" /></svg>
-            </span>
-            <span class="option-body">
-              <span class="option-tag"><i></i>Recomendado</span>
-              <h3>Abrir el editor</h3>
-              <p>Construye niveles con la Biblioteca, la Escena y el Inspector, y deja que la IA te ayude.</p>
-              <span class="go go-pill"><span id="option-editor-go">Continuar</span><i aria-hidden="true">→</i></span>
-            </span>
-          </button>
+        <!-- Quick access: the level editor (a real view of the last map), then
+             Jugar (the heroes), Mis proyectos (the last project) and Ajustes
+             (theme, sound and grid, which work from here). HomeScreen fills them. -->
+        <div class="qa">
+          <article class="qa-card qa-editor tone-blue">
+            <header class="qa-head">
+              <span class="qa-logo" aria-hidden="true"><img src="/brand/emblem.png" alt="" width="30" height="21" /></span>
+              <b class="qa-head-title">Editor de niveles</b>
+              <span id="qa-status" class="qa-pill is-green"><i aria-hidden="true"></i><span>En línea</span></span>
+              <span class="qa-last"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg><span id="qa-last">Aún sin sesiones</span></span>
+            </header>
+            <div class="qa-stage" data-go="editor" role="button" tabindex="0" aria-label="Abrir el editor">
+              <canvas id="qa-scene" class="qa-scene" width="960" height="420" aria-hidden="true"></canvas>
+              <span id="qa-select" class="qa-select" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+              <div class="qa-tools" aria-hidden="true">
+                <span class="is-active"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6.2 1.8L11 19z" /></svg></span>
+                <span><svg viewBox="0 0 24 24"><path d="M18.4 2.6a2 2 0 0 1 2.9 2.9L9 17.8 5 19l1.2-4z" /></svg></span>
+                <span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1" stroke-dasharray="3 3" /></svg></span>
+                <span><svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z" /><path d="m3 13 9 5 9-5" /></svg></span>
+                <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" /></svg></span>
+              </div>
+              <div class="qa-minimap" aria-hidden="true"><canvas id="qa-minimap" width="160" height="96"></canvas><i id="qa-viewport"></i></div>
+            </div>
+            <div class="qa-editor-body">
+              <span class="qa-cube" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 9 5v10l-9 5-9-5V7z" /><path d="m3 7 9 5 9-5M12 12v10" /></svg></span>
+              <div>
+                <h3 id="qa-editor-title">Continúa construyendo tu mundo</h3>
+                <p id="qa-editor-sub">Tu creatividad no tiene límites. Sigue donde lo dejaste.</p>
+              </div>
+            </div>
+            <button class="qa-cta" type="button" data-go="editor">
+              <svg class="qa-cta-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg>
+              <span id="option-editor-go">Continuar creando</span>
+              <svg class="qa-cta-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+          </article>
 
-          <button class="option option-wide tone-green" type="button" data-go="play">
-            <span class="option-glow" aria-hidden="true"></span>
-            <span class="option-art" aria-hidden="true">
-              <img src="/textures/hero-wizard-idle.png" alt="" /><img src="/textures/hero-archer-idle.png" alt="" /><img src="/textures/hero-viking-idle.png" alt="" />
-            </span>
-            <span class="option-body">
-              <span class="option-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg></span>
+          <article class="qa-card qa-play tone-green">
+            <div class="qa-play-text">
+              <div class="qa-row">
+                <span class="qa-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 8h12a4 4 0 0 1 4 4v3a3 3 0 0 1-5.2 2L15 15H9l-1.8 2A3 3 0 0 1 2 15v-3a4 4 0 0 1 4-4z" /><path d="M7 11v3M5.5 12.5h3" /><circle cx="16" cy="11.5" r=".6" /><circle cx="17.8" cy="13.5" r=".6" /></svg></span>
+                <span class="qa-pill is-green"><i aria-hidden="true"></i><span>Disponible</span></span>
+              </div>
               <h3>Jugar</h3>
-              <p>Elige héroe y prueba tu nivel. La IA ajusta la dificultad.</p>
-              <span class="go"><span>Elegir héroe</span><i aria-hidden="true">→</i></span>
-            </span>
-          </button>
+              <p>Pon a prueba tus mundos con la IA y vive la aventura.</p>
+              <button class="qa-link" type="button" data-go="play"><span>Elegir héroe</span><i aria-hidden="true">→</i></button>
+            </div>
+            <div class="qa-heroes">
+              <div class="qa-hero-window"><div id="qa-hero-track" class="qa-hero-track" role="listbox" aria-label="Héroes"></div></div>
+              <div id="qa-hero-dots" class="qa-dots"></div>
+            </div>
+          </article>
 
-          <button class="option tone-gold" type="button" data-go="projects">
-            <span class="option-glow" aria-hidden="true"></span>
-            <span class="option-art is-corner" aria-hidden="true"><img src="/textures/chest.png" alt="" /><img class="is-small" src="/textures/coin.png" alt="" /></span>
-            <span class="option-body">
-              <span class="option-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span>
+          <article class="qa-card qa-projects tone-gold">
+            <div class="qa-row">
+              <span class="qa-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span>
               <h3>Mis proyectos</h3>
-              <p>Crea uno desde una plantilla o abre otro.</p>
-              <span class="go"><span id="option-projects-go">Ver proyectos</span><i aria-hidden="true">→</i></span>
-            </span>
-          </button>
+              <span id="qa-project-count" class="qa-pill is-gold"><span>0 proyectos</span></span>
+            </div>
+            <div id="qa-project" class="qa-project"></div>
+            <button class="qa-link" type="button" data-go="projects"><span id="option-projects-go">Ver todos mis proyectos</span><i aria-hidden="true">→</i></button>
+          </article>
 
-          <button class="option tone-violet" type="button" data-go="settings">
-            <span class="option-glow" aria-hidden="true"></span>
-            <span class="option-art is-corner" aria-hidden="true"><img src="/textures/potion.png" alt="" /></span>
-            <span class="option-body">
-              <span class="option-icon is-gear"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg></span>
-              <h3>Ajustes</h3>
-              <p>Tema, cuadrícula, sonido y seguridad.</p>
-              <span class="go"><span>Abrir ajustes</span><i aria-hidden="true">→</i></span>
-            </span>
-          </button>
-
+          <article class="qa-card qa-settings tone-violet">
+            <div class="qa-row">
+              <span class="qa-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg></span>
+              <div class="qa-title"><h3>Ajustes</h3><p>Personaliza tu experiencia.</p></div>
+            </div>
+            <div class="qa-controls">
+              <label class="qa-control">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.7 0 2-1.4 1.2-2.4-.8-1-.3-2.6 1.1-2.6H17a4 4 0 0 0 4-4c0-5-4-9-9-9z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="14.5" cy="7" r="1" /></svg>
+                <span class="qa-control-text"><small>Tema</small><select id="qa-theme" aria-label="Tema"><option value="dark">Oscuro</option><option value="light">Claro</option><option value="system">Sistema</option></select></span>
+              </label>
+              <label class="qa-control">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>
+                <span class="qa-control-text"><small>Sonido</small><b id="qa-sound-label">Activado</b></span>
+                <input id="qa-sound" class="qa-switch" type="checkbox" role="switch" aria-label="Sonido" />
+              </label>
+              <label class="qa-control">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16M15 4v16" /></svg>
+                <span class="qa-control-text"><small>Cuadrícula</small><b id="qa-grid-label">Activada</b></span>
+                <input id="qa-grid" class="qa-switch" type="checkbox" role="switch" aria-label="Cuadrícula" />
+              </label>
+              <button class="qa-more" type="button" data-go="settings"><span>Más ajustes</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></button>
+            </div>
+          </article>
+        </div>
+        <div class="menu menu-admin">
           <button class="option option-admin tone-red" type="button" data-go="admin">
             <span class="option-glow" aria-hidden="true"></span>
             <span class="option-art" aria-hidden="true"><img src="/textures/ally.png" alt="" /><img src="/textures/brute.png" alt="" /><img src="/textures/potion.png" alt="" class="is-small" /></span>

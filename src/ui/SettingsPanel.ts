@@ -25,6 +25,8 @@ export class SettingsPanel {
   private readonly drawer = byId("settings");
   private readonly backdrop = byId("settings-backdrop");
   private readonly gear = byId("btn-settings");
+  /** Others that show the settings too (the home screen's quick settings). */
+  private readonly listeners: ((settings: SettingsDto) => void)[] = [];
 
   constructor(onChange: (settings: SettingsDto) => void) {
     this.onChange = onChange;
@@ -70,12 +72,23 @@ export class SettingsPanel {
     byId<HTMLInputElement>("set-sfx").value = String(this.settings.sfx_volume);
   }
 
+  /** Be told every time the settings change (here or elsewhere). */
+  listen(listener: (settings: SettingsDto) => void): void {
+    this.listeners.push(listener);
+  }
+
+  /** Change some settings from outside the drawer (applied, shown and saved like the drawer's own). */
+  change(change: Partial<SettingsDto>): void {
+    this.update(change);
+  }
+
   private update(change: Partial<SettingsDto>): void {
     this.settings = { ...this.settings, ...change };
     applyTheme(this.settings.theme);
     setVolumes(this.settings.sfx_volume, this.settings.music_volume);
     this.render();
     this.onChange(this.settings);
+    for (const listener of this.listeners) listener(this.settings);
     window.clearTimeout(this.saveTimer);
     this.saveTimer = window.setTimeout(() => {
       saveSettings(this.settings).catch(() => toast("No se pudieron guardar los ajustes.", "error"));
@@ -91,6 +104,7 @@ export class SettingsPanel {
     applyTheme(this.settings.theme);
     setVolumes(this.settings.sfx_volume, this.settings.music_volume);
     this.onChange(this.settings);
+    for (const listener of this.listeners) listener(this.settings);
     return this.settings;
   }
 

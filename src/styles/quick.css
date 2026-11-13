@@ -1,0 +1,294 @@
+/* ==========================================================================
+   Quick access of the home: the level editor (big), then Jugar, Mis
+   proyectos and Ajustes. Same frame as the rest of the night world: cut
+   corners with an edge in the card's tone, hexagon icons, pixel buttons.
+   Motion: hover and state changes 150-300 ms (transform, opacity); the only
+   loops are on the artwork (the map drifting, the selection box, the
+   walking hero), never on the controls.
+   ========================================================================== */
+.qa {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  grid-template-rows: repeat(3, auto);
+  gap: 16px;
+}
+.qa-editor { grid-row: 1 / 4; }
+
+/* ---------- the frame of every card ---------- */
+.qa-card {
+  --cut: 16px;
+  --edge-a: 0.45;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  background: linear-gradient(160deg, rgba(var(--tone), calc(var(--edge-a) + 0.25)), rgba(var(--tone), 0.1) 42%, rgba(var(--tone), var(--edge-a)));
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  contain: paint;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), --edge-a 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.qa-card::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  z-index: -2;
+  background:
+    radial-gradient(420px circle at var(--mx, 80%) var(--my, 0%), rgba(var(--tone), 0.14), transparent 55%),
+    linear-gradient(165deg, rgba(14, 27, 58, 0.97), rgba(6, 13, 34, 0.98));
+  clip-path: polygon(calc(var(--cut) - 0.6px) 0, calc(100% - var(--cut) + 0.6px) 0, 100% calc(var(--cut) - 0.6px), 100% calc(100% - var(--cut) + 0.6px), calc(100% - var(--cut) + 0.6px) 100%, calc(var(--cut) - 0.6px) 100%, 0 calc(100% - var(--cut) + 0.6px), 0 calc(var(--cut) - 0.6px));
+}
+.qa-card:hover, .qa-card:focus-within { --edge-a: 0.85; }
+.qa-card h3 { margin: 0; font-family: var(--font-brand); font-size: 17px; letter-spacing: 0.03em; color: #f2f6ff; }
+.qa-card p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--text-muted); }
+.qa-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.qa-title { display: grid; gap: 2px; min-width: 0; }
+
+/* Hexagon icons in the card's tone. */
+.qa-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 44px;
+  color: var(--tone-solid);
+  background: rgba(var(--tone), 0.16);
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.qa-icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.qa-card:hover .qa-icon { transform: translateY(-2px); }
+
+/* Status tags (state, count): small and square, not pills. */
+.qa-pill { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; border: 1px solid rgba(var(--tone), 0.4); background: rgba(var(--tone), 0.12); color: var(--tone-solid); }
+.qa-pill i { width: 7px; height: 7px; background: currentColor; box-shadow: 0 0 8px currentColor; }
+.qa-pill.is-green { --tone: 51, 224, 161; --tone-solid: #33e0a1; }
+.qa-pill.is-blue { --tone: 56, 196, 255; --tone-solid: #38c4ff; }
+.qa-pill.is-gold { --tone: 255, 197, 71; --tone-solid: #ffc547; }
+
+.qa-link { justify-self: start; display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; border: 0; background: none; color: var(--tone-solid); font: 600 13.5px var(--font); cursor: pointer; }
+.qa-link i { font-style: normal; transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1); }
+.qa-link:hover i { transform: translateX(4px); }
+.qa-link:focus-visible { outline: 2px solid var(--tone-solid); outline-offset: 3px; border-radius: 2px; }
+
+/* ---------- Editor de niveles ---------- */
+.qa-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.qa-logo img { display: block; width: 30px; height: auto; }
+.qa-head-title { font-family: var(--font-brand); font-size: 14px; letter-spacing: 0.04em; color: #f2f6ff; }
+.qa-head .qa-pill { margin-left: 0; }
+.qa-last { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.qa-last svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+.qa-stage {
+  --cut: 10px;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 960 / 420;
+  background: #0b1730;
+  border: 1px solid rgba(56, 196, 255, 0.35);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  cursor: pointer;
+}
+.qa-stage:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+/* The map drifts slowly, like a camera breathing over the level (artwork, not a control). */
+.qa-scene { display: block; width: 100%; height: 100%; image-rendering: pixelated; transform-origin: 50% 55%; animation: qa-drift 16s ease-in-out infinite alternate; }
+@keyframes qa-drift { from { transform: scale(1); } to { transform: scale(1.06) translate(-1%, -1%); } }
+.qa-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(3, 6, 15, 0) 60%, rgba(3, 6, 15, 0.35)), radial-gradient(ellipse at center, transparent 60%, rgba(3, 6, 15, 0.4)); }
+.qa-stage:hover .qa-scene { animation-play-state: paused; }
+
+/* The editor's selection box around the hero, with its four handles. */
+.qa-select { position: absolute; z-index: 1; border: 1.5px dashed #9fe6ff; box-shadow: 0 0 12px rgba(56, 196, 255, 0.5); animation: qa-pulse 2.4s ease-in-out infinite; pointer-events: none; }
+.qa-select[hidden] { display: none; }
+.qa-select i { position: absolute; width: 6px; height: 6px; background: #fff; border: 1px solid #1f7bff; }
+.qa-select i:nth-child(1) { top: -4px; left: -4px; }
+.qa-select i:nth-child(2) { top: -4px; right: -4px; }
+.qa-select i:nth-child(3) { bottom: -4px; left: -4px; }
+.qa-select i:nth-child(4) { bottom: -4px; right: -4px; }
+@keyframes qa-pulse { 50% { opacity: 0.45; } }
+
+.qa-tools { position: absolute; z-index: 2; top: 10px; left: 10px; display: grid; gap: 6px; padding: 6px; background: rgba(5, 11, 28, 0.9); border: 1px solid rgba(56, 196, 255, 0.3); border-radius: 6px; }
+.qa-tools span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 4px; color: #9fb4d9; }
+.qa-tools span.is-active { color: #fff; background: rgba(31, 123, 255, 0.4); box-shadow: inset 0 0 0 1px #38c4ff; }
+.qa-tools svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.qa-minimap { position: absolute; z-index: 2; top: 10px; right: 10px; width: 22%; max-width: 170px; overflow: hidden; background: rgba(5, 11, 28, 0.9); border: 2px solid rgba(56, 196, 255, 0.55); border-radius: 4px; }
+.qa-minimap canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.qa-minimap i { position: absolute; box-sizing: border-box; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(3, 6, 15, 0.6), 0 0 8px rgba(255, 255, 255, 0.4); }
+
+.qa-editor-body { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.qa-cube { flex: none; display: grid; place-items: center; width: 56px; height: 50px; color: #04121f; background: linear-gradient(180deg, #9fe6ff, #38c4ff 60%, #1f7bff); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+.qa-cube svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+.qa-editor h3 { font-size: clamp(17px, 1.6vw, 21px); }
+.qa-editor p { margin-top: 4px; }
+
+/* The main action: a pixel-edged button that glows (the glow lives on a wrapper filter-free: an inner light instead). */
+.qa-cta {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 24px;
+  border: 0;
+  color: #fff;
+  background: linear-gradient(180deg, #49a6ff, #1f6dff 55%, #1653d6);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.22), inset 0 -4px 0 rgba(0, 0, 0, 0.22);
+  font: 700 13.5px var(--font-brand);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px), 0 8px, 4px 8px, 4px 4px, 8px 4px);
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.qa-cta svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1); }
+.qa-cta .qa-cta-play { fill: currentColor; stroke: none; }
+.qa-cta:hover { transform: translateY(-2px); }
+.qa-cta:hover .qa-cta-arrow { transform: translateX(3px); }
+.qa-cta:active { transform: translateY(1px); }
+.qa-cta:focus-visible { outline: 2px solid #fff; outline-offset: -6px; }
+
+/* ---------- Jugar: the heroes ---------- */
+.qa-play { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 16px; }
+.qa-play-text { display: grid; gap: 8px; min-width: 0; }
+.qa-play-text .qa-row .qa-pill { margin-left: 8px; }
+.qa-heroes { display: grid; justify-items: center; gap: 10px; }
+.qa-hero-window { width: calc(3 * 78px + 2 * 8px); overflow: hidden; padding: 6px 2px; }
+.qa-hero-track { display: flex; gap: 8px; transform: translateX(calc(var(--first, 0) * -86px)); transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1); }
+.qa-hero {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 78px;
+  padding: 8px 4px 6px;
+  border: 1px solid rgba(120, 170, 255, 0.16);
+  border-radius: 6px;
+  background: rgba(5, 11, 28, 0.85);
+  color: var(--text-muted);
+  font: 600 11px var(--font);
+  cursor: pointer;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms, background 200ms;
+}
+.qa-hero img { width: 44px; height: 44px; object-fit: contain; image-rendering: pixelated; }
+.qa-hero span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qa-hero:hover { border-color: rgba(51, 224, 161, 0.5); }
+.qa-hero.is-active { transform: translateY(-4px); border-color: #33e0a1; background: rgba(51, 224, 161, 0.14); color: #e9fff6; box-shadow: inset 0 0 0 1px rgba(51, 224, 161, 0.6), 0 6px 16px rgba(51, 224, 161, 0.2); }
+.qa-hero:focus-visible { outline: 2px solid #33e0a1; outline-offset: 2px; }
+.qa-dots { display: flex; gap: 6px; }
+.qa-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 2px; background: rgba(120, 170, 255, 0.3); cursor: pointer; transition: background 150ms, transform 150ms; }
+.qa-dot.is-active { background: #33e0a1; transform: scaleX(1.6); }
+.qa-dot:focus-visible { outline: 2px solid #33e0a1; outline-offset: 2px; }
+
+/* ---------- Mis proyectos ---------- */
+.qa-projects .qa-row h3 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qa-project-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(255, 197, 71, 0.2);
+  border-radius: 6px;
+  background: rgba(5, 11, 28, 0.85);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+}
+.qa-project-row:hover { border-color: rgba(255, 197, 71, 0.55); background: rgba(255, 197, 71, 0.06); }
+.qa-project-row:focus-visible { outline: 2px solid #ffc547; outline-offset: 2px; }
+.qa-thumb { display: block; width: 120px; height: 72px; border-radius: 4px; image-rendering: pixelated; border: 1px solid rgba(255, 255, 255, 0.12); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); }
+.qa-project-row:hover .qa-thumb { transform: scale(1.04); }
+.qa-project-text { display: grid; gap: 4px; min-width: 0; }
+.qa-project-text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; color: #f2f6ff; }
+.qa-project-text small { font-size: 12.5px; color: var(--text-muted); }
+.qa-saved { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 600; color: #33e0a1; background: rgba(51, 224, 161, 0.12); border: 1px solid rgba(51, 224, 161, 0.4); }
+.qa-saved::before { content: "✓"; font-weight: 800; }
+.qa-go { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); color: #fff; transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1); }
+.qa-go svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.qa-project-row:hover .qa-go { transform: translateX(3px); }
+.qa-project-empty { display: grid; gap: 4px; width: 100%; padding: 14px; border: 1px dashed rgba(255, 197, 71, 0.4); border-radius: 6px; background: rgba(5, 11, 28, 0.7); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.qa-project-empty span { font-size: 13px; color: var(--text-muted); }
+.qa-projects .qa-link { justify-self: end; }
+
+/* ---------- Ajustes ---------- */
+.qa-controls { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.qa-control { flex: 1 1 150px; display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; border: 1px solid rgba(169, 145, 255, 0.25); border-radius: 6px; background: rgba(5, 11, 28, 0.85); cursor: pointer; transition: border-color 150ms; }
+.qa-control:hover, .qa-control:focus-within { border-color: rgba(169, 145, 255, 0.6); }
+.qa-control > svg { flex: none; width: 20px; height: 20px; fill: none; stroke: #c9b8ff; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.qa-control-text { display: grid; min-width: 0; flex: 1; }
+.qa-control-text small { font-size: 11px; color: var(--text-muted); }
+.qa-control-text b { font-size: 13px; font-weight: 600; color: #f2f6ff; }
+.qa-control select { min-width: 0; padding: 0 18px 0 0; border: 0; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9b8ff' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right center / 12px no-repeat; color: #f2f6ff; font: 600 13px var(--font); appearance: none; cursor: pointer; }
+.qa-control select:focus-visible { outline: 2px solid #a991ff; outline-offset: 2px; }
+.qa-control select option { background: #0b1633; color: #f2f6ff; }
+/* Switches: the knob slides. */
+.qa-switch { flex: none; position: relative; width: 36px; height: 20px; margin: 0; border-radius: 10px; background: rgba(120, 170, 255, 0.2); appearance: none; cursor: pointer; transition: background 150ms; }
+.qa-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1); }
+.qa-switch:checked { background: #33e0a1; }
+.qa-switch:checked::after { transform: translateX(16px); }
+.qa-switch:focus-visible { outline: 2px solid #a991ff; outline-offset: 2px; }
+.qa-more { flex: none; display: grid; place-items: center; width: 40px; border: 1px solid rgba(169, 145, 255, 0.35); border-radius: 6px; background: rgba(169, 145, 255, 0.14); color: #fff; cursor: pointer; transition: background 150ms, transform 150ms; }
+.qa-more:hover { background: rgba(169, 145, 255, 0.3); transform: translateX(2px); }
+.qa-more:focus-visible { outline: 2px solid #a991ff; outline-offset: 2px; }
+.qa-more svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* The admin card below keeps the old menu frame, now on its own row. */
+.home .menu-admin { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; margin-top: 0; }
+.home .menu-admin .option-admin { grid-column: auto; }
+
+/* ---------- smaller screens ---------- */
+@media (max-width: 1000px) {
+  .qa { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  .qa-editor { grid-row: auto; }
+}
+@media (max-width: 560px) {
+  .qa-card { padding: 14px; }
+  .qa-play { grid-template-columns: minmax(0, 1fr); }
+  .qa-last { margin-left: 0; flex-basis: 100%; }
+  .qa-tools { gap: 4px; padding: 4px; }
+  .qa-tools span { width: 24px; height: 24px; }
+  .qa-tools svg { width: 14px; height: 14px; }
+  .qa-minimap { width: 28%; }
+  .qa-cta { justify-self: stretch; justify-content: center; }
+  .qa-project-row { grid-template-columns: 88px minmax(0, 1fr) auto; gap: 10px; }
+  .qa-thumb { width: 88px; height: 53px; }
+  .qa-control { flex-basis: calc(50% - 24px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qa-scene, .qa-select { animation: none; }
+  .qa-hero-track, .qa-card, .qa-hero, .qa-switch::after { transition: none; }
+}
+
+/* ---------- balance: the editor fills its column, the settings sit in a 2 x 2 grid ---------- */
+.qa-editor { grid-template-rows: auto minmax(240px, 1fr) auto auto; }
+.qa-stage { aspect-ratio: auto; min-height: 240px; }
+.qa-scene { position: absolute; inset: 0; }
+.qa-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.qa-control { flex: none; }
+.qa-more { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: auto; padding: 8px 12px; font: 600 13px var(--font); }
+@media (max-width: 1000px) {
+  .qa-editor { grid-template-rows: none; }
+  .qa-stage { aspect-ratio: 960 / 420; min-height: 0; }
+}
+@media (max-width: 380px) {
+  .qa-controls { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Medium screens: the heroes go under the text of "Jugar", centred, so nothing is squeezed. */
+@media (min-width: 1001px) and (max-width: 1240px) {
+  .qa-play { grid-template-columns: minmax(0, 1fr); }
+  .qa-heroes { justify-self: center; }
+}
+@media (max-width: 560px) {
+  .qa-heroes { justify-self: center; }
+}
+@media (max-width: 560px) {
+  /* The tool bar keeps four tools so it always fits inside the short view of a phone. */
+  .qa-tools span:nth-child(5) { display: none; }
+}

@@ -3,6 +3,7 @@ import { iconUrl } from "../game/assets";
 import { isEnemy, type Kind } from "../model/GameObject";
 import { byId, make } from "./dom";
 import { NightScene } from "./NightScene";
+import { QuickAccess, type QuickSettings } from "./QuickAccess";
 import { relativeTime } from "./ProjectList";
 
 export type Destination = "home" | "editor" | "play" | "projects" | "settings" | "admin";
@@ -62,11 +63,20 @@ export function objectCount(count: number): string {
 export class HomeScreen {
   private readonly screen = byId("home");
   private readonly onGo: (to: Destination, project?: ProjectDto) => void;
+  private readonly quick: QuickAccess;
   /** The night behind the menu: runs only while the home is on screen. */
   private readonly scene = new NightScene(byId<HTMLCanvasElement>("home-scene"), byId("home-castle"), byId("home-wizard-spot"));
 
-  constructor(onGo: (to: Destination, project?: ProjectDto) => void, onLogout: () => void) {
+  constructor(onGo: (to: Destination, project?: ProjectDto) => void, onLogout: () => void, settings: QuickSettings) {
     this.onGo = onGo;
+    this.quick = new QuickAccess((project) => onGo("editor", project), settings);
+    // The editor view is a big button too: Enter or Space opens the editor.
+    this.screen.addEventListener("keydown", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-go][role=button]");
+      if (target === null || (event.key !== "Enter" && event.key !== " ")) return;
+      event.preventDefault();
+      onGo(target.dataset.go as Destination);
+    });
     this.screen.addEventListener("click", (event) => {
       const target = (event.target as HTMLElement).closest<HTMLElement>("[data-go]");
       if (target !== null) onGo(target.dataset.go as Destination);
@@ -84,7 +94,7 @@ export class HomeScreen {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
     this.screen.addEventListener("pointermove", (event) => {
       if (event.pointerType !== "mouse") return;
-      const target = (event.target as HTMLElement).closest<HTMLElement>(".option, .recent-row");
+      const target = (event.target as HTMLElement).closest<HTMLElement>(".option, .recent-row, .qa-card");
       if (target === null) return;
       const box = target.getBoundingClientRect();
       const x = (event.clientX - box.left) / box.width;
@@ -118,6 +128,7 @@ export class HomeScreen {
     byId("option-editor-go").textContent = projects[0] ? `Continuar con “${projects[0].name}”` : "Crear mi primer nivel";
     byId("option-projects-go").textContent = projects.length > 0 ? `Ver los ${projects.length} proyectos` : "Crear un proyecto";
     this.renderRecent(projects);
+    this.quick.show(projects);
     this.screen.hidden = false;
     this.screen.classList.remove("is-entering");
     void this.screen.offsetWidth;
@@ -128,6 +139,7 @@ export class HomeScreen {
 
   hide(): void {
     this.screen.hidden = true;
+    this.quick.hide();
     this.scene.stop();
   }
 
