@@ -1,0 +1,113 @@
+/* ==========================================================================
+   Editor, night edition: the language of the access screen, the intro, the
+   home and the admin panel, on the editor's chrome.
+   Skills: surfaces (opaque panels, one border, an edge of light; no blur),
+   icon-buttons (square tools with real tooltips, see ui/tooltip.ts),
+   motion (150-300 ms, ease-out, transform and opacity; no loops on chrome),
+   anti-slop (one accent hue, no glass, no rainbow). Only looks change here:
+   sizes and layout stay, so the phone layout keeps working.
+   ========================================================================== */
+#app {
+  --night-edge: rgba(56, 196, 255, 0.22);
+  --night-edge-hi: rgba(56, 196, 255, 0.55);
+  --night-surface: #071029;
+  --night-well: #040a1c;
+  --out: cubic-bezier(0.16, 1, 0.3, 1);
+  background: #03060f;
+}
+
+/* ---------- the top bar ---------- */
+#app .topbar { background: linear-gradient(180deg, #070f26, #050b1c); border-bottom: 1px solid var(--night-edge); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+#app .topbar::after { animation: none; background: linear-gradient(90deg, transparent, rgba(56, 196, 255, 0.85) 50%, transparent); background-size: 100% 100%; }
+
+/* Tool groups: a dark well; the active tool is a pixel-bright block. */
+#app .toolgroup { border-radius: 6px; border-color: var(--night-edge); background: var(--night-well); box-shadow: none; }
+#app .tool { border-radius: 4px; transition: background 150ms var(--out), color 150ms var(--out); }
+/* Bigger square tools only where there is room; phones keep the sizes that fit their bar. */
+@media (min-width: 1101px) { #app .tool { min-width: 38px; height: 36px; } }
+#app .tool:hover:not(:disabled):not(.is-active) { background: rgba(56, 196, 255, 0.12); color: #fff; }
+#app .tool-pill, #app .tab-pill {
+  border-radius: 4px;
+  background: linear-gradient(180deg, #49a6ff, #1f6dff 60%, #1653d6);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.22), inset 0 -2px 0 rgba(0, 0, 0, 0.22);
+  transition: transform 200ms var(--out), width 200ms var(--out);
+}
+#app .tool.is-active { border-radius: 4px; background: linear-gradient(180deg, #49a6ff, #1f6dff 60%, #1653d6); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.22); }
+#app .toolgroup.has-pill .tool.is-active { background: transparent; box-shadow: none; }
+#app .tool:focus-visible { outline: 2px solid #9fe6ff; outline-offset: 1px; }
+
+/* "Jugar": the primary action, a pixel-edged button (same as the access screen's). */
+#app .btn-play {
+  border-radius: 0;
+  background: linear-gradient(180deg, #7fdcff, #38c4ff 55%, #1fa3e6);
+  color: #04121f;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.4), inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px), 0 8px, 4px 8px, 4px 4px, 8px 4px);
+  transition: transform 150ms var(--out);
+}
+#app .btn-play::after, #app .play-controls::before { display: none; }
+#app .btn-play:hover { transform: translateY(-1px); }
+#app .btn-play:active { transform: translateY(1px); }
+#app .btn-stop { border-radius: 0; clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px); animation: none; }
+
+#app .btn-save { border-radius: 4px; border-color: var(--night-edge-hi); background: rgba(31, 123, 255, 0.1); transition: background 150ms var(--out), border-color 150ms var(--out); }
+#app .btn-save:hover { transform: none; box-shadow: none; background: rgba(31, 123, 255, 0.22); }
+#app .save-state { border-radius: 4px; }
+#app .btn-back { border-radius: 4px; }
+#app .project-field, #app .user { border-radius: 6px; }
+
+/* ---------- the side panels ---------- */
+#app .dock { background: radial-gradient(420px 260px at 50% 0%, rgba(31, 123, 255, 0.1), transparent 70%), linear-gradient(180deg, #060d22, #040919); }
+#app .dock-tabs { border-radius: 6px; border-color: var(--night-edge); background: var(--night-well); }
+#app .dock-tab { border-radius: 4px; }
+#app .dock-tab:focus-visible { outline: 2px solid #9fe6ff; outline-offset: 1px; }
+
+/* Section titles: a hexagon for the icon, the "//" tag of the app before the name. */
+#app .library-title { border-radius: 4px; }
+#app .library-title-icon { border-radius: 0; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+#app .library-title-count, #app .library-count { border-radius: 3px; }
+#app .panel-head::before { content: "// "; color: rgba(56, 196, 255, 0.7); }
+
+/* Library cards: squarer, an edge that lights up, a small lift. */
+#app .palette-item {
+  border-radius: 4px;
+  border-color: rgba(120, 170, 255, 0.14);
+  background: linear-gradient(180deg, rgba(14, 27, 58, 0.9), rgba(6, 13, 34, 0.95));
+  box-shadow: none;
+  transition: transform 150ms var(--out), border-color 150ms var(--out), background 150ms var(--out);
+}
+#app .palette-item:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--night-edge-hi); box-shadow: none; }
+#app .palette-item.is-active { border-color: #38c4ff; background: linear-gradient(180deg, rgba(31, 123, 255, 0.3), rgba(6, 13, 34, 0.95)); box-shadow: inset 0 0 0 1px #38c4ff; }
+#app .palette-item:focus-visible { outline: 2px solid #9fe6ff; outline-offset: 2px; }
+#app .filter-chip, #app .filter-pill, #app .chip { border-radius: 4px; }
+#app .search input, #app .search { border-radius: 6px; }
+
+/* Inspector and scene tree: the same cut-corner frame as the rest of the app. */
+#app .inspector-head {
+  --cut: 10px;
+  border: 1px solid var(--night-edge-hi);
+  border-radius: 0;
+  background: linear-gradient(135deg, rgba(31, 123, 255, 0.22), rgba(6, 13, 34, 0.9));
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+}
+#app .inspector-empty { border-radius: 6px; }
+#app .tree-group, #app .tree-item { border-radius: 4px; }
+#app .project-row { border-radius: 6px; }
+#app .project-action { border-radius: 4px; }
+
+/* ---------- the stage ---------- */
+/* Behind the map: the night (the terrain around it is tinted night-blue in EditorScene). */
+#app .stage { background: radial-gradient(ellipse at 50% 45%, #0d1d42, #050b1c 75%); }
+#app .stage-label { border-radius: 4px; border-color: var(--night-edge-hi); }
+#app .viewport-controls { border-radius: 6px; border-color: var(--night-edge-hi); }
+#app .viewport-controls button { border-radius: 4px; }
+#app .corner { box-shadow: none; }
+#app .empty-card { border-radius: 8px; }
+
+/* ---------- the status bar ---------- */
+#app .statusbar { background: #040917; border-top: 1px solid var(--night-edge); }
+#app .status-tool { border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #app .tool, #app .palette-item, #app .btn-play, #app .tool-pill, #app .tab-pill { transition: none; }
+}

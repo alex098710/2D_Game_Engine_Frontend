@@ -65,7 +65,7 @@ export class EditorScene extends Phaser.Scene {
     // Outside the map the terrain goes on, dim and dark, so the empty room around
     // the frame reads as the world continuing instead of black bands.
     this.add.tileSprite(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH * 5, WORLD_HEIGHT * 5, "grass")
-      .setDepth(-12).setTint(0x6a8aa0).setAlpha(0.6);
+      .setDepth(-12).setTint(0x3a50a0).setAlpha(0.28); // faint and night-blue, like the rest of the app
     this.add.tileSprite(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, "grass").setDepth(-10);
     this.add.rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT).setStrokeStyle(4, 0x0b0f14, 0.9).setDepth(-5);
     this.grid = this.add.graphics().setDepth(-4);

@@ -34,6 +34,7 @@ import { CHARACTER_KINDS, ENEMY_KINDS, isKind, KIND_INFO, type Kind } from "./mo
 import { countByKind, hasPlayer, nextObjectId, SceneModel } from "./model/SceneModel";
 import { AdminPanel } from "./ui/AdminPanel";
 import { once } from "./ui/busy";
+import { initTooltips } from "./ui/tooltip";
 import { AiPanel, aiSummary } from "./ui/AiPanel";
 import { bindNameCounter, byId, errorText } from "./ui/dom";
 import { initEditorFx } from "./ui/editorFx";
@@ -562,6 +563,7 @@ window.addEventListener("beforeunload", (event) => {
   if (isDirty()) event.preventDefault();
 });
 
+initTooltips(); // real tooltips (with shortcuts) instead of the browser's title
 setupTabs();
 initEditorFx();
 byId("status-tool").textContent = TOOL_NAMES.select;
