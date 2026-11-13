@@ -1,0 +1,30 @@
+/* ==========================================================================
+   Scrollbars of the whole app: thin, rounded and in the forge's blue, with a
+   transparent track and space of their own (scrollbar-gutter), so they never
+   sit on top of a card. Chrome, Edge and Safari use the ::-webkit-scrollbar
+   styles; Firefox, which does not know them, gets the standard properties.
+   ========================================================================== */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(56, 196, 255, 0.75), rgba(31, 123, 255, 0.75)) padding-box;
+  box-shadow: inset 0 0 0 1px rgba(160, 220, 255, 0.15);
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #5fd3ff, #2d8bff) padding-box; }
+::-webkit-scrollbar-thumb:active { background: linear-gradient(180deg, #8fe2ff, #38c4ff) padding-box; }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+/* Inside narrow panels the bar is slimmer still. */
+.dock-panel::-webkit-scrollbar, .new-project::-webkit-scrollbar, .login-panel::-webkit-scrollbar { width: 8px; }
+.dock-panel::-webkit-scrollbar-thumb, .new-project::-webkit-scrollbar-thumb { border-width: 2px; }
+:root[data-theme="light"] ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(20, 99, 230, 0.55), rgba(11, 63, 184, 0.55)) padding-box; }
+
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: rgba(56, 196, 255, 0.6) transparent; }
+  :root[data-theme="light"] * { scrollbar-color: rgba(20, 99, 230, 0.5) transparent; }
+}
+
+/* Scrolling areas keep a lane for the bar, so content never runs under it. */
+.dock-panel, .new-project, .home { scrollbar-gutter: stable; }

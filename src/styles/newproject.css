@@ -22,7 +22,7 @@
 @keyframes np-spin { to { --np-spin: 360deg; } }
 :root[data-theme="light"] .dialog-new { background: var(--bg-elevated); }
 
-.new-project { box-sizing: border-box; display: grid; gap: 16px; max-height: calc(100dvh - 28px); padding: 24px; overflow-y: auto; scrollbar-width: thin; }
+.new-project { box-sizing: border-box; display: grid; gap: 16px; max-height: calc(100dvh - 28px); padding: 24px; overflow-y: auto; }
 .np-head { display: flex; align-items: center; gap: 14px; }
 .np-badge { flex: none; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 14px; background: radial-gradient(circle at 50% 35%, rgba(56, 196, 255, 0.3), rgba(11, 63, 214, 0.2) 60%, rgba(5, 11, 24, 0.9)); border: 1px solid rgba(56, 196, 255, 0.35); box-shadow: 0 0 20px rgba(31, 123, 255, 0.35); }
 .np-badge img { animation: float 4s ease-in-out infinite; }
@@ -50,7 +50,7 @@
 .np-panel[hidden] { display: none; }
 
 /* Templates: two columns of cards with a picture of the map. */
-.dialog-new .templates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-height: min(42dvh, 360px); padding: 2px; overflow-y: auto; scrollbar-width: thin; }
+.dialog-new .templates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-height: min(42dvh, 360px); padding: 2px; overflow-y: auto; }
 .dialog-new .template { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: 8px 10px; padding: 10px; border: 1px solid rgba(120, 170, 255, 0.14); border-radius: 14px; background: rgba(10, 19, 38, 0.7); cursor: pointer; transition: border-color 0.2s, transform 0.2s var(--ease), box-shadow 0.2s; }
 .dialog-new .template:hover { border-color: rgba(56, 196, 255, 0.45); transform: translateY(-2px); box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35); }
 .dialog-new .template input { grid-row: 2; grid-column: 1; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }

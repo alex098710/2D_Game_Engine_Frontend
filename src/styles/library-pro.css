@@ -14,8 +14,8 @@
 [data-category="war"] { --tone: 120, 220, 120; --tone-solid: #78dc78; }
 
 /* ---------- head: search, filter, count ---------- */
-.library-head { position: sticky; top: -16px; z-index: 2; display: grid; gap: 10px; margin: -16px -14px 0; padding: 16px 14px 12px; background: linear-gradient(180deg, rgba(10, 19, 38, 0.98) 80%, rgba(10, 19, 38, 0)); }
-:root[data-theme="light"] .library-head { background: linear-gradient(180deg, var(--bg-elevated) 80%, transparent); }
+.library-head { position: sticky; top: -16px; z-index: 2; display: grid; gap: 10px; margin: -16px -14px 0; padding: 16px 14px 12px; background: #0a1326; box-shadow: 0 10px 14px -10px rgba(0, 0, 0, 0.7); border-bottom: 1px solid var(--line); }
+:root[data-theme="light"] .library-head { background: var(--bg-elevated); }
 .search { position: relative; }
 .search input { padding-right: 38px; }
 .search input::-webkit-search-cancel-button { display: none; }

@@ -228,7 +228,7 @@
 .dock-tabs.has-pill .dock-tab.is-active { background: transparent; box-shadow: none; }
 :root[data-theme="light"] .dock-tab.is-active { color: #fff; }
 
-.dock-panel { position: relative; padding: 16px 14px; gap: 14px; scrollbar-width: thin; scrollbar-color: rgba(120, 170, 255, 0.25) transparent; }
+.dock-panel { position: relative; padding: 16px 14px; gap: 14px; }
 .dock-panel:not([hidden]) { animation: panel-in 0.3s var(--decel); }
 @keyframes panel-in { from { opacity: 0; transform: translateY(6px); } }
 .panel-head { font-family: var(--font-tag); font-size: 9.5px; font-weight: 400; letter-spacing: 0.2em; color: var(--accent-hi); }
@@ -436,6 +436,7 @@
   /* The card sits between the panel buttons on top and the zoom at the bottom. */
   .empty-state { padding: 104px 16px 72px; overflow-y: auto; align-items: center; }
   .empty-card { max-height: 100%; overflow-y: auto; scrollbar-width: none; }
+  .empty-card::-webkit-scrollbar { display: none; }
 }
 @media (max-width: 640px) {
   /* One flexible row that fits a 360 px phone without sideways scroll. */
