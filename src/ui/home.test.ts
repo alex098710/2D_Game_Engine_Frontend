@@ -25,3 +25,20 @@ test("a lightning bolt starts and ends where asked", () => {
   expect(points).toHaveLength(9);
   expect(Math.abs(points[4][1])).toBeCloseTo(15);
 });
+
+test("the greeting follows the hour of the day", async () => {
+  const { greeting } = await import("./HomeScreen");
+  expect(greeting(8)).toBe("Buenos días");
+  expect(greeting(15)).toBe("Buenas tardes");
+  expect(greeting(22)).toBe("Buenas noches");
+  expect(greeting(2)).toBe("Buenas noches");
+});
+
+test("the forge rank only grows with the games played", async () => {
+  const { forgeRank } = await import("./HomeScreen");
+  expect(forgeRank(0)).toBe("Aprendiz de la forja");
+  expect(forgeRank(1)).toBe("Herrero novato");
+  expect(forgeRank(22)).toBe("Forjador");
+  expect(forgeRank(30)).toBe("Maestro forjador");
+  expect(forgeRank(250)).toBe("Leyenda de la forja");
+});

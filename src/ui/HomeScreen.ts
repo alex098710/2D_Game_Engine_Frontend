@@ -16,6 +16,38 @@ export function projectIcon(project: ProjectDto): Kind {
   return enemy?.kind ?? "tree";
 }
 
+/** "Buenos días" / "Buenas tardes" / "Buenas noches" for the hour of the day. */
+export function greeting(hour: number): string {
+  if (hour >= 5 && hour < 12) return "Buenos días";
+  if (hour >= 12 && hour < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+/** A title earned by playing: it only depends on the number of games. */
+export function forgeRank(games: number): string {
+  if (games >= 100) return "Leyenda de la forja";
+  if (games >= 30) return "Maestro forjador";
+  if (games >= 10) return "Forjador";
+  if (games >= 1) return "Herrero novato";
+  return "Aprendiz de la forja";
+}
+
+/** Counts a number up from 0 in about 0.9 s (instantly for reduced motion). */
+function countUp(element: HTMLElement, value: number, suffix = ""): void {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || value === 0) {
+    element.textContent = `${value}${suffix}`;
+    return;
+  }
+  const start = performance.now();
+  const step = (now: number): void => {
+    const t = Math.min(1, (now - start) / 900);
+    const eased = 1 - Math.pow(1 - t, 3);
+    element.textContent = `${Math.round(value * eased)}${suffix}`;
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 /** "1 objeto" / "24 objetos". */
 export function objectCount(count: number): string {
   return `${count} ${count === 1 ? "objeto" : "objetos"}`;
@@ -75,8 +107,11 @@ export class HomeScreen {
     byId("home-avatar").textContent = initial;
     byId("welcome-avatar").textContent = initial;
     byId("home-user").textContent = user.username;
-    byId("welcome-title").textContent = `Bienvenido, ${user.username}`;
-    byId("kpi-projects").textContent = String(projects.length);
+    byId("welcome-title").replaceChildren("Bienvenido, ", make("span", "welcome-name", user.username));
+    const now = new Date();
+    byId("welcome-greeting").textContent = greeting(now.getHours());
+    byId("welcome-date").textContent = now.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" });
+    countUp(byId("kpi-projects"), projects.length);
     byId("option-editor-go").textContent = projects[0] ? `Continuar con “${projects[0].name}”` : "Crear mi primer nivel";
     byId("option-projects-go").textContent = projects.length > 0 ? `Ver los ${projects.length} proyectos` : "Crear un proyecto";
     this.renderRecent(projects);
@@ -146,12 +181,17 @@ export class HomeScreen {
   private async loadNumbers(): Promise<void> {
     const [stats, achievements] = await Promise.all([myStats(), myAchievements()]).catch(() => [null, null] as const);
     if (stats !== null) {
-      byId("kpi-games").textContent = String(stats.games_played);
-      byId("kpi-best").textContent = String(stats.best_score);
+      countUp(byId("kpi-games"), stats.games_played);
+      countUp(byId("kpi-best"), stats.best_score);
+      byId("welcome-rank").textContent = forgeRank(stats.games_played);
       byId("welcome-sub").textContent = stats.games_played === 0
         ? "Tu forja está lista. Juega tu primera partida y la IA empezará a aprender."
         : `Has jugado ${stats.games_played} ${stats.games_played === 1 ? "partida" : "partidas"} · la IA aprende de cada una.`;
     }
-    if (achievements !== null) byId("kpi-achievements").textContent = `${achievements.length}/${ACHIEVEMENTS_TOTAL}`;
+    if (achievements !== null) {
+      countUp(byId("kpi-achievements"), achievements.length, `/${ACHIEVEMENTS_TOTAL}`);
+      // The ring around the star fills with the share of achievements earned.
+      byId("kpi-ring").style.setProperty("--p", String(Math.min(1, achievements.length / ACHIEVEMENTS_TOTAL)));
+    }
   }
 }

@@ -2,25 +2,109 @@
 .home {
   position: fixed;
   inset: 0;
+  overflow-x: hidden;
   overflow-y: auto;
-  background:
-    radial-gradient(1100px 520px at 50% -12%, rgba(31, 123, 255, 0.20), transparent 62%),
-    radial-gradient(700px 500px at 100% 100%, rgba(56, 196, 255, 0.06), transparent 70%),
-    var(--bg);
+  background: #02040b;
 }
-/* A faint grid behind everything, fading towards the edges. */
-.home::before {
-  content: "";
-  position: fixed;
+.home > :not(.home-backdrop) { position: relative; z-index: 1; }
+.home > .topnav { position: sticky; z-index: 20; }
+
+/* The world behind the menu, in layers from far to near. Everything is
+   fixed and ignores the pointer; it only sets the mood. */
+.home-backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.bd-sky {
+  position: absolute;
   inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(120, 170, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(120, 170, 255, 0.045) 1px, transparent 1px);
-  background-size: 40px 40px;
-  -webkit-mask: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 80%);
-  mask: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 80%);
+  background:
+    radial-gradient(900px 500px at 18% 8%, rgba(31, 123, 255, 0.28), transparent 65%),
+    radial-gradient(800px 520px at 85% 18%, rgba(124, 92, 255, 0.20), transparent 65%),
+    radial-gradient(1000px 420px at 50% 100%, rgba(56, 196, 255, 0.16), transparent 70%),
+    linear-gradient(180deg, #030713 0%, #05102a 55%, #0a1a3d 100%);
 }
+/* Two layers of pixel stars that twinkle out of step. */
+.bd-stars {
+  position: absolute;
+  inset: 0 0 30% 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 24px 40px, #fff, transparent),
+    radial-gradient(1px 1px at 110px 90px, #cfe6ff, transparent),
+    radial-gradient(1.5px 1.5px at 180px 20px, #9fdcff, transparent),
+    radial-gradient(1px 1px at 260px 140px, #fff, transparent),
+    radial-gradient(2px 2px at 300px 60px, #bfe9ff, transparent),
+    radial-gradient(1px 1px at 60px 180px, #fff, transparent),
+    radial-gradient(1px 1px at 200px 220px, #cfe6ff, transparent);
+  background-size: 320px 260px;
+  -webkit-mask: linear-gradient(180deg, #000 40%, transparent);
+  mask: linear-gradient(180deg, #000 40%, transparent);
+  animation: twinkle 5s ease-in-out infinite;
+}
+.bd-stars.is-far { background-size: 210px 190px; opacity: 0.5; background-position: 70px 40px; animation-duration: 7s; animation-delay: -2s; }
+@keyframes twinkle { 50% { opacity: 0.45; } }
+.bd-moon {
+  position: absolute;
+  top: 12%;
+  right: 9%;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #eaf6ff, #a9d4ff 55%, #5b8fd6);
+  box-shadow: 0 0 40px rgba(160, 210, 255, 0.55), 0 0 120px rgba(56, 160, 255, 0.35);
+  opacity: 0.85;
+  animation: moon 9s ease-in-out infinite;
+}
+@keyframes moon { 50% { transform: translateY(-6px); box-shadow: 0 0 50px rgba(160, 210, 255, 0.7), 0 0 140px rgba(56, 160, 255, 0.45); } }
+/* A shooting star now and then. */
+.bd-comet { position: absolute; top: 14%; left: -10%; width: 120px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, #bfe9ff); filter: drop-shadow(0 0 6px #9fdcff); transform: rotate(14deg); opacity: 0; animation: comet 11s ease-in infinite 3s; }
+@keyframes comet { 0%, 82% { opacity: 0; transform: translate(0, 0) rotate(14deg); } 84% { opacity: 1; } 100% { opacity: 0; transform: translate(70vw, 18vw) rotate(14deg); } }
+
+/* Pixel mountains and a castle with lit windows on the horizon. */
+.bd-mountains, .bd-kingdom { position: absolute; left: 0; bottom: 0; width: 100%; }
+.bd-mountains { height: min(34vh, 300px); bottom: 70px; fill: #12295c; filter: drop-shadow(0 -1px 0 rgba(120, 180, 255, 0.35)); animation: drift-far 40s ease-in-out infinite alternate; }
+.bd-kingdom { height: min(30vh, 260px); bottom: 34px; filter: drop-shadow(0 -1px 0 rgba(56, 196, 255, 0.45)); }
+.bd-kingdom .land { fill: #081638; }
+.bd-kingdom .flag { fill: var(--forge-hi); filter: drop-shadow(0 0 3px var(--forge-hi)); animation: flag 1.2s steps(2) infinite; transform-origin: 336px 25px; }
+.bd-kingdom .lights rect { fill: #ffc547; filter: drop-shadow(0 0 3px #ffb020); animation: window 4s ease-in-out infinite; }
+.bd-kingdom .lights rect:nth-child(2n) { animation-delay: -1.5s; }
+.bd-kingdom .lights rect:nth-child(3n) { animation-delay: -2.6s; }
+@keyframes flag { 50% { transform: scaleX(0.8); } }
+@keyframes window { 50% { opacity: 0.55; } }
+@keyframes drift-far { to { transform: translateX(-2%); } }
+/* The ground: a glowing grid in perspective that slides towards you. */
+.bd-floor {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: 0;
+  height: 70px;
+  background:
+    linear-gradient(rgba(56, 196, 255, 0.35) 1px, transparent 1px) 0 0 / 40px 20px,
+    linear-gradient(90deg, rgba(56, 196, 255, 0.25) 1px, transparent 1px) 0 0 / 40px 20px,
+    linear-gradient(180deg, #06102a, #03070f);
+  transform: perspective(240px) rotateX(48deg);
+  transform-origin: bottom;
+  animation: floor-run 2.4s linear infinite;
+  -webkit-mask: linear-gradient(180deg, transparent, #000 50%);
+  mask: linear-gradient(180deg, transparent, #000 50%);
+}
+.bd-floor::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--forge-hi), transparent); box-shadow: 0 0 18px var(--forge-hi); }
+@keyframes floor-run { to { background-position: 0 20px, 0 0, 0 0; } }
+/* Sparks of the forge rising from the ground. */
+.bd-embers i { position: absolute; bottom: 40px; width: 3px; height: 3px; background: var(--forge-hi); box-shadow: 0 0 8px var(--forge-hi); opacity: 0; animation: ember 9s linear infinite; }
+.bd-embers i:nth-child(1) { left: 6%; animation-delay: 0s; }
+.bd-embers i:nth-child(2) { left: 14%; animation-delay: 3.2s; background: #ffb547; box-shadow: 0 0 8px #ffb547; }
+.bd-embers i:nth-child(3) { left: 23%; animation-delay: 6.1s; }
+.bd-embers i:nth-child(4) { left: 31%; animation-delay: 1.4s; width: 2px; height: 2px; }
+.bd-embers i:nth-child(5) { left: 40%; animation-delay: 4.8s; background: #a991ff; box-shadow: 0 0 8px #a991ff; }
+.bd-embers i:nth-child(6) { left: 49%; animation-delay: 7.4s; }
+.bd-embers i:nth-child(7) { left: 57%; animation-delay: 2.2s; background: #ffb547; box-shadow: 0 0 8px #ffb547; }
+.bd-embers i:nth-child(8) { left: 66%; animation-delay: 5.5s; width: 2px; height: 2px; }
+.bd-embers i:nth-child(9) { left: 73%; animation-delay: 0.7s; }
+.bd-embers i:nth-child(10) { left: 81%; animation-delay: 3.9s; background: #a991ff; box-shadow: 0 0 8px #a991ff; }
+.bd-embers i:nth-child(11) { left: 89%; animation-delay: 6.8s; background: #ffb547; box-shadow: 0 0 8px #ffb547; }
+.bd-embers i:nth-child(12) { left: 96%; animation-delay: 2.9s; width: 2px; height: 2px; }
+@keyframes ember { 0% { transform: translate(0, 0); opacity: 0; } 8% { opacity: 1; } 50% { transform: translate(14px, -38vh); } 85% { opacity: 0.6; } 100% { transform: translate(-6px, -78vh); opacity: 0; } }
+/* Darker edges keep the eye on the content. */
+.bd-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 85% 75% at 50% 35%, transparent 45%, rgba(1, 3, 9, 0.75)); }
 .home.is-entering .home-body > * { animation: enter 0.6s var(--ease) both; }
 .home.is-entering .home-body > :nth-child(2) { animation-delay: 0.06s; }
 .home.is-entering .home-body > :nth-child(3) { animation-delay: 0.12s; }
@@ -122,73 +206,190 @@
 .userchip .btn { border-radius: 999px; }
 
 /* ---------- body ---------- */
-.home-body { position: relative; display: grid; gap: 18px; max-width: 1240px; margin: 0 auto; padding: 28px max(20px, env(safe-area-inset-right, 0px)) 56px max(20px, env(safe-area-inset-left, 0px)); }
+/* The bottom padding leaves the horizon (castle and grid) in view at the end. */
+.home-body { position: relative; display: grid; gap: 18px; max-width: 1240px; margin: 0 auto; padding: 28px max(20px, env(safe-area-inset-right, 0px)) min(30vh, 260px) max(20px, env(safe-area-inset-left, 0px)); }
 
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
 .section-head .eyebrow { display: flex; align-items: center; gap: 10px; }
 .section-head .eyebrow::after { content: ""; width: 48px; height: 1px; background: linear-gradient(90deg, var(--accent-hi), transparent); }
 .section-head .link { font-size: 13px; }
 
-/* The welcome banner: an aurora drifts behind the avatar and the numbers. */
+/* ---------- welcome banner ---------- */
+/* Centred greeting over a living background (aurora, pixel grid, drifting
+   pixels and a light sweep), then four stat cards in one row. The border is a
+   light running around the banner, like the access card. */
+@property --welcome-spin { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 .welcome {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+  gap: 26px;
+  padding: 36px clamp(16px, 4vw, 40px) 28px;
+  border-radius: 26px;
+  background: linear-gradient(160deg, rgba(14, 30, 64, 0.88), rgba(6, 11, 23, 0.94) 65%);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.welcome::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(from var(--welcome-spin), rgba(56, 196, 255, 0.08), rgba(56, 196, 255, 0.85) 12%, rgba(124, 92, 255, 0.5) 22%, rgba(56, 196, 255, 0.08) 34%, rgba(56, 196, 255, 0.08) 60%, rgba(51, 224, 161, 0.5) 72%, rgba(56, 196, 255, 0.08) 84%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: welcome-spin 10s linear infinite;
+}
+@keyframes welcome-spin { to { --welcome-spin: 360deg; } }
+
+.welcome-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.welcome-aurora {
+  position: absolute;
+  inset: -50% -20%;
+  background:
+    radial-gradient(30% 40% at 30% 40%, rgba(31, 123, 255, 0.42), transparent 70%),
+    radial-gradient(25% 35% at 55% 25%, rgba(56, 196, 255, 0.26), transparent 70%),
+    radial-gradient(28% 38% at 75% 55%, rgba(124, 92, 255, 0.24), transparent 70%);
+  filter: blur(20px);
+  animation: aurora 16s ease-in-out infinite alternate;
+}
+@keyframes aurora { 0% { transform: translate3d(-4%, -2%, 0) rotate(-3deg); } 100% { transform: translate3d(5%, 4%, 0) rotate(4deg); } }
+.welcome-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(140, 200, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(140, 200, 255, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask: radial-gradient(ellipse 60% 70% at 50% 40%, #000, transparent 75%);
+  mask: radial-gradient(ellipse 60% 70% at 50% 40%, #000, transparent 75%);
+  animation: grid-drift 20s linear infinite;
+}
+@keyframes grid-drift { to { background-position: 28px 28px; } }
+/* Square pixels that rise and fade like sparks of the forge. */
+.px { position: absolute; bottom: -8px; width: 4px; height: 4px; background: var(--forge-hi); box-shadow: 0 0 8px var(--forge-hi); opacity: 0; animation: px-rise 7s linear infinite; }
+.p1 { left: 8%; animation-delay: 0s; }
+.p2 { left: 19%; animation-delay: 2.4s; width: 3px; height: 3px; background: #a991ff; box-shadow: 0 0 8px #a991ff; }
+.p3 { left: 31%; animation-delay: 4.1s; }
+.p4 { left: 46%; animation-delay: 1.2s; width: 3px; height: 3px; }
+.p5 { left: 58%; animation-delay: 5.3s; background: var(--success); box-shadow: 0 0 8px var(--success); }
+.p6 { left: 69%; animation-delay: 3.2s; width: 3px; height: 3px; }
+.p7 { left: 81%; animation-delay: 0.8s; background: #a991ff; box-shadow: 0 0 8px #a991ff; }
+.p8 { left: 92%; animation-delay: 4.7s; }
+@keyframes px-rise { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 0.9; } 80% { opacity: 0.5; } 100% { transform: translateY(-260px) translateX(12px); opacity: 0; } }
+.welcome-sweep { position: absolute; inset: 0; background: linear-gradient(110deg, transparent 40%, rgba(160, 220, 255, 0.08) 50%, transparent 60%); transform: translateX(-100%); animation: welcome-sweep 7s ease-in-out infinite 1.5s; }
+@keyframes welcome-sweep { 0%, 60% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+.welcome-hero { display: grid; justify-items: center; gap: 8px; max-width: 720px; text-align: center; }
+.avatar-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--forge-hi), #7c5cff, var(--forge), var(--success), var(--forge-hi));
+  box-shadow: 0 0 40px rgba(56, 196, 255, 0.45);
+  animation: ring-spin 8s linear infinite;
+}
+.avatar-ring .avatar { width: 80px; height: 80px; font-size: 30px; font-family: var(--font-brand); border: 4px solid #08122a; animation: ring-spin 8s linear infinite reverse; }
+@keyframes ring-spin { to { transform: rotate(360deg); } }
+/* Two small moons orbiting the avatar. */
+.avatar-orbit { position: absolute; inset: -12px; border-radius: 50%; border: 1px dashed rgba(56, 196, 255, 0.25); animation: ring-spin 6s linear infinite reverse; }
+.avatar-orbit i { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--forge-hi); box-shadow: 0 0 10px var(--forge-hi); top: -4px; left: calc(50% - 4px); }
+.avatar-orbit i + i { top: auto; bottom: -4px; background: #a991ff; box-shadow: 0 0 10px #a991ff; width: 6px; height: 6px; }
+.avatar-status { position: absolute; right: 4px; bottom: 4px; width: 16px; height: 16px; border-radius: 50%; background: var(--success); border: 3px solid #08122a; box-shadow: 0 0 10px var(--success); animation: ring-spin 8s linear infinite reverse; }
+
+.welcome-eyebrow { display: flex; align-items: center; gap: 10px; margin: 0; font-family: var(--font-tag); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--forge-hi); }
+.welcome-eyebrow { flex-wrap: wrap; justify-content: center; row-gap: 4px; }
+.welcome-eyebrow span { white-space: nowrap; }
+.welcome-eyebrow i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+.welcome h1 { margin: 0; font-family: var(--font-brand); font-size: clamp(24px, 3.4vw, 40px); line-height: 1.1; letter-spacing: -0.01em; overflow-wrap: anywhere; text-wrap: balance; }
+/* The name shines: a light passes over its letters. */
+.welcome-name {
+  background: linear-gradient(100deg, #9fdcff 20%, #ffffff 40%, #9fdcff 55%, var(--forge-hi) 80%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: name-shine 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px rgba(56, 196, 255, 0.35));
+}
+@keyframes name-shine { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+.welcome-sub { margin: 0; max-width: 56ch; font-size: 15px; color: #b9c8e3; }
+.welcome-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 6px; }
+.welcome-chips > span { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: rgba(5, 11, 24, 0.6); border: 1px solid rgba(120, 170, 255, 0.18); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.chip-live { color: #a8f5d6; }
+.chip-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 0 rgba(51, 224, 161, 0.6); animation: live-ping 1.8s ease-out infinite; }
+@keyframes live-ping { 0% { box-shadow: 0 0 0 0 rgba(51, 224, 161, 0.6); } 100% { box-shadow: 0 0 0 8px rgba(51, 224, 161, 0); } }
+.chip-rank { color: #ffe2a3; }
+.chip-rank svg { width: 14px; height: 14px; fill: rgba(255, 197, 71, 0.25); stroke: var(--warning); stroke-width: 2; stroke-linejoin: round; }
+
+/* Four stat cards, same width, centred under the greeting. */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; width: 100%; max-width: 980px; }
+.kpi {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 20px 28px;
-  padding: 26px 26px;
-  border: 1px solid rgba(120, 170, 255, 0.16);
-  border-radius: 22px;
-  background: linear-gradient(135deg, rgba(16, 29, 54, 0.92), rgba(7, 13, 27, 0.95));
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-.welcome-aurora {
-  position: absolute;
-  inset: -60% -10% auto -10%;
-  height: 220%;
-  z-index: -1;
-  background:
-    radial-gradient(40% 35% at 15% 40%, rgba(31, 123, 255, 0.40), transparent 70%),
-    radial-gradient(30% 30% at 45% 30%, rgba(56, 196, 255, 0.22), transparent 70%),
-    radial-gradient(35% 30% at 80% 50%, rgba(124, 92, 255, 0.18), transparent 70%);
-  filter: blur(10px);
-  animation: aurora 14s ease-in-out infinite alternate;
-}
-@keyframes aurora { to { transform: translate3d(6%, 4%, 0) rotate(4deg); } }
-.welcome-main { display: flex; align-items: center; gap: 18px; min-width: 0; flex: 1 1 320px; }
-.avatar-ring { position: relative; flex: none; display: grid; place-items: center; width: 70px; height: 70px; border-radius: 50%; background: conic-gradient(from 0deg, var(--forge-hi), #7c5cff, var(--forge), var(--forge-hi)); animation: ring-spin 8s linear infinite; }
-.avatar-ring .avatar { animation: ring-spin 8s linear infinite reverse; border: 3px solid var(--bg-elevated); }
-@keyframes ring-spin { to { transform: rotate(360deg); } }
-.avatar-big { width: 64px; height: 64px; font-size: 24px; font-family: var(--font-brand); }
-.welcome-text { min-width: 0; display: grid; gap: 4px; }
-.welcome-text .eyebrow { font-size: 9.5px; }
-.welcome h1 { margin: 0; font-family: var(--font-brand); font-size: clamp(20px, 2.6vw, 30px); line-height: 1.1; overflow-wrap: anywhere; text-wrap: balance; }
-.welcome p { margin: 0; color: var(--text-muted); }
-
-.kpis { display: grid; grid-template-columns: repeat(4, minmax(118px, 1fr)); gap: 10px; flex: 1 1 520px; }
-.kpi {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 6px;
   min-width: 0;
-  padding: 12px 14px;
-  border: 1px solid rgba(120, 170, 255, 0.14);
-  border-radius: 14px;
-  background: rgba(5, 11, 24, 0.65);
+  padding: 18px 12px 16px;
+  border: 1px solid rgba(var(--tone), 0.18);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(var(--tone), 0.08), rgba(5, 11, 24, 0.72) 60%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  text-align: center;
   font-variant-numeric: tabular-nums;
-  transition: transform 0.25s var(--ease), border-color 0.25s;
+  transition: transform 0.3s var(--ease), border-color 0.3s, box-shadow 0.3s;
+  animation: card-rise 0.55s cubic-bezier(0, 0, 0.2, 1) both;
 }
-.kpi:hover { transform: translateY(-2px); border-color: rgba(56, 196, 255, 0.4); }
-.kpi > div { display: grid; min-width: 0; }
-.kpi b { font-family: var(--font-brand); font-size: 20px; line-height: 1.1; }
-.kpi span { font-size: 11.5px; line-height: 1.25; color: var(--text-muted); overflow-wrap: anywhere; }
-.kpi-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; color: var(--forge-hi); background: rgba(31, 123, 255, 0.14); box-shadow: inset 0 0 0 1px rgba(56, 196, 255, 0.25); }
-.kpi-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.kpi-icon.is-green { color: var(--success); background: rgba(51, 224, 161, 0.12); box-shadow: inset 0 0 0 1px rgba(51, 224, 161, 0.25); }
-.kpi-icon.is-gold { color: var(--warning); background: rgba(255, 197, 71, 0.12); box-shadow: inset 0 0 0 1px rgba(255, 197, 71, 0.25); }
-.kpi-icon.is-violet { color: #a991ff; background: rgba(124, 92, 255, 0.14); box-shadow: inset 0 0 0 1px rgba(124, 92, 255, 0.3); }
+.kpi:nth-child(2) { animation-delay: 0.07s; }
+.kpi:nth-child(3) { animation-delay: 0.14s; }
+.kpi:nth-child(4) { animation-delay: 0.21s; }
+/* A line of light in the card's tone along the top. */
+.kpi::before { content: ""; position: absolute; top: 0; left: 20%; right: 20%; height: 2px; border-radius: 0 0 2px 2px; background: linear-gradient(90deg, transparent, var(--tone-solid), transparent); opacity: 0.8; transition: left 0.35s var(--ease), right 0.35s var(--ease); }
+.kpi::after { content: ""; position: absolute; inset: auto -30% -60% -30%; height: 90%; z-index: -1; background: radial-gradient(closest-side, rgba(var(--tone), 0.22), transparent); opacity: 0; transition: opacity 0.35s; }
+.kpi:hover { transform: translateY(-4px); border-color: rgba(var(--tone), 0.5); box-shadow: 0 16px 34px rgba(0, 0, 0, 0.4), 0 0 26px rgba(var(--tone), 0.18); }
+.kpi:hover::before { left: 0; right: 0; }
+.kpi:hover::after { opacity: 1; }
+.kpi b { font-family: var(--font-brand); font-size: clamp(22px, 2.4vw, 30px); line-height: 1; color: #f2f6ff; text-shadow: 0 0 18px rgba(var(--tone), 0.45); }
+.kpi-label { font-size: 12px; letter-spacing: 0.04em; color: var(--text-muted); overflow-wrap: anywhere; }
+.kpi-icon { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 4px; border-radius: 12px; color: var(--tone-solid); background: rgba(var(--tone), 0.14); box-shadow: inset 0 0 0 1px rgba(var(--tone), 0.3), 0 0 18px rgba(var(--tone), 0.15); transition: transform 0.35s var(--ease); }
+.kpi-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.kpi:hover .kpi-icon { transform: translateY(-2px) scale(1.08); }
+/* Achievements: a ring around the star fills with the share earned (--p). */
+@property --p { syntax: "<number>"; inherits: true; initial-value: 0; }
+.kpi-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: -6px 0 -2px;
+  border-radius: 50%;
+  transition: --p 1.1s var(--ease);
+}
+.kpi-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--tone-solid) calc(var(--p) * 360deg), rgba(var(--tone), 0.16) 0);
+  -webkit-mask: radial-gradient(closest-side, transparent 86%, #000 88%);
+  mask: radial-gradient(closest-side, transparent 86%, #000 88%);
+  filter: drop-shadow(0 0 4px rgba(var(--tone), 0.6));
+}
+.kpi-ring .kpi-icon { margin: 0; }
 
 /* ---------- section headers ---------- */
 .section-head { align-items: flex-end; }
@@ -530,8 +731,20 @@
   .userchip-name { display: none; }
   .topnav-tabs { order: 2; width: 100%; flex-basis: 100%; }
   .nav-home { width: 100%; justify-content: center; }
-  .welcome { padding: 20px 16px; }
-  .home-body { padding-inline: 16px; }
+  .welcome { gap: 20px; padding: 28px 14px 16px; border-radius: 22px; }
+  .welcome h1 { font-size: clamp(22px, 7vw, 28px); }
+  .welcome-sub { font-size: 14px; }
+  .welcome-eyebrow { font-size: 9px; letter-spacing: 0.16em; }
+  .avatar-ring { width: 76px; height: 76px; }
+  .avatar-ring .avatar { width: 66px; height: 66px; font-size: 24px; }
+  .welcome-chips > span { font-size: 12px; padding: 6px 12px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .kpi { padding: 14px 8px 12px; border-radius: 16px; }
+  .bd-moon { width: 44px; height: 44px; top: 9%; right: 7%; }
+  .bd-mountains { height: 22vh; bottom: 56px; }
+  .bd-kingdom { height: 20vh; bottom: 26px; }
+  .bd-floor { height: 52px; }
+  .home-body { padding-inline: 16px; padding-bottom: 24vh; }
   .section-head { flex-wrap: wrap; }
   .recent-row { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; }
   .recent-index, .recent-size { display: none; }
@@ -540,6 +753,10 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .nav-home, .nav-home-ring, .nav-home-icon, .nav-home-spark, .welcome-aurora, .avatar-ring, .avatar-ring .avatar,
-  .sprite, .stage-floor, .stage-select, .stage-cursor, .option-tag i, .recent-bar i, .recent-empty img { animation: none; }
+  .sprite, .stage-floor, .stage-select, .stage-cursor, .option-tag i, .recent-bar i, .recent-empty img,
+  .welcome::before, .welcome-grid, .welcome-sweep, .px, .avatar-orbit, .avatar-status, .welcome-name, .chip-live i, .kpi,
+  .bd-stars, .bd-moon, .bd-comet, .bd-mountains, .bd-kingdom *, .bd-floor, .bd-embers i { animation: none; }
+  .px, .bd-embers i, .bd-comet { display: none; }
   .option { transform: none; }
 }
+

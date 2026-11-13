@@ -183,6 +183,42 @@
 
     <!-- Home: the menu of the engine, only after the intro -->
     <section id="home" class="home" hidden>
+      <!-- The world behind the menu: a night sky over a pixel kingdom, with the
+           forge's sparks rising. Fixed, so the content scrolls over it. -->
+      <div class="home-backdrop" aria-hidden="true">
+        <div class="bd-sky"></div>
+        <div class="bd-stars"></div>
+        <div class="bd-stars is-far"></div>
+        <div class="bd-moon"></div>
+        <span class="bd-comet"></span>
+        <svg class="bd-mountains" viewBox="0 0 480 120" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges">
+          <path d="M0 120V80h20v-8h16v-8h16v-8h12v8h16v8h20V60h16V48h12v-8h12v8h12v12h20v10h28v-8h16v-8h16v8h16v10h32V58h16V46h12v-8h12v8h12v12h20v10h28V56h16v8h24V52h16v8h20v10h24v50z" />
+        </svg>
+        <svg class="bd-kingdom" viewBox="0 0 480 120" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges">
+          <path class="land" d="M0 120V98h24v-6h24v6h24v-8h24v4h24v-6h30v8h30v-4h30v6h30v-4h20v-6h110v6h24v-6h24v4h20v-4h12v28z" />
+          <g class="land">
+            <rect x="296" y="56" width="16" height="42" /><rect x="294" y="52" width="4" height="6" /><rect x="302" y="52" width="4" height="6" /><rect x="310" y="52" width="4" height="6" />
+            <rect x="358" y="56" width="16" height="42" /><rect x="356" y="52" width="4" height="6" /><rect x="364" y="52" width="4" height="6" /><rect x="372" y="52" width="4" height="6" />
+            <rect x="312" y="70" width="46" height="28" /><rect x="312" y="66" width="4" height="4" /><rect x="320" y="66" width="4" height="4" /><rect x="346" y="66" width="4" height="4" /><rect x="354" y="66" width="4" height="4" />
+            <rect x="328" y="40" width="14" height="30" /><rect x="326" y="36" width="4" height="6" /><rect x="333" y="36" width="4" height="6" /><rect x="340" y="36" width="4" height="6" />
+            <rect x="334" y="22" width="2" height="14" />
+            <rect x="40" y="80" width="6" height="12" /><rect x="36" y="72" width="14" height="10" /><rect x="39" y="66" width="8" height="6" />
+            <rect x="60" y="84" width="6" height="10" /><rect x="56" y="76" width="14" height="10" /><rect x="59" y="70" width="8" height="6" />
+            <rect x="150" y="80" width="22" height="16" /><rect x="146" y="74" width="30" height="6" /><rect x="152" y="68" width="18" height="6" />
+            <rect x="420" y="82" width="6" height="12" /><rect x="416" y="74" width="14" height="10" /><rect x="419" y="68" width="8" height="6" />
+            <rect x="440" y="84" width="6" height="10" /><rect x="436" y="76" width="14" height="10" />
+          </g>
+          <rect class="flag" x="336" y="22" width="10" height="6" />
+          <g class="lights">
+            <rect x="302" y="64" width="4" height="5" /><rect x="364" y="64" width="4" height="5" /><rect x="333" y="48" width="4" height="6" />
+            <rect x="320" y="80" width="4" height="5" /><rect x="346" y="80" width="4" height="5" /><rect x="333" y="84" width="4" height="14" />
+            <rect x="158" y="84" width="4" height="4" />
+          </g>
+        </svg>
+        <div class="bd-floor"></div>
+        <div class="bd-embers"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="bd-vignette"></div>
+      </div>
       <header class="topnav">
         <div class="mark"><img src="/brand/emblem.png" alt="" width="36" /><b><span class="mark-pixel">PIXEL</span><span class="mark-forge">FORGE</span></b></div>
         <nav class="topnav-tabs" aria-label="Navegación">
@@ -196,21 +232,48 @@
         <div class="userchip"><span class="avatar" id="home-avatar" aria-hidden="true">?</span><span id="home-user" class="userchip-name"></span><button id="home-logout" class="btn btn-ghost btn-small" type="button">Salir</button></div>
       </header>
       <div class="home-body">
+        <!-- Welcome banner: a centred greeting over a living background, then four
+             stat cards that count up when the home opens. -->
         <div class="welcome">
-          <div class="welcome-aurora" aria-hidden="true"></div>
-          <div class="welcome-main">
-            <span class="avatar-ring"><span class="avatar avatar-big" id="welcome-avatar" aria-hidden="true">?</span></span>
-            <div class="welcome-text">
-              <p class="eyebrow">Panel principal</p>
-              <h1 id="welcome-title">Bienvenido</h1>
-              <p id="welcome-sub">Tu forja está lista.</p>
+          <div class="welcome-bg" aria-hidden="true">
+            <div class="welcome-aurora"></div>
+            <div class="welcome-grid"></div>
+            <span class="px p1"></span><span class="px p2"></span><span class="px p3"></span><span class="px p4"></span><span class="px p5"></span><span class="px p6"></span><span class="px p7"></span><span class="px p8"></span>
+            <div class="welcome-sweep"></div>
+          </div>
+
+          <div class="welcome-hero">
+            <span class="avatar-ring">
+              <span class="avatar-orbit" aria-hidden="true"><i></i><i></i></span>
+              <span class="avatar avatar-big" id="welcome-avatar" aria-hidden="true">?</span>
+              <span class="avatar-status" aria-hidden="true"></span>
+            </span>
+            <p class="welcome-eyebrow"><span id="welcome-greeting">Hola</span><i aria-hidden="true"></i><span id="welcome-date"></span></p>
+            <h1 id="welcome-title">Bienvenido</h1>
+            <p id="welcome-sub" class="welcome-sub">Tu forja está lista.</p>
+            <div class="welcome-chips">
+              <span class="chip-live"><i></i>IA aprendiendo de tus partidas</span>
+              <span class="chip-rank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /></svg><span id="welcome-rank">Aprendiz de la forja</span></span>
             </div>
           </div>
+
           <div class="kpis">
-            <div class="kpi"><span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span><div><b id="kpi-projects">0</b><span>Proyectos</span></div></div>
-            <div class="kpi"><span class="kpi-icon is-green"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg></span><div><b id="kpi-games">0</b><span>Partidas</span></div></div>
-            <div class="kpi"><span class="kpi-icon is-gold"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6" /></svg></span><div><b id="kpi-best">0</b><span>Mejor puntuación</span></div></div>
-            <div class="kpi"><span class="kpi-icon is-violet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg></span><div><b id="kpi-achievements">0/5</b><span>Logros</span></div></div>
+            <div class="kpi tone-blue">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span>
+              <b id="kpi-projects">0</b><span class="kpi-label">Proyectos</span>
+            </div>
+            <div class="kpi tone-green">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg></span>
+              <b id="kpi-games">0</b><span class="kpi-label">Partidas</span>
+            </div>
+            <div class="kpi tone-gold">
+              <span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6" /></svg></span>
+              <b id="kpi-best">0</b><span class="kpi-label">Mejor puntuación</span>
+            </div>
+            <div class="kpi tone-violet">
+              <span class="kpi-ring" id="kpi-ring" aria-hidden="true"><span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg></span></span>
+              <b id="kpi-achievements">0/5</b><span class="kpi-label">Logros</span>
+            </div>
           </div>
         </div>
 
