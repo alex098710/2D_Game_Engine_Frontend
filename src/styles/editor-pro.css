@@ -471,3 +471,17 @@
   .corner, .stage-label, .stage-label i, .empty-floor, .ea, .ea-plus, .steps li, .palette-item, .project-row, .inspector-empty::before, .viewport-controls, .dock-panel { animation: none !important; }
   .tool-pill, .tab-pill { transition: none; }
 }
+
+/* Status bar: one line always. Each item keeps to its own space and is cut
+   with an ellipsis instead of wrapping or spilling out of the bar. */
+.statusbar { flex-wrap: nowrap; overflow: hidden; white-space: nowrap; }
+.statusbar > * { flex: none; white-space: nowrap; }
+.statusbar > .status { flex: 1 1 auto; min-width: 0; }
+.statusbar > .spacer { flex: 0 1 0; min-width: 0; }
+#status-objects { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 1100px) {
+  #status-pointer { display: none; }
+}
+@media (max-width: 960px) {
+  .statusbar { gap: 8px; }
+}

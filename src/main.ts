@@ -2,6 +2,7 @@ import "./quietConsole";
 import "./style.css";
 import {
   ApiError,
+  askAi,
   createProject,
   finishRun,
   getCharacterLines,
@@ -22,7 +23,7 @@ import type { Tool } from "./game/EditorScene";
 import type { GameHost } from "./game/GameHost";
 import { CHARACTER_KINDS, ENEMY_KINDS, isKind, KIND_INFO, type Kind } from "./model/GameObject";
 import { countByKind, hasPlayer, nextObjectId, SceneModel } from "./model/SceneModel";
-import { AiPanel } from "./ui/AiPanel";
+import { AiPanel, aiSummary } from "./ui/AiPanel";
 import { bindNameCounter, byId, errorText } from "./ui/dom";
 import { initEditorFx } from "./ui/editorFx";
 import { chooseHero } from "./ui/HeroDialog";
@@ -332,12 +333,29 @@ function openProject(project: ProjectDto | null): void {
 }
 
 async function newProject(): Promise<void> {
-  const choice = await askNewProject();
-  if (choice === null) return;
-  const project = await createProject(choice.name, choice.template);
+  let aiNote = "";
+  let aiFailed = false;
+  const project = await askNewProject(async (choice, step) => {
+    step(1);
+    // With a description the project starts empty and the AI fills the map.
+    const created = await createProject(choice.name, choice.prompt === null ? choice.template : "empty");
+    if (choice.prompt === null) return created;
+    step(2);
+    try {
+      const filled = await askAi(created.id, choice.prompt);
+      aiNote = ` ${aiSummary(filled.ai)}`;
+      return filled;
+    } catch (error) {
+      // The project exists already: open it empty and say why.
+      aiNote = ` ${errorText(error)} Puedes pedírselo desde la pestaña IA.`;
+      aiFailed = true;
+      return created;
+    }
+  });
+  if (project === null) return;
   openProject(project);
   showTab("library");
-  toast(`Proyecto "${project.name}" creado.`, "success");
+  toast(`Proyecto "${project.name}" creado.${aiNote}`, aiFailed ? "error" : "success");
 }
 
 async function save(): Promise<void> {

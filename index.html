@@ -696,14 +696,59 @@
     <div id="settings-backdrop" class="backdrop" hidden></div>
 
     <!-- Dialogs -->
-    <dialog id="new-project-dialog" class="dialog">
-      <form method="dialog" id="new-project-form" class="form">
-        <h3>Nuevo proyecto</h3>
-        <label class="field"><span class="field-label-row"><span>Nombre</span><span id="new-project-count" class="name-count">8/30</span></span><input id="new-project-name" maxlength="30" required value="Mi juego" aria-describedby="new-project-count" /></label>
-        <div id="templates" class="templates"></div>
+    <dialog id="new-project-dialog" class="dialog dialog-new">
+      <form method="dialog" id="new-project-form" class="form new-project">
+        <header class="np-head">
+          <span class="np-badge" aria-hidden="true"><img src="/brand/emblem.png" alt="" width="34" /></span>
+          <div>
+            <h3>Nuevo proyecto</h3>
+            <p>Empieza desde una plantilla o deja que la IA construya el mapa por ti.</p>
+          </div>
+        </header>
+
+        <label class="field np-name">
+          <span class="field-label-row"><span>Nombre del proyecto</span><span id="new-project-count" class="name-count">8/30</span></span>
+          <span class="np-input"><svg class="icon" aria-hidden="true"><use href="#i-folder" /></svg><input id="new-project-name" maxlength="30" required value="Mi juego" aria-describedby="new-project-count" /></span>
+        </label>
+
+        <div id="np-modes" class="np-modes" role="tablist" aria-label="Cómo empezar">
+          <span class="tab-pill" aria-hidden="true"></span>
+          <button type="button" class="np-mode is-active" role="tab" aria-selected="true" data-mode="template"><svg class="icon" aria-hidden="true"><use href="#i-library" /></svg>Plantilla</button>
+          <button type="button" class="np-mode" role="tab" aria-selected="false" data-mode="ai"><svg class="icon" aria-hidden="true"><use href="#i-spark" /></svg>Crear con IA</button>
+        </div>
+
+        <div class="np-panel" data-panel="template">
+          <div id="templates" class="templates"></div>
+        </div>
+
+        <div class="np-panel" data-panel="ai" hidden>
+          <label class="field np-prompt">
+            <span class="field-label-row"><span>Describe tu mapa</span><span id="np-prompt-count" class="name-count">0/500</span></span>
+            <textarea id="np-prompt" rows="3" maxlength="500" placeholder="Ej.: una aldea con 4 casas, 6 árboles, un lago con puente, 2 aldeanos y 8 monedas"></textarea>
+          </label>
+          <p class="np-tip">La IA entiende cantidades y objetos: casas, árboles, muros, lagos, puentes, monedas, cofres, enemigos, jefes, tanques, soldados… hasta 10 de cada uno y 30 en total.</p>
+          <div class="ideas" id="np-ideas">
+              <button type="button" class="idea" data-prompt="una aldea con 4 casas, 6 árboles, un lago con puente, 2 aldeanos y 8 monedas"><img src="/textures/house.png" alt="" /><span><b>Aldea tranquila</b><small>una aldea con 4 casas, 6 árboles, un lago con puente, 2 aldeanos y 8 monedas</small></span></button>
+              <button type="button" class="idea" data-prompt="una mazmorra con muros, 5 cofres, 3 fantasmas, 2 arañas y un demonio jefe"><img src="/textures/ghost.png" alt="" /><span><b>Mazmorra</b><small>una mazmorra con muros, 5 cofres, 3 fantasmas, 2 arañas y un demonio jefe</small></span></button>
+              <button type="button" class="idea" data-prompt="2 tanques, 4 fusileros, sacos terreros, 2 búnkeres y 3 barriles explosivos"><img src="/textures/tank.png" alt="" /><span><b>Campo de batalla</b><small>2 tanques, 4 fusileros, sacos terreros, 2 búnkeres y 3 barriles explosivos</small></span></button>
+              <button type="button" class="idea" data-prompt="un bosque con 8 árboles, 4 arbustos, un río, 3 slimes, un mago y 5 monedas"><img src="/textures/tree.png" alt="" /><span><b>Bosque encantado</b><small>un bosque con 8 árboles, 4 arbustos, un río, 3 slimes, un mago y 5 monedas</small></span></button>
+          </div>
+        </div>
+
+        <!-- While creating: the steps light up one by one and nothing else can be pressed. -->
+        <ol id="np-progress" class="np-progress" aria-live="polite" hidden>
+          <li data-step="1"><span class="np-dot"></span><span>Creando el proyecto</span></li>
+          <li data-step="2"><span class="np-dot"></span><span>La IA construye el mapa</span></li>
+          <li data-step="3"><span class="np-dot"></span><span>Abriendo el editor</span></li>
+        </ol>
+        <p id="np-error" class="form-message is-error" role="alert"></p>
+
         <div class="dialog-actions">
-          <button class="btn" value="cancel" formnovalidate>Cancelar</button>
-          <button class="btn btn-primary" value="create">Crear</button>
+          <button id="np-cancel" class="btn btn-ghost" value="cancel" formnovalidate>Cancelar</button>
+          <button id="np-create" class="btn btn-primary np-create" value="create">
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <span class="btn-label">Crear</span>
+          </button>
         </div>
       </form>
     </dialog>

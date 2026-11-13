@@ -1,0 +1,131 @@
+/* ==========================================================================
+   "Nuevo proyecto": a glass dialog with two ways to start (a template or a
+   description for the AI) and a progress list while it builds. Nothing
+   overlaps: label and counter share a row with space between them, cards
+   keep their own columns and long texts are clamped.
+   ========================================================================== */
+@property --np-spin { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.dialog-new {
+  width: min(620px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 22px;
+  background: linear-gradient(170deg, rgba(16, 29, 54, 0.97), rgba(6, 11, 23, 0.98));
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), 0 0 60px rgba(31, 123, 255, 0.15);
+}
+.dialog-new[open] { animation: np-in 0.35s cubic-bezier(0, 0, 0.2, 1); }
+@keyframes np-in { from { opacity: 0; transform: translateY(14px) scale(0.97); } }
+.dialog-new::backdrop { background: rgba(2, 5, 12, 0.7); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.dialog-new::before { content: ""; position: absolute; inset: 0; padding: 1px; border-radius: inherit; pointer-events: none; background: conic-gradient(from var(--np-spin), rgba(56, 196, 255, 0.12), rgba(56, 196, 255, 0.85) 14%, rgba(124, 92, 255, 0.5) 24%, rgba(56, 196, 255, 0.12) 38%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation: np-spin 8s linear infinite; }
+@keyframes np-spin { to { --np-spin: 360deg; } }
+:root[data-theme="light"] .dialog-new { background: var(--bg-elevated); }
+
+.new-project { box-sizing: border-box; display: grid; gap: 16px; max-height: calc(100dvh - 28px); padding: 24px; overflow-y: auto; scrollbar-width: thin; }
+.np-head { display: flex; align-items: center; gap: 14px; }
+.np-badge { flex: none; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 14px; background: radial-gradient(circle at 50% 35%, rgba(56, 196, 255, 0.3), rgba(11, 63, 214, 0.2) 60%, rgba(5, 11, 24, 0.9)); border: 1px solid rgba(56, 196, 255, 0.35); box-shadow: 0 0 20px rgba(31, 123, 255, 0.35); }
+.np-badge img { animation: float 4s ease-in-out infinite; }
+.np-head h3 { margin: 0; font-family: var(--font-brand); font-size: 20px; }
+.np-head p { margin: 4px 0 0; font-size: 13px; color: var(--text-muted); line-height: 1.45; }
+
+.field-label-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.new-project .field { display: grid; gap: 8px; }
+.new-project .field > .field-label-row > span:first-child { font-family: var(--font-tag); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-hi); }
+.np-input { position: relative; display: flex; align-items: center; }
+.np-input .icon { position: absolute; left: 13px; color: var(--accent-hi); pointer-events: none; }
+.np-input input { width: 100%; min-height: 46px; padding-left: 42px; border-radius: 12px; border: 1px solid rgba(120, 170, 255, 0.18); background: rgba(5, 11, 24, 0.7); font-weight: 600; transition: border-color 0.2s, box-shadow 0.2s; }
+.np-input input:focus, .np-prompt textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(31, 123, 255, 0.2); outline: none; }
+
+/* Two ways to start: a segmented control with a sliding pill. */
+.np-modes { position: relative; isolation: isolate; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid rgba(120, 170, 255, 0.16); border-radius: 14px; background: rgba(5, 11, 24, 0.7); }
+.np-modes .tab-pill { top: 4px; bottom: 4px; border-radius: 10px; }
+.np-mode { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--text-muted); font: 700 13.5px var(--font); cursor: pointer; transition: color 0.2s; }
+.np-mode:hover:not(.is-active) { color: var(--text); }
+.np-mode.is-active { color: #fff; }
+.np-mode[data-mode="ai"] .icon { color: #ffd65c; }
+.np-mode[data-mode="ai"].is-active .icon { animation: np-twinkle 1.6s ease-in-out infinite; }
+@keyframes np-twinkle { 50% { transform: scale(1.25) rotate(15deg); filter: drop-shadow(0 0 6px #ffd65c); } }
+.np-panel { animation: tile-in 0.3s cubic-bezier(0, 0, 0.2, 1); }
+.np-panel[hidden] { display: none; }
+
+/* Templates: two columns of cards with a picture of the map. */
+.dialog-new .templates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-height: min(42dvh, 360px); padding: 2px; overflow-y: auto; scrollbar-width: thin; }
+.dialog-new .template { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: 8px 10px; padding: 10px; border: 1px solid rgba(120, 170, 255, 0.14); border-radius: 14px; background: rgba(10, 19, 38, 0.7); cursor: pointer; transition: border-color 0.2s, transform 0.2s var(--ease), box-shadow 0.2s; }
+.dialog-new .template:hover { border-color: rgba(56, 196, 255, 0.45); transform: translateY(-2px); box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35); }
+.dialog-new .template input { grid-row: 2; grid-column: 1; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.dialog-new .template-preview { grid-row: 1; grid-column: 1 / -1; }
+.dialog-new .template-text { grid-row: 2; grid-column: 2; }
+.dialog-new .template:has(input:checked) { border-color: var(--accent-hi); background: linear-gradient(180deg, rgba(31, 123, 255, 0.22), rgba(10, 19, 38, 0.7)); box-shadow: inset 0 0 0 1px var(--accent-hi), 0 0 22px rgba(56, 196, 255, 0.25); }
+.dialog-new .template-preview { width: 100%; height: auto; aspect-ratio: 5 / 3; border-radius: 10px; box-shadow: inset 0 0 0 1px rgba(120, 170, 255, 0.2); transition: transform 0.3s var(--ease); }
+.dialog-new .template:hover .template-preview { transform: scale(1.02); }
+.template-text { display: grid; gap: 2px; min-width: 0; }
+.template-text strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
+.template-text small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 11.5px; line-height: 1.35; color: var(--text-muted); }
+
+/* AI: the description, a tip and four ideas to start from. */
+.np-panel[data-panel="ai"] { display: grid; gap: 12px; }
+.np-prompt textarea { width: 100%; min-height: 92px; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255, 214, 92, 0.3); background: rgba(5, 11, 24, 0.7); resize: vertical; line-height: 1.5; transition: border-color 0.2s, box-shadow 0.2s; }
+.np-tip { margin: 0; padding: 10px 12px; border-radius: 12px; font-size: 12px; line-height: 1.5; color: #d9c48a; background: rgba(255, 214, 92, 0.07); border: 1px dashed rgba(255, 214, 92, 0.3); }
+.ideas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.idea { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 10px; min-width: 0; padding: 10px; border: 1px solid rgba(120, 170, 255, 0.14); border-radius: 12px; background: rgba(10, 19, 38, 0.7); color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: border-color 0.2s, transform 0.2s var(--ease), background 0.2s; }
+.idea img { width: 34px; height: 34px; image-rendering: pixelated; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5)); transition: transform 0.3s var(--ease); }
+.idea b { display: block; font-size: 13px; }
+.idea small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 11px; line-height: 1.35; color: var(--text-muted); }
+.idea:hover:not(:disabled) { border-color: rgba(255, 214, 92, 0.5); background: rgba(255, 214, 92, 0.06); transform: translateY(-2px); }
+.idea:hover:not(:disabled) img { transform: scale(1.12) rotate(-4deg); }
+.idea.is-active { border-color: #ffd65c; background: linear-gradient(135deg, rgba(255, 214, 92, 0.16), rgba(10, 19, 38, 0.7)); box-shadow: inset 0 0 0 1px rgba(255, 214, 92, 0.5); }
+
+/* Progress while creating. */
+.np-progress { list-style: none; margin: 0; padding: 14px; display: grid; gap: 10px; border: 1px solid rgba(56, 196, 255, 0.3); border-radius: 14px; background: rgba(31, 123, 255, 0.08); animation: tile-in 0.3s cubic-bezier(0, 0, 0.2, 1); }
+.np-progress[hidden], .np-progress li[hidden] { display: none; }
+.np-progress li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); transition: color 0.2s; }
+.np-dot { position: relative; flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(120, 170, 255, 0.3); transition: border-color 0.2s, background 0.2s; }
+.np-progress li[data-state="active"] { color: var(--text); font-weight: 600; }
+.np-progress li[data-state="active"] .np-dot { border-color: rgba(56, 196, 255, 0.25); border-top-color: var(--accent-hi); animation: spin 0.8s linear infinite; }
+.np-progress li[data-state="done"] { color: var(--success); }
+.np-progress li[data-state="done"] .np-dot { border-color: var(--success); background: var(--success) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2304120c' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center / 12px no-repeat; animation: pop-in 0.25s var(--ease); }
+
+.dialog-new .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin: 0; padding-top: 4px; }
+.dialog-new .dialog-actions .btn { min-height: 44px; padding: 0 20px; border-radius: 12px; }
+.np-create { position: relative; overflow: hidden; gap: 8px; min-width: 150px; box-shadow: 0 8px 22px rgba(31, 123, 255, 0.45); }
+.dialog-new[data-mode="ai"] .np-create { background: linear-gradient(100deg, #7c5cff, #1f7bff 55%, #38c4ff); }
+.np-create::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%); transform: translateX(-130%); animation: play-shine 3.4s ease-in-out infinite 1s; pointer-events: none; }
+.new-project.is-busy .np-panel, .new-project.is-busy .np-name, .new-project.is-busy .np-modes { opacity: 0.5; pointer-events: none; transition: opacity 0.2s; }
+#np-error:empty { display: none; }
+
+@media (max-width: 560px) {
+  .new-project { padding: 18px 14px; gap: 14px; }
+  .np-head p { display: none; }
+  .dialog-new .templates, .ideas { grid-template-columns: 1fr; }
+  .dialog-new .template { grid-template-columns: 18px 96px minmax(0, 1fr); }
+  .dialog-new .template input, .dialog-new .template-preview, .dialog-new .template-text { grid-row: 1; }
+  .dialog-new .template-preview { grid-column: 2; }
+  .dialog-new .template-text { grid-column: 3; }
+  .dialog-new .dialog-actions .btn { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog-new[open], .dialog-new::before, .np-badge img, .np-mode .icon, .np-create::after, .np-progress li .np-dot { animation: none !important; }
+}
+
+/* Nothing leaves the dialog: the dialog clips, only its body scrolls, and the
+   actions stay pinned at the bottom on a solid band, so cards scroll under
+   them instead of spilling past the border. */
+.dialog-new[open] { display: flex; flex-direction: column; overflow: hidden; }
+.dialog-new .new-project { flex: 1 1 auto; min-height: 0; max-height: none; padding-bottom: 0; }
+.dialog-new .dialog-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 0 -24px;
+  padding: 14px 24px 20px;
+  background: linear-gradient(180deg, rgba(8, 15, 30, 0) 0, rgba(8, 15, 30, 0.96) 14px, rgb(7, 13, 26) 100%);
+  border-top: 1px solid rgba(120, 170, 255, 0.1);
+}
+:root[data-theme="light"] .dialog-new .dialog-actions { background: var(--bg-elevated); }
+@media (max-width: 560px) {
+  .dialog-new .dialog-actions { margin: 0 -14px; padding: 12px 14px 16px; }
+}
+/* One scroll only (the dialog body): the template list grows instead of
+   scrolling inside it, so no card is ever cut at an inner edge. */
+.dialog-new .templates { max-height: none; overflow: visible; }

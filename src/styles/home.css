@@ -292,7 +292,8 @@
   place-items: center;
   width: 92px;
   height: 92px;
-  margin-bottom: 6px;
+  /* Room for the orbit, which reaches 12 px outside the ring. */
+  margin: 12px 0 18px;
   border-radius: 50%;
   background: conic-gradient(from 0deg, var(--forge-hi), #7c5cff, var(--forge), var(--success), var(--forge-hi));
   box-shadow: 0 0 40px rgba(56, 196, 255, 0.45);
