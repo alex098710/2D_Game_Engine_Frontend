@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { isCharacter, isEnemy, isGround, SIZES, WORLD_HEIGHT, WORLD_WIDTH, type GameObject, type Kind } from "../model/GameObject";
-import { clampToWorld, fitZoom, snap } from "../model/geometry";
+import { clampToWorld, coverZoom, fitZoom, snap } from "../model/geometry";
 import type { SceneModel } from "../model/SceneModel";
 import { variantTint } from "./balance";
 import { bob, KIND_TEXTURE, loadTextures } from "./textures";
@@ -73,6 +73,8 @@ export class EditorScene extends Phaser.Scene {
   private setupCamera(): void {
     const camera = this.cameras.main;
     camera.setBackgroundColor("rgba(0,0,0,0)");
+    // Panning stops at the edges of the world, so no empty band shows while it fills the view.
+    camera.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.fitView();
     // The scale manager belongs to the whole game: stop listening when this scene
     // shuts down, or a resize while playing would touch a camera that no longer exists.
@@ -81,8 +83,17 @@ export class EditorScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, onResize));
   }
 
-  /** Zoom so the whole world is visible and centre it. */
+  /** Zoom so the world fills the whole frame (no empty bands) and centre it. */
   fitView(): void {
+    const camera = this.cameras.main;
+    camera.setZoom(Phaser.Math.Clamp(coverZoom(this.scale.width, this.scale.height), MIN_ZOOM, MAX_ZOOM));
+    camera.centerOn(WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
+    this.drawGrid();
+    this.events_.onZoom(camera.zoom);
+  }
+
+  /** Zoom out until the whole world is visible ("Ver todo el mundo"). */
+  showWholeWorld(): void {
     const camera = this.cameras.main;
     camera.setZoom(Phaser.Math.Clamp(fitZoom(this.scale.width, this.scale.height), MIN_ZOOM, MAX_ZOOM));
     camera.centerOn(WORLD_WIDTH / 2, WORLD_HEIGHT / 2);

@@ -12,6 +12,7 @@
 [data-category="items"] { --tone: 255, 214, 92; --tone-solid: #ffd65c; }
 [data-category="firearms"] { --tone: 160, 180, 205; --tone-solid: #a0b4cd; }
 [data-category="war"] { --tone: 120, 220, 120; --tone-solid: #78dc78; }
+[data-category="western"] { --tone: 222, 160, 90; --tone-solid: #dea05a; }
 
 /* ---------- head: search, filter, count ---------- */
 .library-head { position: sticky; top: -16px; z-index: 2; display: grid; gap: 10px; margin: -16px -14px 0; padding: 16px 14px 12px; background: #0a1326; box-shadow: 0 10px 14px -10px rgba(0, 0, 0, 0.7); border-bottom: 1px solid var(--line); }

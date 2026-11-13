@@ -486,3 +486,10 @@
 @media (max-width: 960px) {
   .statusbar { gap: 8px; }
 }
+
+/* The scene label lives in the bottom-left corner, level with the zoom
+   controls on the right, so it never sits over the top of the map. */
+.stage-label { top: auto; bottom: 2px; left: 30px; transform: none; padding: 8px 14px; font-size: 9.5px; }
+@media (max-width: 640px) {
+  .stage-label { left: 22px; bottom: 0; padding: 6px 10px; font-size: 8px; }
+}

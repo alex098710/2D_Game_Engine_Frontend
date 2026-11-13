@@ -189,5 +189,5 @@ export function enemyDefaults(): Record<string, Stats & { name: string; texture:
 }
 
 const ENEMY_LIST: Kind[] = (
-  ["enemy", "bat", "spider", "ghost", "brute", "rat", "mimic", "marksman", "necromancer", "legionary", "captain", "soldier", "grenadier", "artillery", "tank", "demon"] as Kind[]
+  ["enemy", "bat", "spider", "ghost", "brute", "rat", "mimic", "marksman", "necromancer", "legionary", "captain", "soldier", "grenadier", "artillery", "tank", "bandit", "demon"] as Kind[]
 ).filter((kind) => isEnemy(kind));

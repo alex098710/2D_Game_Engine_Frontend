@@ -217,6 +217,10 @@ export const ENEMIES: Partial<Record<Kind, EnemyStats>> = {
   },
   legionary: { name: "Legionario", texture: "legionary", health: 4, speed: 88, damage: 1, points: 6, passesWalls: false, behavior: "chase", scale: 1 },
   captain: { name: "Capitán", texture: "captain", health: 9, speed: 52, damage: 2, points: 16, passesWalls: false, behavior: "chase", scale: 1.2 },
+  bandit: {
+    name: "Bandido", texture: "bandit", health: 3, speed: 82, damage: 1, points: 7, passesWalls: false, behavior: "ranged", scale: 1,
+    attack: { projectile: BULLETS, range: 340, keepAway: 200, cooldownMs: 1300, windupMs: 380, tint: 0xffd36a },
+  },
   soldier: {
     name: "Fusilero", texture: "soldier", health: 3, speed: 70, damage: 1, points: 7, passesWalls: false, behavior: "ranged", scale: 1,
     attack: { projectile: BULLETS, range: 380, keepAway: 230, cooldownMs: 1500, windupMs: 420, tint: 0xffe7a3 },

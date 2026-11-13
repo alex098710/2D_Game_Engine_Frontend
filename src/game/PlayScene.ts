@@ -302,6 +302,14 @@ export class PlayScene extends Phaser.Scene {
       case "flag":
       case "banner":
       case "rock":
+      case "saloon":
+      case "cabin":
+      case "wagon":
+      case "hay":
+      case "crates":
+      case "trough":
+      case "cactus":
+      case "lamp":
         this.tinted(this.solids.create(object.x, object.y, key) as Sprite, object).setDepth(depth);
         break;
       case "explosive": {

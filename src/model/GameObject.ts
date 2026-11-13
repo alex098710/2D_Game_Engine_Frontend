@@ -7,6 +7,8 @@ export const KINDS = [
   "soldier", "grenadier", "tank", "artillery", "ally", "sandbag", "barricade", "hedgehog", "bunker", "tower",
   "flag", "rock", "road", "medkit", "legionary", "captain", "guard",
   "pistol", "rifle", "shotgun", "smg", "sniper", "launcher", "grenade", "explosive", "banner",
+  // The Western town.
+  "saloon", "cabin", "wagon", "hay", "crates", "trough", "cactus", "lamp", "boardwalk", "dirt", "bandit",
 ] as const;
 export type Kind = (typeof KINDS)[number];
 
@@ -64,6 +66,17 @@ export const SIZES: Record<Kind, [number, number]> = {
   mimic: [30, 28],
   rat: [24, 20],
   soldier: [24, 28],
+  saloon: [160, 128],
+  cabin: [96, 96],
+  wagon: [64, 48],
+  hay: [32, 32],
+  crates: [64, 48],
+  trough: [64, 32],
+  cactus: [32, 48],
+  lamp: [32, 64],
+  boardwalk: [32, 32],
+  dirt: [32, 32],
+  bandit: [24, 28],
   grenadier: [24, 28],
   tank: [52, 44],
   artillery: [30, 28],
@@ -127,6 +140,17 @@ export const KIND_INFO: Record<Kind, { name: string; hint: string }> = {
   mimic: { name: "Mímico", hint: "Parece un cofre… hasta que te acercas. Muerde fuerte." },
   rat: { name: "Rata", hint: "Enemigo rápido y débil que corre en zigzag." },
   soldier: { name: "Fusilero", hint: "Soldado enemigo: guarda las distancias y dispara ráfagas de balas. 3 de vida." },
+  saloon: { name: "Saloon", hint: "El edificio principal del pueblo: dos plantas, porche y puertas batientes. 5 × 4 casillas." },
+  cabin: { name: "Cabaña", hint: "Casa de troncos con chimenea de piedra. Sólida, 3 × 3 casillas." },
+  wagon: { name: "Carreta con heno", hint: "Carreta de madera cargada de heno. Sirve de cobertura en un duelo." },
+  hay: { name: "Fardo de heno", hint: "Fardo atado con cuerda. Bloquea el paso y cubre de los disparos." },
+  crates: { name: "Pila de cajas", hint: "Tres cajas de madera apiladas: una buena barricada." },
+  trough: { name: "Abrevadero", hint: "Tronco de madera con agua para los caballos. Sólido." },
+  cactus: { name: "Cactus", hint: "Saguaro del desierto. No se puede atravesar." },
+  lamp: { name: "Farol", hint: "Farol de calle encendido. Decora y bloquea una casilla." },
+  boardwalk: { name: "Pasarela de tablas", hint: "Suelo de tablones para las aceras del pueblo. Se pisa." },
+  dirt: { name: "Tierra", hint: "Suelo de tierra seca del pueblo. Se pisa." },
+  bandit: { name: "Bandido", hint: "Pistolero del oeste: se cubre a distancia y dispara con su revólver. 3 de vida." },
   grenadier: { name: "Granadero", hint: "Soldado enemigo: lanza granadas en parábola que explotan al caer. 3 de vida." },
   tank: { name: "Tanque (jefe)", hint: "Jefe: 25 de vida, dispara obuses en abanico y se enfurece a media vida." },
   artillery: { name: "Artillería", hint: "Cañón fijo: no se mueve, pero dispara obuses que explotan desde muy lejos." },
@@ -161,14 +185,14 @@ export const KIND_INFO: Record<Kind, { name: string; hint: string }> = {
 export const CHARACTER_KINDS: readonly Kind[] = ["villager", "knight", "wizard", "ally", "guard"];
 export const ENEMY_KINDS: readonly Kind[] = [
   "enemy", "bat", "spider", "ghost", "brute", "marksman", "necromancer", "demon", "mimic", "rat",
-  "soldier", "grenadier", "tank", "artillery", "legionary", "captain",
+  "soldier", "grenadier", "tank", "artillery", "legionary", "captain", "bandit",
 ];
 export const WEAPON_KINDS: readonly Kind[] = [
   "sword", "axe", "wand", "bow", "dagger", "hammer", "spear", "staff",
   "pistol", "rifle", "shotgun", "smg", "sniper", "launcher", "grenade",
 ];
 /** Ground drawn under everything, with no body. */
-export const GROUND_KINDS: readonly Kind[] = ["path", "sand", "bridge", "road"];
+export const GROUND_KINDS: readonly Kind[] = ["path", "sand", "bridge", "road", "boardwalk", "dirt"];
 
 export function isGround(kind: Kind): boolean {
   return GROUND_KINDS.includes(kind);
@@ -195,6 +219,7 @@ export const CATEGORIES: readonly { id: string; name: string; kinds: readonly Ki
   { id: "obstacles", name: "Obstáculos", kinds: ["box", "barrel", "spike"] },
   { id: "items", name: "Objetos", kinds: ["coin", "chest", "potion", "medkit", "sword", "axe", "wand", "bow", "dagger", "hammer", "spear", "staff"] },
   { id: "firearms", name: "Armas de fuego", kinds: ["pistol", "rifle", "shotgun", "smg", "sniper", "launcher", "grenade"] },
+  { id: "western", name: "Oeste", kinds: ["bandit", "saloon", "cabin", "wagon", "hay", "crates", "trough", "cactus", "lamp", "boardwalk", "dirt"] },
   { id: "war", name: "Guerra", kinds: ["legionary", "captain", "soldier", "grenadier", "artillery", "tank", "ally", "guard", "sandbag", "barricade", "hedgehog", "bunker", "tower", "flag", "banner", "rock", "road", "explosive"] },
 ];
 

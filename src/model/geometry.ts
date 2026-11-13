@@ -23,6 +23,12 @@ export function fitZoom(viewWidth: number, viewHeight: number, margin = 24): num
   return Math.max(0.1, Math.round(zoom * 100) / 100);
 }
 
+/** Zoom at which the world fills the whole view (no empty bands); the rest is reached by panning. */
+export function coverZoom(viewWidth: number, viewHeight: number): number {
+  const zoom = Math.max(viewWidth / WORLD_WIDTH, viewHeight / WORLD_HEIGHT);
+  return Math.max(0.1, Math.ceil(zoom * 100) / 100);
+}
+
 /** True when two objects' boxes intersect. */
 export function overlaps(a: { kind: Kind; x: number; y: number }, b: { kind: Kind; x: number; y: number }): boolean {
   const [aw, ah] = SIZES[a.kind];

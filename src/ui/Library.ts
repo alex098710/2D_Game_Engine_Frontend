@@ -22,6 +22,7 @@ const CATEGORY_ICON: Record<string, Kind> = {
   items: "chest",
   firearms: "rifle",
   war: "tank",
+  western: "saloon",
 };
 
 export function iconElement(kind: Kind, tint?: string): HTMLElement {

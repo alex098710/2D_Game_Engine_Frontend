@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { KINDS, SIZES, isKind } from "./GameObject";
-import { clampToWorld, fitZoom, overlaps, snap } from "./geometry";
+import { clampToWorld, coverZoom, fitZoom, overlaps, snap } from "./geometry";
 
 test("snap puts tile-sized objects exactly on a cell", () => {
   expect(snap(50, "wall", 32)).toBe(48);
@@ -18,6 +18,12 @@ test("clampToWorld keeps the whole object inside", () => {
   expect(clampToWorld(0, 0, "house")).toEqual([48, 48]);
   expect(clampToWorld(5000, 5000, "coin")).toEqual([1592, 952]);
   expect(clampToWorld(400, 300, "box")).toEqual([400, 300]);
+});
+
+test("coverZoom fills the view with the world, whatever its shape", () => {
+  expect(coverZoom(1600, 960)).toBe(1);
+  expect(coverZoom(800, 800)).toBe(0.84); // a square view: the height decides
+  expect(coverZoom(1200, 400)).toBe(0.75); // a wide view: the width decides
 });
 
 test("fitZoom shows the whole world", () => {
