@@ -556,3 +556,139 @@
   .fx { display: none; }
   .battle, .hero-copy > *, .auth-card, .auth-card::before, .auth-form .btn-forge::after, .auth-badge img { animation: none; }
 }
+
+/* ==========================================================================
+   Access screen, refined (design skills: anti-slop, motion, typography).
+   - The card is an opaque surface with one border: no glass, no spinning edge.
+   - Fields are label + input; only the password eye lives inside a field.
+   - The main action is one hue; its arrow moves on hover.
+   - Motion: 150 ms for hover and focus, 200-300 ms to enter, ease-out in,
+     transform and opacity only. The living logo keeps its effects: it is the
+     artwork of the brand, not chrome.
+   ========================================================================== */
+.login {
+  --m-100: 100ms;
+  --m-150: 150ms;
+  --m-200: 200ms;
+  --m-300: 300ms;
+  --out: cubic-bezier(0.16, 1, 0.3, 1);
+  --surface: #0b1426;
+  --surface-2: #060c19;
+  --edge: rgba(120, 170, 255, 0.16);
+  --edge-strong: rgba(120, 170, 255, 0.28);
+}
+
+/* ---------- left: brand, promise and what is inside ---------- */
+.scrim {
+  background:
+    linear-gradient(90deg, rgba(3, 6, 13, 0.97) 0%, rgba(3, 6, 13, 0.94) 52%, rgba(3, 6, 13, 0.6) 74%, rgba(3, 6, 13, 0.35) 88%, var(--bg-elevated) 100%),
+    linear-gradient(0deg, rgba(3, 6, 13, 0.9) 0%, transparent 30%, transparent 75%, rgba(3, 6, 13, 0.7) 100%);
+}
+.hero-copy { gap: 24px; max-width: 520px; }
+.hero-copy .logo { gap: 8px; }
+.hero-title { margin: 0; font-size: clamp(30px, 3.2vw, 46px); line-height: 1.08; letter-spacing: -0.02em; }
+.hero-sub { max-width: 44ch; font-size: 16px; line-height: 1.6; color: #b9c8e3; }
+.hero-features { list-style: none; margin: 0; padding: 0; display: grid; width: 100%; max-width: 440px; border-top: 1px solid var(--edge); }
+.hero-features li { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--edge); animation: rise var(--m-300) var(--out) both; }
+.hero-features li:nth-child(1) { animation-delay: 360ms; }
+.hero-features li:nth-child(2) { animation-delay: 420ms; }
+.hero-features li:nth-child(3) { animation-delay: 480ms; }
+.feature-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--surface); border: 1px solid var(--edge); transition: border-color var(--m-150) var(--out), transform var(--m-150) var(--out); }
+.feature-icon img { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; }
+.hero-features li:hover .feature-icon { border-color: var(--forge-hi); transform: translateY(-2px); }
+.hero-features b { display: block; font-size: 15px; font-weight: 600; color: #f2f6ff; }
+.hero-features small { display: block; margin-top: 2px; font-size: 13.5px; line-height: 1.45; color: var(--text-muted); }
+
+/* ---------- right: the card ---------- */
+.auth-card {
+  gap: 16px;
+  max-width: 440px;
+  padding: 32px 32px 24px;
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  background: var(--surface);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  animation: card-in var(--m-300) var(--out) both 100ms;
+}
+.auth-card::before { display: none; }
+/* A thin line of blue along the top edge (static). */
+.auth-card::after { content: ""; position: absolute; top: -1px; left: 32px; right: 32px; height: 1px; background: linear-gradient(90deg, transparent, var(--forge-hi), transparent); pointer-events: none; }
+@keyframes card-in { from { opacity: 0; transform: translateY(8px); } }
+/* The parts of the card arrive one after another (40 ms apart). */
+.auth-card > * { animation: field-in var(--m-300) var(--out) both; }
+.auth-card > :nth-child(1) { animation-delay: 160ms; }
+.auth-card > :nth-child(2) { animation-delay: 200ms; }
+.auth-card > :nth-child(3) { animation-delay: 240ms; }
+.auth-card > :nth-child(4) { animation-delay: 280ms; }
+.auth-card > :nth-child(5) { animation-delay: 320ms; }
+.auth-card > :nth-child(6) { animation-delay: 360ms; }
+.auth-card > :nth-child(n + 7) { animation-delay: 400ms; }
+@keyframes field-in { from { opacity: 0; transform: translateY(6px); } }
+
+.auth-head { gap: 16px; margin-bottom: 8px; }
+.auth-badge { width: 48px; height: 48px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--edge-strong); box-shadow: none; }
+.auth-badge img { width: 34px; animation: none; }
+.auth-title { font-size: 22px; letter-spacing: -0.01em; }
+.auth-subtitle { margin-top: 4px; font-size: 14px; }
+
+.seg { padding: 4px; border-radius: 12px; background: var(--surface-2); border-color: var(--edge); }
+.seg button { min-height: 40px; font-size: 14px; transition: color var(--m-150) var(--out); }
+.seg button:hover:not([aria-selected="true"]) { color: var(--text); }
+.seg-pill { border-radius: 9px; background: var(--forge); box-shadow: 0 4px 12px rgba(31, 123, 255, 0.35); transition: transform var(--m-200) var(--out); }
+
+/* Fields: label above, input, message and guide below. */
+.auth-form .field { gap: 8px; }
+.auth-form .field label { font-family: var(--font); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: var(--text-muted); transition: color var(--m-150) var(--out); }
+.auth-form .field:focus-within label { color: var(--forge-hi); }
+.control input { min-height: 48px; padding: 12px 40px 12px 14px; border-radius: 10px; border: 1px solid var(--edge); background: var(--surface-2); font-size: 15px; transition: border-color var(--m-150) var(--out), box-shadow var(--m-150) var(--out); }
+.control:has(.eye) input { padding-right: 80px; }
+.control input:hover:not(:focus) { border-color: var(--edge-strong); }
+.control input:focus { border-color: var(--forge); box-shadow: 0 0 0 3px rgba(31, 123, 255, 0.22); background: var(--surface-2); }
+.field[data-state="bad"] input { animation: none; }
+.control input::placeholder { color: #51648a; }
+.eye { right: 8px; width: 36px; height: 36px; transition: color var(--m-150) var(--out), background var(--m-150) var(--out); }
+/* The guide appears under the focused field (fade, no height animation). */
+.hint { display: none; grid-template-rows: none; max-height: none; opacity: 1; margin: 0; padding: 10px 12px 10px 34px; border-color: rgba(56, 196, 255, 0.24); transition: none; }
+.field:focus-within .hint { display: grid; padding: 10px 12px 10px 34px; animation: hint-in var(--m-200) var(--out); }
+@keyframes hint-in { from { opacity: 0; transform: translateY(-4px); } }
+
+/* What is still missing. */
+.needs { padding: 14px 16px; border-radius: 12px; background: var(--surface-2); border-color: var(--edge); }
+.needs-bar i { width: 100%; transform: scaleX(0); transform-origin: left; transition: transform var(--m-300) var(--out), background var(--m-200); }
+
+/* The main action: one hue, an arrow that moves, a firm press. */
+.auth-form .btn-forge {
+  gap: 10px;
+  min-height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #2d8bff, var(--forge));
+  box-shadow: 0 8px 20px rgba(31, 123, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: box-shadow var(--m-150) var(--out), transform var(--m-100) var(--out);
+}
+.auth-form .btn-forge::after { display: none; }
+.auth-form .btn-forge:hover { background: linear-gradient(180deg, #3b95ff, #2483ff); box-shadow: 0 10px 26px rgba(31, 123, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22); transform: none; }
+.auth-form .btn-forge:active { transform: translateY(1px); box-shadow: 0 4px 12px rgba(31, 123, 255, 0.35); }
+.auth-form .btn-forge:focus-visible { outline: 2px solid var(--forge-hi); outline-offset: 3px; }
+.btn-arrow { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--m-150) var(--out); }
+.auth-form .btn-forge:hover .btn-arrow { transform: translateX(3px); }
+.btn-forge.is-loading .btn-arrow { display: none; }
+
+.form-foot { font-size: 14px; }
+.trust { gap: 8px 18px; padding-top: 16px; border-top-color: var(--edge); font-size: 12px; }
+
+@media (max-width: 900px) {
+  .hero-features { display: none; }
+  .scrim { background: linear-gradient(0deg, var(--bg-elevated) 0%, rgba(7, 13, 27, 0.92) 16%, rgba(3, 6, 13, 0.7) 48%, rgba(3, 6, 13, 0.35) 100%); }
+}
+@media (max-width: 480px) {
+  .auth-card { padding: 24px 18px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-card, .auth-card > *, .hero-features li, .field:focus-within .hint { animation: none; }
+  .seg-pill, .needs-bar i, .btn-arrow { transition: none; }
+}

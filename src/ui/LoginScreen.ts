@@ -131,7 +131,7 @@ export class LoginScreen {
       if (this.terms.checked) done += 1;
     }
     byId("needs-count").textContent = `${done} / ${total}`;
-    byId("needs-bar").style.width = `${(done / total) * 100}%`;
+    byId("needs-bar").style.transform = `scaleX(${done / total})`;
     byId("auth-needs").classList.toggle("is-complete", done === total);
   }
 
