@@ -9,6 +9,7 @@ import { currentSprites, setSprites, spritesReady, spriteUrl } from "../game/spr
 import { KIND_INFO, type Kind } from "../model/GameObject";
 import { byId, errorText, make } from "./dom";
 import { trackActive } from "./editorFx";
+import { once } from "./busy";
 import { NightScene } from "./NightScene";
 import { nameFromFile, prepareSprite, UploadError } from "./spriteUpload";
 import { toast } from "./toast";
@@ -266,22 +267,19 @@ export class AdminPanel {
   }
 
   private async save(): Promise<void> {
-    const button = byId<HTMLButtonElement>("adm-save");
-    button.classList.add("is-loading");
-    button.disabled = true;
-    try {
-      const saved = await saveBalance(compactBalance(this.draft, heroBase(), enemyBase()));
-      this.saved = saved;
-      this.draft = structuredClone(saved);
-      this.onRules(saved, this.creations);
-      this.renderBalance();
-      toast("Cambios guardados. Se aplican desde tu próxima partida.", "success");
-    } catch (error) {
-      toast(errorText(error), "error");
-    } finally {
-      button.classList.remove("is-loading");
-      this.renderCounts();
-    }
+    await once(byId<HTMLButtonElement>("adm-save"), async () => {
+      try {
+        const saved = await saveBalance(compactBalance(this.draft, heroBase(), enemyBase()));
+        this.saved = saved;
+        this.draft = structuredClone(saved);
+        this.onRules(saved, this.creations);
+        this.renderBalance();
+        toast("Cambios guardados. Se aplican desde tu próxima partida.", "success");
+      } catch (error) {
+        toast(errorText(error), "error");
+      }
+    });
+    this.renderCounts(); // the buttons show whether something is left to save
   }
 
   // --- creations -------------------------------------------------------------------------------
@@ -467,7 +465,7 @@ export class AdminPanel {
       const remove = make("button", "adm-picture-delete", "✕");
       remove.type = "button";
       remove.setAttribute("aria-label", `Borrar la imagen «${sprite.name}»`);
-      remove.addEventListener("click", () => void this.removePicture(sprite.id, sprite.name));
+      remove.addEventListener("click", () => void this.removePicture(sprite.id, sprite.name, remove));
       tile.append(pick, remove);
       return tile;
     });
@@ -488,6 +486,7 @@ export class AdminPanel {
     // The steps start one after another while the file travels and is checked.
     const timers = steps.map((step, i) => window.setTimeout(() => step.classList.add("is-checking"), i * 140));
     const label = document.querySelector<HTMLElement>(".adm-upload")!;
+    if (label.classList.contains("is-busy")) return; // one picture at a time
     label.classList.add("is-busy");
     try {
       const prepared = await prepareSprite(file);
@@ -522,10 +521,11 @@ export class AdminPanel {
     }
   }
 
-  private async removePicture(id: number, name: string): Promise<void> {
+  private async removePicture(id: number, name: string, button: HTMLButtonElement): Promise<void> {
     const users = this.creations.filter((creation) => creation.sprite_id === id);
     const note = users.length > 0 ? ` ${users.length === 1 ? "La creación que la usa volverá" : "Las creaciones que la usan volverán"} a su dibujo original.` : "";
     if (!window.confirm(`¿Borrar la imagen «${name}»?${note}`)) return;
+    await once(button, async () => {
     try {
       await deleteSprite(id);
       setSprites(currentSprites().filter((sprite) => sprite.id !== id));
@@ -538,6 +538,7 @@ export class AdminPanel {
     } catch (failure) {
       byId("adm-upload-error").textContent = errorText(failure);
     }
+    });
   }
 
   private paintStats(): void {
@@ -577,9 +578,7 @@ export class AdminPanel {
       byId("adm-name").focus();
       return;
     }
-    const button = byId<HTMLButtonElement>("adm-submit");
-    button.classList.add("is-loading");
-    button.disabled = true;
+    await once(byId<HTMLButtonElement>("adm-submit"), async () => {
     try {
       const input: CreationInput = { category: this.form.category, base_kind: this.form.base_kind, name, tint: this.form.tint, health: this.form.health, damage: this.form.damage, speed: this.form.speed, value: this.form.value, sprite_id: this.form.sprite_id ?? null };
       const saved = this.editing ? await updateCreation(this.editing.id, input) : await createCreation(input);
@@ -590,16 +589,15 @@ export class AdminPanel {
       this.renderCreations();
     } catch (error) {
       byId("adm-form-error").textContent = errorText(error);
-    } finally {
-      button.classList.remove("is-loading");
-      button.disabled = false;
     }
+    });
   }
 
   private async remove(): Promise<void> {
     const creation = this.editing;
     if (creation === null) return;
     if (!window.confirm(`¿Eliminar «${creation.name}»? Los mapas que lo usan mostrarán el ${baseName(creation.category, creation.base_kind).toLowerCase()} original.`)) return;
+    await once(byId<HTMLButtonElement>("adm-delete"), async () => {
     try {
       await deleteCreation(creation.id);
       this.creations = this.creations.filter((c) => c.id !== creation.id);
@@ -610,6 +608,7 @@ export class AdminPanel {
     } catch (error) {
       byId("adm-form-error").textContent = errorText(error);
     }
+    });
   }
 }
 

@@ -1,5 +1,6 @@
 import { deleteProject, duplicateProject, listProjects, type ProjectDto } from "../api/client";
 import { iconUrl } from "../game/assets";
+import { once } from "./busy";
 import { byId, errorText, make } from "./dom";
 import { projectIcon } from "./HomeScreen";
 import { toast } from "./toast";
@@ -54,7 +55,7 @@ export class ProjectList {
     return item;
   }
 
-  private action(path: string, label: string, handler: () => void, danger = false): HTMLButtonElement {
+  private action(path: string, label: string, handler: () => void | Promise<void>, danger = false): HTMLButtonElement {
     const button = make("button", `project-action${danger ? " is-danger" : ""}`);
     button.type = "button";
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -68,7 +69,7 @@ export class ProjectList {
     button.setAttribute("aria-label", label);
     button.addEventListener("click", (event) => {
       event.stopPropagation();
-      handler();
+      void once(button, async () => handler()); // one request at a time, with its wheel
     });
     return button;
   }

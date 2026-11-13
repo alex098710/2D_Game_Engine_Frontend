@@ -42,3 +42,11 @@
 }
 .adm-card, .recent-row { contain: layout paint; }
 .palette-item, .tree-item, .hero { contain: layout style; }
+
+/* 4. Every button that is waiting for the server shows its wheel (ui/busy.ts), also the icon-only ones. */
+[aria-busy="true"] > .btn-spinner { display: inline-block; }
+[aria-busy="true"] { cursor: progress; }
+.project-action[aria-busy="true"] > svg { display: none; }
+.project-action > .btn-spinner, .adm-picture-delete > .btn-spinner { width: 13px; height: 13px; }
+.adm-picture-delete[aria-busy="true"] { font-size: 0; opacity: 1; }
+.btn-ghost > .btn-spinner, .adm-picture-delete > .btn-spinner, .project-action > .btn-spinner { border-color: rgba(159, 230, 255, 0.3); border-top-color: #9fe6ff; }

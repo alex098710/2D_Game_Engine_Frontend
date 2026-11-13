@@ -1,4 +1,5 @@
 import { changePassword, logOutEverywhere, myActivity } from "../api/client";
+import { once } from "./busy";
 import { bindPasswordEyes, byId, errorText, make } from "./dom";
 import { passwordProblem } from "./passwordPolicy";
 import { relativeTime } from "./ProjectList";
@@ -49,8 +50,7 @@ export class SecurityPanel {
       message.classList.add("is-error");
       return;
     }
-    const button = byId<HTMLButtonElement>("btn-change-password");
-    button.classList.add("is-loading");
+    await once(byId<HTMLButtonElement>("btn-change-password"), async () => {
     try {
       await changePassword(current.value, next.value);
       current.value = "";
@@ -61,19 +61,20 @@ export class SecurityPanel {
     } catch (error) {
       message.textContent = errorText(error);
       message.classList.add("is-error");
-    } finally {
-      button.classList.remove("is-loading");
     }
+    });
   }
 
   private async logOutEverywhere(): Promise<void> {
     if (!window.confirm("¿Cerrar la sesión en todos tus dispositivos, también en este?")) return;
-    try {
-      await logOutEverywhere();
-      this.onLoggedOutEverywhere();
-    } catch (error) {
-      toast(errorText(error), "error");
-    }
+    await once(byId<HTMLButtonElement>("btn-logout-all"), async () => {
+      try {
+        await logOutEverywhere();
+        this.onLoggedOutEverywhere();
+      } catch (error) {
+        toast(errorText(error), "error");
+      }
+    });
   }
 
   /** Show the latest security events of the account. */

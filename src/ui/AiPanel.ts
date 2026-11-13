@@ -1,4 +1,5 @@
 import { aiModel, aiObstacles, askAi, setAiDifficulty, type AiModelDto, type DifficultyLevel, type ProjectDto } from "../api/client";
+import { MIN_SPIN_MS } from "./busy";
 import { byId, errorText, make } from "./dom";
 import { toast } from "./toast";
 
@@ -94,7 +95,7 @@ export class AiPanel {
   }
 
   private async obstacles(): Promise<void> {
-    if (this.working) return;
+    if (this.working || performance.now() - this.finishedAt < 700) return;
     const id = this.requireProject();
     if (id === null) return;
     await this.busy(byId<HTMLButtonElement>("btn-ai-obstacles"), "Colocando obstáculos…", "La IA está colocando obstáculos", async () => {
@@ -108,7 +109,7 @@ export class AiPanel {
 
   /** Pick one of the four levels; shown at once, then saved. */
   private async choose(level: DifficultyLevel): Promise<void> {
-    if (this.working || level === this.level) return;
+    if (this.working || level === this.level || performance.now() - this.finishedAt < 700) return;
     const id = this.requireProject();
     if (id === null) return;
     const previous = this.level;
@@ -182,11 +183,15 @@ export class AiPanel {
     for (const control of controls) control.disabled = true;
     byId("ai-working-text").textContent = status;
     byId("ai-working").hidden = false;
+    const started = performance.now();
     try {
       await work();
     } catch (error) {
       toast(errorText(error), "error");
     } finally {
+      // The wheel stays long enough to be seen, even when the answer is quick.
+      const left = MIN_SPIN_MS - (performance.now() - started);
+      if (left > 0) await new Promise((resolve) => window.setTimeout(resolve, left));
       this.working = false;
       this.finishedAt = performance.now();
       if (label) label.textContent = idle;

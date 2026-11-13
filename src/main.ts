@@ -33,6 +33,7 @@ import type { GameHost } from "./game/GameHost";
 import { CHARACTER_KINDS, ENEMY_KINDS, isKind, KIND_INFO, type Kind } from "./model/GameObject";
 import { countByKind, hasPlayer, nextObjectId, SceneModel } from "./model/SceneModel";
 import { AdminPanel } from "./ui/AdminPanel";
+import { once } from "./ui/busy";
 import { AiPanel, aiSummary } from "./ui/AiPanel";
 import { bindNameCounter, byId, errorText } from "./ui/dom";
 import { initEditorFx } from "./ui/editorFx";
@@ -388,31 +389,37 @@ async function newProject(): Promise<void> {
   toast(`Proyecto "${project.name}" creado.${aiNote}`, aiFailed ? "error" : "success");
 }
 
+/** The save in progress: a second save while one runs waits for it instead of sending another. */
+let saving: Promise<void> | null = null;
+
 async function save(): Promise<void> {
   if (projectId === null) {
     toast("Crea o abre un proyecto primero.", "error");
     return;
   }
-  const button = byId<HTMLButtonElement>("btn-save");
-  button.classList.add("is-loading");
-  try {
-    const project = await saveScene(projectId, model.toJson());
+  saving ??= (async () => {
+    const project = await saveScene(projectId!, model.toJson());
     savedVersion = model.version;
     seenVersion = -1;
     setStatus(`Guardado: ${project.scene.length} objetos.`, "success");
     await projectList.refresh();
-  } finally {
-    button.classList.remove("is-loading");
-  }
+  })().finally(() => {
+    saving = null;
+  });
+  return saving;
 }
 
+let renaming = false;
 byId<HTMLInputElement>("project-name").addEventListener("change", (event) => {
   const input = event.target as HTMLInputElement;
-  if (projectId === null || input.value.trim() === "") return;
+  if (projectId === null || input.value.trim() === "" || renaming) return;
+  renaming = true;
   void attempt(async () => {
     await renameProject(projectId!, input.value.trim());
     await projectList.refresh();
     toast("Nombre actualizado.", "success");
+  }).finally(() => {
+    renaming = false;
   });
 });
 
@@ -448,12 +455,15 @@ async function play(): Promise<void> {
   const chosen = await chooseHero();
   if (chosen === null) return;
   hero = chosen;
-  if (isDirty()) await save();
-  const run = await startRun(projectId);
-  runId = run.id;
-  difficulty = run.difficulty;
-  setPlaying(true);
-  host.play(difficulty, hero);
+  // Saving and starting the run: once, with the wheel on "Jugar".
+  await once(byId<HTMLButtonElement>("btn-play"), async () => {
+    if (isDirty()) await save();
+    const run = await startRun(projectId!);
+    runId = run.id;
+    difficulty = run.difficulty;
+    setPlaying(true);
+    host.play(difficulty, hero);
+  });
 }
 
 function setPlaying(value: boolean): void {
@@ -496,11 +506,16 @@ async function runFinished(result: RunResultDto): Promise<void> {
 
 // --- Buttons and shortcuts ---------------------------------------------------------------
 
-function bind(id: string, handler: () => void | Promise<void>): void {
-  byId(id).addEventListener("click", () => void attempt(async () => handler()));
+/** request: the button talks to the server, so it runs once at a time and shows its wheel. */
+function bind(id: string, handler: () => void | Promise<void>, request = false): void {
+  const button = byId<HTMLButtonElement>(id);
+  button.addEventListener("click", () => void attempt(async () => {
+    if (request) await once(button, async () => handler());
+    else await handler();
+  }));
 }
 
-bind("btn-save", save);
+bind("btn-save", save, true);
 bind("btn-undo", () => void model.undo());
 bind("btn-redo", () => void model.redo());
 bind("btn-play", play);
