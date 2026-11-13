@@ -1,6 +1,8 @@
 import { listTemplates, type TemplateDto } from "../api/client";
-import { byId, make } from "./dom";
+import { bindNameCounter, byId, make } from "./dom";
 import { drawPreview } from "./mapPreview";
+
+let showNewNameCount: (() => void) | undefined;
 
 const FALLBACK: TemplateDto[] = [{ code: "empty", name: "Vacío", description: "Una escena sin objetos", object_count: 0 }];
 
@@ -12,6 +14,8 @@ export async function askNewProject(): Promise<{ name: string; template: string 
   const options = await listTemplates().catch(() => FALLBACK);
   templates.replaceChildren(...options.map((t, i) => templateOption(t, i === 0)));
   name.value = "Mi juego";
+  showNewNameCount ??= bindNameCounter(name, byId("new-project-count"));
+  showNewNameCount();
   dialog.showModal();
   name.select();
   return new Promise((resolve) => {

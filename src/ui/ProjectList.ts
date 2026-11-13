@@ -1,6 +1,11 @@
 import { deleteProject, duplicateProject, listProjects, type ProjectDto } from "../api/client";
+import { iconUrl } from "../game/assets";
 import { byId, errorText, make } from "./dom";
+import { projectIcon } from "./HomeScreen";
 import { toast } from "./toast";
+
+const COPY_ICON = "M9 9h11v11H9zM5 15H4V4h11v1";
+const TRASH_ICON = "M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3";
 
 /** "hace 5 min", "ayer"... for the project dates. */
 export function relativeTime(iso: string, now = Date.now()): string {
@@ -32,17 +37,33 @@ export class ProjectList {
   private row(project: ProjectDto): HTMLElement {
     const item = make("li", "project-row");
     item.classList.toggle("is-current", project.id === this.currentId);
-    const text = make("div");
-    text.append(make("strong", "", project.name), make("small", "", `${project.scene.length} objetos · ${relativeTime(project.updated_at)}`));
+    const thumb = make("span", "project-thumb");
+    const icon = make("img");
+    icon.src = iconUrl(projectIcon(project));
+    icon.alt = "";
+    thumb.append(icon);
+    // The name is cut with "…" by CSS; the full name shows on hover.
+    const text = make("div", "project-text");
+    const name = make("strong", "", project.name);
+    name.title = project.name;
+    text.append(name, make("small", "", `${project.scene.length} objetos · ${relativeTime(project.updated_at)}`));
     const actions = make("div", "project-actions");
-    actions.append(this.action("⧉", "Duplicar", () => this.duplicate(project)), this.action("🗑", "Eliminar", () => this.remove(project)));
-    item.append(text, actions);
+    actions.append(this.action(COPY_ICON, "Duplicar", () => this.duplicate(project)), this.action(TRASH_ICON, "Eliminar", () => this.remove(project), true));
+    item.append(thumb, text, actions);
     item.addEventListener("click", () => this.onOpen(project));
     return item;
   }
 
-  private action(symbol: string, label: string, handler: () => void): HTMLButtonElement {
-    const button = make("button", "btn btn-icon btn-ghost", symbol);
+  private action(path: string, label: string, handler: () => void, danger = false): HTMLButtonElement {
+    const button = make("button", `project-action${danger ? " is-danger" : ""}`);
+    button.type = "button";
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    shape.setAttribute("d", path);
+    svg.append(shape);
+    button.append(svg);
     button.title = label;
     button.setAttribute("aria-label", label);
     button.addEventListener("click", (event) => {

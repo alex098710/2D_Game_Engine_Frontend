@@ -382,7 +382,8 @@
         </button>
         <div class="project-field">
           <svg class="icon" aria-hidden="true"><use href="#i-folder" /></svg>
-          <input id="project-name" class="project-name" type="text" maxlength="100" placeholder="Sin proyecto" aria-label="Nombre del proyecto" disabled />
+          <input id="project-name" class="project-name" type="text" maxlength="30" placeholder="Sin proyecto" aria-label="Nombre del proyecto (máximo 30 caracteres)" aria-describedby="project-name-count" disabled />
+          <span id="project-name-count" class="name-count" aria-live="polite">0/30</span>
         </div>
 
         <div class="toolgroup" role="toolbar" aria-label="Herramientas">
@@ -640,7 +641,7 @@
     <dialog id="new-project-dialog" class="dialog">
       <form method="dialog" id="new-project-form" class="form">
         <h3>Nuevo proyecto</h3>
-        <label class="field"><span>Nombre</span><input id="new-project-name" maxlength="100" required value="Mi juego" /></label>
+        <label class="field"><span class="field-label-row"><span>Nombre</span><span id="new-project-count" class="name-count">8/30</span></span><input id="new-project-name" maxlength="30" required value="Mi juego" aria-describedby="new-project-count" /></label>
         <div id="templates" class="templates"></div>
         <div class="dialog-actions">
           <button class="btn" value="cancel" formnovalidate>Cancelar</button>

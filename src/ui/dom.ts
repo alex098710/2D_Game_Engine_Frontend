@@ -30,3 +30,21 @@ export function bindPasswordEyes(root: ParentNode): void {
     });
   }
 }
+
+/** Most characters a project name may have (the backend checks it too). */
+export const PROJECT_NAME_MAX = 30;
+
+/**
+ * Shows "12/30" next to a name field and turns it amber near the limit.
+ * Returns a function to call after setting the value from code.
+ */
+export function bindNameCounter(input: HTMLInputElement, counter: HTMLElement): () => void {
+  const update = (): void => {
+    const length = input.value.length;
+    counter.textContent = `${length}/${PROJECT_NAME_MAX}`;
+    counter.dataset.level = length >= PROJECT_NAME_MAX ? "full" : length >= PROJECT_NAME_MAX - 5 ? "near" : "";
+  };
+  input.addEventListener("input", update);
+  update();
+  return update;
+}

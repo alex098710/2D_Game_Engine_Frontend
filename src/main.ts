@@ -23,7 +23,7 @@ import type { GameHost } from "./game/GameHost";
 import { CHARACTER_KINDS, ENEMY_KINDS, isKind, KIND_INFO, type Kind } from "./model/GameObject";
 import { countByKind, hasPlayer, nextObjectId, SceneModel } from "./model/SceneModel";
 import { AiPanel } from "./ui/AiPanel";
-import { byId, errorText } from "./ui/dom";
+import { bindNameCounter, byId, errorText } from "./ui/dom";
 import { chooseHero } from "./ui/HeroDialog";
 import { HomeScreen, type Destination } from "./ui/HomeScreen";
 import { setHudVisible, showHud } from "./ui/Hud";
@@ -300,6 +300,8 @@ const projectList = new ProjectList(
   },
 );
 
+const showProjectNameCount = bindNameCounter(byId<HTMLInputElement>("project-name"), byId("project-name-count"));
+
 function openProject(project: ProjectDto | null): void {
   if (isDirty() && !window.confirm("Hay cambios sin guardar. ¿Abrir otro proyecto igualmente?")) return;
   projectId = project?.id ?? null;
@@ -310,6 +312,7 @@ function openProject(project: ProjectDto | null): void {
   const name = byId<HTMLInputElement>("project-name");
   name.value = project?.name ?? "";
   name.disabled = project === null;
+  showProjectNameCount();
   projectList.setCurrent(projectId);
   void projectList.refresh();
   void aiPanel.refresh();
