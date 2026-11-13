@@ -256,7 +256,8 @@ const sceneTree = new SceneTree({
 });
 
 function refreshSceneTree(): void {
-  sceneTree.render(model, host.editor.selectedId);
+  // The game host loads lazily; until then nothing is selected.
+  sceneTree.render(model, host?.editor.selectedId ?? null);
 }
 
 function refreshEmptyState(): void {
@@ -270,6 +271,17 @@ function refreshEmptyState(): void {
 
 let seenVersion = -1;
 function watchModel(): void {
+  try {
+    refreshFromModel();
+  } catch (error) {
+    // One failed refresh must never stop the loop: the status bar, undo/redo
+    // and the save state would freeze for the rest of the session.
+    console.error(error);
+  }
+  requestAnimationFrame(watchModel);
+}
+
+function refreshFromModel(): void {
   if (model.version !== seenVersion) {
     seenVersion = model.version;
     const counts = countByKind(model);
@@ -289,7 +301,6 @@ function watchModel(): void {
     refreshSceneTree();
     refreshEmptyState();
   }
-  requestAnimationFrame(watchModel);
 }
 
 // --- Projects ----------------------------------------------------------------------
