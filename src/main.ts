@@ -3,6 +3,10 @@ import "./style.css";
 import {
   ApiError,
   askAi,
+  getBalance,
+  listCreations,
+  type BalanceDto,
+  type CreationDto,
   createProject,
   finishRun,
   getCharacterLines,
@@ -23,6 +27,7 @@ import type { Tool } from "./game/EditorScene";
 import type { GameHost } from "./game/GameHost";
 import { CHARACTER_KINDS, ENEMY_KINDS, isKind, KIND_INFO, type Kind } from "./model/GameObject";
 import { countByKind, hasPlayer, nextObjectId, SceneModel } from "./model/SceneModel";
+import { AdminPanel } from "./ui/AdminPanel";
 import { AiPanel, aiSummary } from "./ui/AiPanel";
 import { bindNameCounter, byId, errorText } from "./ui/dom";
 import { initEditorFx } from "./ui/editorFx";
@@ -33,7 +38,8 @@ import { initTouchControls, setTouchControlsActive, wantsTouchControls } from ".
 import { IdleTimer } from "./ui/IdleTimer";
 import { Intro } from "./ui/Intro";
 import { Inspector } from "./ui/Inspector";
-import { DRAG_TYPE, Library } from "./ui/Library";
+import { DRAG_TYPE, Library, VARIANT_TYPE } from "./ui/Library";
+import { setRules, variantName } from "./game/balance";
 import { hideLoader, showLoader } from "./ui/loader";
 import { LoginScreen } from "./ui/LoginScreen";
 import { askNewProject } from "./ui/NewProjectDialog";
@@ -143,7 +149,7 @@ function applyTool(tool: Tool): void {
   const hints: Record<Tool, string> = {
     select: "",
     hand: "Mano: arrastra para mover la vista",
-    brush: kind ? `Pincel: ${KIND_INFO[kind].name} — clic para colocar · Esc para terminar` : "",
+    brush: kind ? `Pincel: ${variantName(kind, library.currentVariant) ?? KIND_INFO[kind].name} — clic para colocar · Esc para terminar` : "",
     erase: "Borrar: haz clic en un objeto para quitarlo · Esc para terminar",
   };
   hint.textContent = hints[tool];
@@ -177,7 +183,7 @@ const createHost = (Host: typeof GameHost): GameHost => new Host(
       if (id !== null) showTab("inspector");
       refreshSceneTree();
     },
-    onPlace: (kind, x, y) => placeObject(kind, x, y),
+    onPlace: (kind, x, y) => placeObject(kind, x, y, library.current === kind ? library.currentVariant : undefined),
     onErase: (id) => removeObject(id),
     onPointer: (x, y) => (byId("status-pointer").textContent = `x ${x} · y ${y}`),
     onZoom: (zoom) => (byId("zoom-value").textContent = `${Math.round(zoom * 100)}%`),
@@ -191,7 +197,7 @@ const createHost = (Host: typeof GameHost): GameHost => new Host(
 );
 initTouchControls(byId("game").parentElement!, () => host?.quitPlay());
 
-function placeObject(kind: Kind, x: number, y: number): void {
+function placeObject(kind: Kind, x: number, y: number, variant?: number): void {
   if (projectId === null) {
     toast("Crea o abre un proyecto antes de colocar objetos.", "error");
     return;
@@ -201,8 +207,8 @@ function placeObject(kind: Kind, x: number, y: number): void {
     return;
   }
   const id = nextObjectId(model, kind);
-  model.add({ id, kind, x, y });
-  setStatus(`${KIND_INFO[kind].name} colocado en ${Math.round(x)}, ${Math.round(y)}.`);
+  model.add(variant === undefined ? { id, kind, x, y } : { id, kind, x, y, variant });
+  setStatus(`${variantName(kind, variant) ?? KIND_INFO[kind].name} colocado en ${Math.round(x)}, ${Math.round(y)}.`);
   if (kind === "player") {
     library.pick(null);
     host.editor.select(id);
@@ -243,7 +249,8 @@ stage.addEventListener("drop", (event) => {
   const point = host.editor.worldPointAt(event.clientX, event.clientY);
   if (point === null) return;
   const [x, y] = host.editor.snapPoint(point.x, point.y, kind);
-  placeObject(kind, x, y);
+  const variant = Number(event.dataTransfer?.getData(VARIANT_TYPE));
+  placeObject(kind, x, y, variant > 0 ? variant : undefined);
 });
 
 // --- Panels that follow the model ----------------------------------------------
@@ -550,9 +557,12 @@ function setStage(stage: "auth" | "intro" | "app"): void {
   document.body.dataset.stage = stage;
 }
 
+const admin = new AdminPanel(() => void goHome(), (balance, creations) => applyRules(balance, creations));
+
 async function goHome(): Promise<void> {
   if (playing) return;
   byId("app").hidden = true;
+  admin.hide();
   const projects = await projectList.refresh().catch(() => [] as ProjectDto[]);
   home.show(currentUser!, projects);
 }
@@ -570,6 +580,11 @@ function openEditor(): void {
 /** Where the menu options and the navigation bar lead. */
 async function go(to: Destination, project?: ProjectDto): Promise<void> {
   if (to === "home") return goHome();
+  if (to === "admin") {
+    home.hide();
+    admin.show();
+    return;
+  }
   if (project !== undefined && project.id !== projectId) openProject(project);
   openEditor();
   if (to === "projects") showTab("projects");
@@ -583,6 +598,20 @@ async function go(to: Destination, project?: ProjectDto): Promise<void> {
   }
 }
 
+/** The admin panel's rules of this account: numbers of heroes and enemies, and own creations. */
+async function loadRules(): Promise<void> {
+  const [balance, creations] = await Promise.all([getBalance(), listCreations()]).catch(
+    () => [{ heroes: {}, enemies: {} }, []] as [BalanceDto, CreationDto[]],
+  );
+  applyRules(balance, creations);
+}
+
+function applyRules(balance: BalanceDto, creations: CreationDto[]): void {
+  setRules(balance, creations);
+  library.setCreations(creations);
+  host?.editor.refresh();
+}
+
 async function enterApp(user: UserDto, withIntro: boolean): Promise<void> {
   currentUser = user;
   login.hide();
@@ -593,6 +622,7 @@ async function enterApp(user: UserDto, withIntro: boolean): Promise<void> {
     await loadHost();
     host.start();
     await settings.load();
+    await loadRules();
     getCharacterLines()
       .then((lines) => {
         if (Object.keys(lines).length > 0) characterLines = lines;
@@ -636,6 +666,9 @@ async function leaveApp(callBackend: boolean, note = ""): Promise<void> {
   settings.close();
   byId("app").hidden = true;
   home.hide();
+  admin.hide();
+  // Another account may log in next: its rules are loaded after login.
+  applyRules({ heroes: {}, enemies: {} }, []);
   setStage("auth");
   login.show(note);
 }

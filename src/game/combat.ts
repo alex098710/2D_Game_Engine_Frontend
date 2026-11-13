@@ -7,7 +7,7 @@ import type { Kind } from "../model/GameObject";
 export type WeaponId =
   | "sword" | "axe" | "wand" | "bow" | "dagger" | "hammer" | "spear" | "staff"
   | "pistol" | "rifle" | "shotgun" | "smg" | "sniper" | "launcher" | "grenade";
-export type HeroId = "knight" | "wizard" | "archer" | "barbarian" | "rogue" | "viking" | "lancer" | "druid";
+export type HeroId = "knight" | "wizard" | "archer" | "barbarian" | "rogue" | "viking" | "lancer" | "druid" | "soldier" | "commando" | "warrior";
 
 /** How a thrown or shot thing flies (see projectiles.ts for the physics). */
 export interface ProjectileSpec {
@@ -145,6 +145,10 @@ export const HEROES: readonly Hero[] = [
   { id: "viking", name: "Vikingo", texture: "hero-viking", maxHealth: 8, speed: 150, agility: 7, weapon: "hammer", description: "Una muralla. Golpea el suelo con el martillo y empuja a todos a su alrededor.", bars: { health: 8, speed: 3, power: 9 } },
   { id: "lancer", name: "Lancero", texture: "hero-lancer", maxHealth: 6, speed: 185, agility: 12, weapon: "spear", description: "Alcance largo. Se lanza hacia delante con una estocada que atraviesa.", bars: { health: 6, speed: 6, power: 6 } },
   { id: "druid", name: "Druida", texture: "hero-druid", maxHealth: 5, speed: 180, agility: 11, weapon: "staff", description: "Juega con los rebotes: su chispa salta en las paredes y atraviesa enemigos.", bars: { health: 5, speed: 5, power: 6 } },
+  // Soldiers of the blue army: the heroes of the firearms.
+  { id: "soldier", name: "Soldado", texture: "ally", maxHealth: 6, speed: 180, agility: 11, weapon: "rifle", description: "Soldado del ejército azul. Su fusil dispara lejos y con fuerza.", bars: { health: 6, speed: 5, power: 7 } },
+  { id: "commando", name: "Comando", texture: "guard", maxHealth: 5, speed: 200, agility: 15, weapon: "shotgun", description: "Asalto a corta distancia: la escopeta lanza una ráfaga en abanico.", bars: { health: 5, speed: 7, power: 7 } },
+  { id: "warrior", name: "Guerrero", texture: "legionary", maxHealth: 7, speed: 165, agility: 9, weapon: "grenade", description: "Guerrero de batalla. Lanza granadas que explotan y dañan en área.", bars: { health: 7, speed: 4, power: 9 } },
 ];
 
 export function heroById(id: string | null | undefined): Hero {

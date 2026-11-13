@@ -16,6 +16,8 @@ export interface GameObject {
   kind: Kind;
   x: number;
   y: number;
+  /** One of the account's own creations based on this kind (admin panel). */
+  variant?: number;
 }
 
 export const WORLD_WIDTH = 1600;

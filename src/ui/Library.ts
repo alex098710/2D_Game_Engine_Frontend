@@ -1,10 +1,16 @@
 import { iconUrl } from "../game/assets";
-import { CATEGORIES, KIND_INFO, type Kind } from "../model/GameObject";
+import { tintValue, type CreationDto } from "../game/balance";
+import { CATEGORIES, isKind, KIND_INFO, type Kind } from "../model/GameObject";
 import { byId, make } from "./dom";
 import { trackActive } from "./editorFx";
 
 /** MIME type used when a library card is dragged onto the map. */
 export const DRAG_TYPE = "application/x-motor2d-kind";
+/** The creation id travels with the kind when a card of "Mis creaciones" is dragged. */
+export const VARIANT_TYPE = "application/x-motor2d-variant";
+
+/** Id of the library group with the account's own creations. */
+export const MINE = "mine";
 
 /** The picture that stands for each category in the filter and the headers. */
 const CATEGORY_ICON: Record<string, Kind> = {
@@ -18,9 +24,15 @@ const CATEGORY_ICON: Record<string, Kind> = {
   war: "tank",
 };
 
-export function iconElement(kind: Kind): HTMLElement {
+export function iconElement(kind: Kind, tint?: string): HTMLElement {
   const icon = make("span", "palette-icon");
   icon.style.backgroundImage = `url("${iconUrl(kind)}")`;
+  // A creation's colour is laid over the sprite, masked by it (like Phaser's tint).
+  if (tintValue(tint) !== null) {
+    icon.classList.add("is-tinted");
+    icon.style.setProperty("--icon", `url("${iconUrl(kind)}")`);
+    icon.style.setProperty("--tint", tint!);
+  }
   return icon;
 }
 
@@ -49,17 +61,22 @@ export function countLabel(count: number): string {
  */
 export class Library {
   private active: Kind | null = null;
+  private activeVariant: number | undefined;
   private category = "all";
   private query = "";
-  private readonly cards = new Map<Kind, HTMLButtonElement>();
+  private readonly cards = new Map<string, HTMLButtonElement>();
   private readonly groups: HTMLElement[] = [];
   private readonly onPick: (kind: Kind | null) => void;
 
   constructor(onPick: (kind: Kind | null) => void) {
     this.onPick = onPick;
     const root = byId("library");
+    const mine = this.group({ id: MINE, name: "Mis creaciones", kinds: [] });
+    mine.hidden = true;
+    root.append(mine);
     for (const category of CATEGORIES) root.append(this.group(category));
     this.buildFilter();
+    this.setCreations([]);
 
     const search = byId<HTMLInputElement>("library-search");
     const clear = byId<HTMLButtonElement>("library-clear");
@@ -82,7 +99,7 @@ export class Library {
     head.type = "button";
     head.setAttribute("aria-expanded", "true");
     const icon = make("img", "library-title-icon");
-    icon.src = iconUrl(CATEGORY_ICON[category.id] ?? category.kinds[0]);
+    icon.src = iconUrl(CATEGORY_ICON[category.id] ?? category.kinds[0] ?? "chest");
     icon.alt = "";
     const count = make("span", "library-title-count", String(category.kinds.length));
     const caret = make("span", "library-caret", "▾");
@@ -128,29 +145,38 @@ export class Library {
       });
       return button;
     };
-    bar.append(chip("all", "Todos", null), ...CATEGORIES.map((category) => chip(category.id, category.name, CATEGORY_ICON[category.id] ?? null)));
+    bar.append(chip("all", "Todos", null), chip(MINE, "Mis creaciones", "chest"), ...CATEGORIES.map((category) => chip(category.id, category.name, CATEGORY_ICON[category.id] ?? null)));
     trackActive(bar, bar.querySelector<HTMLElement>(".filter-pill")!, ".filter-chip.is-active");
     this.apply();
   }
 
-  private card(kind: Kind): HTMLButtonElement {
+  private card(kind: Kind, creation?: CreationDto): HTMLButtonElement {
     const card = make("button", "palette-item");
     card.type = "button";
     card.draggable = true;
-    card.title = `${KIND_INFO[kind].name}: ${KIND_INFO[kind].hint}`;
+    const name = creation?.name ?? KIND_INFO[kind].name;
+    card.title = creation ? `${name}: tu versión de ${KIND_INFO[kind].name.toLowerCase()}` : `${name}: ${KIND_INFO[kind].hint}`;
     card.dataset.kind = kind;
+    if (creation) {
+      card.dataset.variant = String(creation.id);
+      card.classList.add("is-mine");
+    }
     const grip = make("span", "palette-grip", "⠿");
     grip.setAttribute("aria-hidden", "true");
-    card.append(grip, iconElement(kind), make("span", "palette-name", KIND_INFO[kind].name));
-    card.addEventListener("click", () => this.pick(this.active === kind ? null : kind));
+    card.append(grip, iconElement(kind, creation?.tint), make("span", "palette-name", name));
+    card.addEventListener("click", () => {
+      const same = this.active === kind && this.activeVariant === creation?.id;
+      this.pick(same ? null : kind, same ? undefined : creation?.id);
+    });
     card.addEventListener("dragstart", (event) => {
       event.dataTransfer?.setData(DRAG_TYPE, kind);
+      if (creation) event.dataTransfer?.setData(VARIANT_TYPE, String(creation.id));
       event.dataTransfer?.setData("text/plain", kind);
       if (event.dataTransfer) event.dataTransfer.effectAllowed = "copy";
       card.classList.add("is-dragging");
     });
     card.addEventListener("dragend", () => card.classList.remove("is-dragging"));
-    this.cards.set(kind, card);
+    this.cards.set(creation ? `${kind}#${creation.id}` : kind, card);
     return card;
   }
 
@@ -163,13 +189,17 @@ export class Library {
   /** Search and category together decide what is shown; the count follows. */
   private apply(): void {
     let shown = 0;
-    for (const [kind, card] of this.cards) {
-      card.hidden = !matchesSearch(kind, this.query);
+    for (const card of this.cards.values()) {
+      const kind = card.dataset.kind as Kind;
+      const text = card.querySelector(".palette-name")?.textContent ?? "";
+      card.hidden = !(matchesSearch(kind, this.query) || normalise(text).includes(normalise(this.query)));
       if (!card.hidden && (this.category === "all" || card.closest<HTMLElement>(".library-group")?.dataset.category === this.category)) shown += 1;
     }
     for (const group of this.groups) {
       const outside = this.category !== "all" && group.dataset.category !== this.category;
-      group.hidden = outside || [...group.querySelectorAll<HTMLElement>(".palette-item")].every((card) => card.hidden);
+      const empty = group.querySelectorAll(".palette-item").length === 0;
+      // "Mis creaciones" with nothing yet: shown (with a hint) only when it is the chosen filter.
+      group.hidden = outside || (empty ? !(group.dataset.category === MINE && this.category === MINE) : [...group.querySelectorAll<HTMLElement>(".palette-item")].every((card) => card.hidden));
       const visible = [...group.querySelectorAll<HTMLElement>(".palette-item")].filter((card) => !card.hidden).length;
       group.querySelector(".library-title-count")!.textContent = String(visible);
       // A search or a single category always opens its sections.
@@ -179,25 +209,46 @@ export class Library {
       }
     }
     const count = document.getElementById("library-count");
-    const name = CATEGORIES.find((category) => category.id === this.category)?.name ?? "Todos";
+    const name = this.category === MINE ? "Mis creaciones" : CATEGORIES.find((category) => category.id === this.category)?.name ?? "Todos";
     if (count !== null) count.textContent = `${name} · ${shown === 0 ? "sin resultados" : countLabel(shown)}`;
   }
 
-  /** Highlight the kind the brush paints with (null: none). */
-  pick(kind: Kind | null): void {
-    this.active = kind;
-    for (const [k, card] of this.cards) card.classList.toggle("is-active", k === kind);
+  /** Highlight the kind the brush paints with (null: none), and which creation it is. */
+  pick(kind: Kind | null, variant?: number): void {
+    this.highlight(kind, variant);
     this.onPick(kind);
   }
 
   /** Show the active kind without telling the app again (when the tool changes). */
-  highlight(kind: Kind | null): void {
+  highlight(kind: Kind | null, variant: number | undefined = kind === this.active ? this.activeVariant : undefined): void {
     this.active = kind;
-    for (const [k, card] of this.cards) card.classList.toggle("is-active", k === kind);
+    this.activeVariant = kind === null ? undefined : variant;
+    const key = kind === null ? null : variant === undefined ? kind : `${kind}#${variant}`;
+    for (const [k, card] of this.cards) card.classList.toggle("is-active", k === key);
   }
 
   get current(): Kind | null {
     return this.active;
+  }
+
+  /** The creation the brush paints with, if the chosen card is one of "Mis creaciones". */
+  get currentVariant(): number | undefined {
+    return this.activeVariant;
+  }
+
+  /** Fill "Mis creaciones" with the account's enemies and objects (heroes are chosen when playing). */
+  setCreations(creations: readonly CreationDto[]): void {
+    const group = this.groups.find((g) => g.dataset.category === MINE)!;
+    const grid = group.querySelector(".library-grid")!;
+    for (const [key, card] of [...this.cards]) if (card.classList.contains("is-mine")) this.cards.delete(key);
+    const placeable = creations.filter((c) => c.category !== "hero" && isKind(c.base_kind));
+    grid.replaceChildren(...placeable.map((c) => this.card(c.base_kind as Kind, c)));
+    group.querySelector(".library-empty")?.remove();
+    if (placeable.length === 0) {
+      grid.after(make("p", "library-empty", "Aún no tienes creaciones. Crea enemigos y objetos propios en el Panel de administración."));
+    }
+    if (this.activeVariant !== undefined && !placeable.some((c) => c.id === this.activeVariant)) this.pick(null);
+    this.apply();
   }
 
   /** A scene has only one player: its card is disabled once one is placed. */

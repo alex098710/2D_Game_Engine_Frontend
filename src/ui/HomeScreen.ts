@@ -4,7 +4,7 @@ import { isEnemy, type Kind } from "../model/GameObject";
 import { byId, make } from "./dom";
 import { relativeTime } from "./ProjectList";
 
-export type Destination = "home" | "editor" | "play" | "projects" | "settings";
+export type Destination = "home" | "editor" | "play" | "projects" | "settings" | "admin";
 
 const ACHIEVEMENTS_TOTAL = 5;
 

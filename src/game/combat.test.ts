@@ -16,9 +16,9 @@ describe("heroes and weapons", () => {
     expect(wand.projectile!.splash).toBeGreaterThan(0);
   });
 
-  it("there are eight heroes, each with its own texture and a weapon that flies or hits", () => {
-    expect(HEROES).toHaveLength(8);
-    expect(new Set(HEROES.map((h) => h.texture)).size).toBe(8);
+  it("there are eleven heroes (three soldiers with firearms), each with its own texture and a weapon that flies or hits", () => {
+    expect(HEROES).toHaveLength(11);
+    expect(new Set(HEROES.map((h) => h.texture)).size).toBe(11);
     for (const hero of HEROES) {
       const weapon = WEAPONS[hero.weapon];
       expect(weapon.windupMs).toBeGreaterThan(0);

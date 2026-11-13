@@ -339,6 +339,17 @@
               <span class="go"><span>Abrir ajustes</span><i aria-hidden="true">→</i></span>
             </span>
           </button>
+
+          <button class="option option-admin tone-red" type="button" data-go="admin">
+            <span class="option-glow" aria-hidden="true"></span>
+            <span class="option-art" aria-hidden="true"><img src="/textures/ally.png" alt="" /><img src="/textures/brute.png" alt="" /><img src="/textures/potion.png" alt="" class="is-small" /></span>
+            <span class="option-body">
+              <span class="option-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /></svg></span>
+              <h3>Panel de administración</h3>
+              <p>Ajusta la vida y el daño de héroes y enemigos, y crea los tuyos propios.</p>
+              <span class="go"><span>Abrir el panel</span><i aria-hidden="true">→</i></span>
+            </span>
+          </button>
         </div>
 
         <div class="recent">
@@ -349,6 +360,117 @@
           <ul id="recent-projects" class="recent-list"></ul>
         </div>
       </div>
+    </section>
+
+    <!-- Admin panel of the account: numbers of heroes and enemies, and own creations -->
+    <section id="admin" class="admin" hidden aria-label="Panel de administración">
+      <header class="adm-top">
+        <button id="adm-back" class="btn-back" type="button" aria-label="Volver al inicio">
+          <span class="btn-back-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></span>
+          <span class="btn-back-label">Inicio</span>
+        </button>
+        <div class="adm-title">
+          <span class="adm-shield" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /></svg></span>
+          <div><h1>Panel de administración</h1><p>Solo tu cuenta ve y usa estos cambios.</p></div>
+        </div>
+        <div class="adm-save">
+          <span id="adm-save-state" class="adm-save-state" data-state="clean">Todo guardado</span>
+          <button id="adm-discard" class="btn btn-ghost" type="button" disabled>Descartar</button>
+          <button id="adm-save" class="btn btn-primary adm-save-btn" type="button" disabled><span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">Guardar cambios</span></button>
+        </div>
+      </header>
+
+      <div class="adm-body">
+        <nav class="adm-nav" aria-label="Secciones del panel">
+          <span class="adm-nav-pill" aria-hidden="true"></span>
+          <button class="adm-nav-item is-active" type="button" data-section="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4zM14 20h6V11h-6zM4 20h6v-3H4zM14 7h6V4h-6z" /></svg><span>Resumen</span></button>
+          <button class="adm-nav-item" type="button" data-section="heroes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" /></svg><span>Héroes</span><b id="adm-count-heroes" class="adm-nav-count">0</b></button>
+          <button class="adm-nav-item" type="button" data-section="enemies"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c4 0 7 3 7 7 0 3-2 5-3 6v3H8v-3c-1-1-3-3-3-6 0-4 3-7 7-7zM9 10h.01M15 10h.01M10 21h4" /></svg><span>Enemigos</span><b id="adm-count-enemies" class="adm-nav-count">0</b></button>
+          <button class="adm-nav-item" type="button" data-section="creations"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /></svg><span>Mis creaciones</span><b id="adm-count-creations" class="adm-nav-count">0</b></button>
+        </nav>
+
+        <main class="adm-main">
+          <section class="adm-section" data-section="overview">
+            <div class="adm-hero">
+              <div class="adm-hero-text">
+                <p class="eyebrow">Tu reglamento</p>
+                <h2>Ajusta el juego a tu medida</h2>
+                <p>Cambia la vida y el daño de cada héroe y enemigo, y crea tus propios héroes, enemigos y objetos. Todo se aplica a tus partidas y a tu editor, y nadie más lo ve.</p>
+              </div>
+              <div class="adm-hero-art" aria-hidden="true"><img src="/textures/ally.png" alt="" /><img src="/textures/hero-knight.png" alt="" /><img src="/textures/demon.png" alt="" /><img src="/textures/chest.png" alt="" /></div>
+            </div>
+            <div class="adm-kpis">
+              <button class="adm-kpi tone-blue" type="button" data-go-section="heroes"><span class="adm-kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" /></svg></span><b id="adm-kpi-heroes">0</b><span>Héroes ajustados</span></button>
+              <button class="adm-kpi tone-red" type="button" data-go-section="enemies"><span class="adm-kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c4 0 7 3 7 7 0 3-2 5-3 6v3H8v-3c-1-1-3-3-3-6 0-4 3-7 7-7zM9 10h.01M15 10h.01M10 21h4" /></svg></span><b id="adm-kpi-enemies">0</b><span>Enemigos ajustados</span></button>
+              <button class="adm-kpi tone-gold" type="button" data-go-section="creations"><span class="adm-kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /></svg></span><b id="adm-kpi-creations">0</b><span>Creaciones propias</span></button>
+            </div>
+            <div class="adm-steps">
+              <div class="adm-step"><span>1</span><div><b>Ajusta</b><small>Mueve las barras de vida y daño: los cambios se ven al instante.</small></div></div>
+              <div class="adm-step"><span>2</span><div><b>Guarda</b><small>Pulsa «Guardar cambios», arriba a la derecha.</small></div></div>
+              <div class="adm-step"><span>3</span><div><b>Juega</b><small>Tus héroes salen al elegir héroe; tus enemigos y objetos, en la Biblioteca.</small></div></div>
+            </div>
+          </section>
+
+          <section class="adm-section" data-section="heroes" hidden>
+            <div class="adm-head"><div><h2>Héroes</h2><p>La vida y el daño de ataque de cada héroe en tus partidas.</p></div><button class="btn btn-ghost adm-reset-all" type="button" data-reset="heroes">Restablecer todos</button></div>
+            <div id="adm-heroes" class="adm-grid"></div>
+          </section>
+
+          <section class="adm-section" data-section="enemies" hidden>
+            <div class="adm-head"><div><h2>Enemigos</h2><p>La vida y el daño que hace cada enemigo.</p></div><button class="btn btn-ghost adm-reset-all" type="button" data-reset="enemies">Restablecer todos</button></div>
+            <label class="search adm-search"><svg class="icon" aria-hidden="true"><use href="#i-search" /></svg><input id="adm-enemy-search" type="search" placeholder="Buscar enemigo…" aria-label="Buscar enemigo" autocomplete="off" /></label>
+            <div id="adm-enemies" class="adm-grid"></div>
+          </section>
+
+          <section class="adm-section" data-section="creations" hidden>
+            <div class="adm-head"><div><h2>Mis creaciones</h2><p>Héroes, enemigos y objetos propios, basados en los del motor.</p></div><button id="adm-new" class="btn btn-primary adm-new" type="button"><span aria-hidden="true">＋</span> Nueva creación</button></div>
+            <div id="adm-filter" class="adm-filter" role="tablist" aria-label="Filtrar creaciones">
+              <span class="tab-pill" aria-hidden="true"></span>
+              <button class="adm-filter-item is-active" type="button" data-filter="all">Todas</button>
+              <button class="adm-filter-item" type="button" data-filter="hero">Héroes</button>
+              <button class="adm-filter-item" type="button" data-filter="enemy">Enemigos</button>
+              <button class="adm-filter-item" type="button" data-filter="object">Objetos</button>
+            </div>
+            <div id="adm-creations" class="adm-grid adm-grid-creations"></div>
+          </section>
+        </main>
+      </div>
+
+      <!-- The form of a creation: a drawer with a live preview. -->
+      <div id="adm-drawer-backdrop" class="adm-backdrop" hidden></div>
+      <aside id="adm-drawer" class="adm-drawer" hidden aria-label="Creación">
+        <form id="adm-form" class="adm-form" novalidate>
+          <header class="adm-drawer-head"><h3 id="adm-form-title">Nueva creación</h3><button id="adm-close" class="adm-close" type="button" aria-label="Cerrar">✕</button></header>
+          <div class="adm-form-body">
+            <div class="adm-preview" aria-hidden="true">
+              <span class="adm-preview-glow"></span>
+              <span id="adm-preview-sprite" class="adm-preview-sprite"></span>
+              <b id="adm-preview-name">Mi creación</b>
+              <small id="adm-preview-meta">Enemigo</small>
+            </div>
+            <div class="adm-field">
+              <span class="adm-label">Tipo</span>
+              <div id="adm-type" class="adm-type" role="radiogroup" aria-label="Tipo de creación">
+                <span class="tab-pill" aria-hidden="true"></span>
+                <button type="button" class="adm-type-item" data-type="hero">Héroe</button>
+                <button type="button" class="adm-type-item is-active" data-type="enemy">Enemigo</button>
+                <button type="button" class="adm-type-item" data-type="object">Objeto</button>
+              </div>
+            </div>
+            <label class="adm-field"><span class="adm-label-row"><span class="adm-label">Nombre</span><span id="adm-name-count" class="name-count">0/24</span></span><input id="adm-name" maxlength="24" placeholder="Ej.: Ogro de hielo" autocomplete="off" /></label>
+            <div class="adm-field"><span class="adm-label">Basado en</span><div id="adm-bases" class="adm-bases" role="radiogroup" aria-label="Basado en"></div></div>
+            <div class="adm-field"><span class="adm-label">Color</span><div id="adm-colors" class="adm-colors"></div></div>
+            <div id="adm-stats" class="adm-field adm-stats"></div>
+            <p id="adm-form-error" class="form-message is-error" role="alert"></p>
+          </div>
+          <footer class="adm-drawer-foot">
+            <button id="adm-delete" class="btn btn-ghost adm-delete" type="button" hidden>Eliminar</button>
+            <span class="spacer"></span>
+            <button id="adm-cancel" class="btn btn-ghost" type="button">Cancelar</button>
+            <button id="adm-submit" class="btn btn-primary" type="submit"><span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">Crear</span></button>
+          </footer>
+        </form>
+      </aside>
     </section>
 
     <!-- SVG icons used by the editor (one stroke style, 24 px grid) -->

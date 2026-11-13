@@ -12,7 +12,7 @@ test("a run is played with physics, finished and learned from", async ({ page })
   // Before every run the player picks a hero; each one has its own health and weapon.
   const heroes = page.locator("#hero-dialog");
   await expect(heroes).toBeVisible();
-  await expect(heroes.locator(".hero")).toHaveCount(4);
+  await expect(heroes.locator(".hero")).toHaveCount(11);
   await heroes.locator('.hero[data-hero="wizard"]').click();
   await expect(heroes.locator('.hero[data-hero="wizard"]')).toHaveAttribute("aria-checked", "true");
   await page.getByRole("button", { name: "Jugar con este héroe ›" }).click();

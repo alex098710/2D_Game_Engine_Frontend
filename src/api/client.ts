@@ -1,3 +1,4 @@
+import type { BalanceDto, CreationDto } from "../game/balance";
 import type { GameObject } from "../model/GameObject";
 import { HttpClient } from "./http";
 import { TokenStore, type TokenPair } from "./tokens";
@@ -247,4 +248,35 @@ export async function logOutEverywhere(): Promise<void> {
 
 export function myActivity(): Promise<ActivityDto[]> {
   return http.request<ActivityDto[]>("/me/activity");
+}
+
+// --- Admin panel of the account (balance and own creations) ---------------------------------
+
+export type { BalanceDto, CreationDto };
+
+/** Fields of a creation the panel sends (the id and dates come from the backend). */
+export type CreationInput = Omit<CreationDto, "id">;
+
+export function getBalance(): Promise<BalanceDto> {
+  return http.request<BalanceDto>("/me/balance");
+}
+
+export function saveBalance(balance: BalanceDto): Promise<BalanceDto> {
+  return http.request<BalanceDto>("/me/balance", { method: "PUT", body: JSON.stringify(balance) });
+}
+
+export function listCreations(): Promise<CreationDto[]> {
+  return http.request<CreationDto[]>("/me/creations");
+}
+
+export function createCreation(creation: CreationInput): Promise<CreationDto> {
+  return http.request<CreationDto>("/me/creations", { method: "POST", body: JSON.stringify(creation) });
+}
+
+export function updateCreation(id: number, creation: CreationInput): Promise<CreationDto> {
+  return http.request<CreationDto>(`/me/creations/${id}`, { method: "PUT", body: JSON.stringify(creation) });
+}
+
+export function deleteCreation(id: number): Promise<void> {
+  return http.request<void>(`/me/creations/${id}`, { method: "DELETE" });
 }

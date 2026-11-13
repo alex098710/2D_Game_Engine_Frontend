@@ -3,11 +3,12 @@ import type { RunResultDto } from "../api/client";
 import { isCharacter, isEnemy, isGround, isWeapon, WORLD_HEIGHT, WORLD_WIDTH, type GameObject, type Kind } from "../model/GameObject";
 import type { SceneModel } from "../model/SceneModel";
 import {
-  aimAngle, BARREL_BLAST, chargePower, enemyStats, healthColor, heroById, inSwing, isFirearm, leadAngle, MEDKIT_HEAL, POTION_HEAL, rangedIntent, ringAngles,
+  aimAngle, BARREL_BLAST, chargePower, healthColor, inSwing, isFirearm, leadAngle, rangedIntent, ringAngles,
   rollLoot, speedFor, WEAPONS,
-  type EnemyStats, type Hero, type ProjectileSpec, type Weapon, type WeaponId,
+  type EnemyStats, type ProjectileSpec, type Weapon, type WeaponId,
 } from "./combat";
 import { loadSounds, playEffect, playJingle, type Effect } from "./audio";
+import { objectValue, playableEnemy, playableHero, variantTint, type PlayableHero } from "./balance";
 import { touch } from "./touchInput";
 import { approach, fanAngles, launch, screenAngle, step, type Flight } from "./projectiles";
 import { RunTracker } from "./RunTracker";
@@ -148,7 +149,7 @@ export class PlayScene extends Phaser.Scene {
   private readonly hooks: PlayHooks;
   private tracker!: RunTracker;
   private difficulty = 0.5;
-  private hero: Hero = heroById(null);
+  private hero: PlayableHero = playableHero(null);
   private weapon: Weapon = WEAPONS.sword;
   private player!: Sprite;
   private held!: Phaser.GameObjects.Image;
@@ -199,7 +200,7 @@ export class PlayScene extends Phaser.Scene {
 
   init(data: { difficulty?: number; hero?: string }): void {
     this.difficulty = data.difficulty ?? 0.5;
-    this.hero = heroById(data.hero);
+    this.hero = playableHero(data.hero);
     this.weapon = WEAPONS[this.hero.weapon];
     this.finished = false;
     this.facing = 0;
@@ -270,7 +271,7 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     if (isEnemy(object.kind)) {
-      this.spawnEnemy(object.kind, object.x, object.y);
+      this.spawnEnemy(object.kind, object.x, object.y, object.variant);
       return;
     }
     if (isCharacter(object.kind)) {
@@ -284,7 +285,7 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     if (isWeapon(object.kind) || object.kind === "potion" || object.kind === "medkit") {
-      this.spawnItem(object.kind, object.x, object.y);
+      this.spawnItem(object.kind, object.x, object.y, true, object.variant);
       return;
     }
     switch (object.kind) {
@@ -301,29 +302,29 @@ export class PlayScene extends Phaser.Scene {
       case "flag":
       case "banner":
       case "rock":
-        this.solids.create(object.x, object.y, key).setDepth(depth);
+        this.tinted(this.solids.create(object.x, object.y, key) as Sprite, object).setDepth(depth);
         break;
       case "explosive": {
         const keg = this.explosives.create(object.x, object.y, key) as Sprite;
-        keg.setDepth(depth).setData("kind", "explosive");
+        this.tinted(keg, object).setDepth(depth).setData("kind", "explosive").setData("damage", objectValue("explosive", object.variant));
         break;
       }
       case "spike":
-        this.spikes.create(object.x, object.y, key).setDepth(-1);
+        this.tinted(this.spikes.create(object.x, object.y, key) as Sprite, object).setDepth(-1).setData("damage", objectValue("spike", object.variant));
         break;
       case "coin": {
-        const coin = this.coins.create(object.x, object.y, key) as Sprite;
+        const coin = this.tinted(this.coins.create(object.x, object.y, key) as Sprite, object);
         (coin.body as Phaser.Physics.Arcade.StaticBody).setSize(16, 16);
         this.tweens.add({ targets: coin, scaleX: { from: 1, to: 0.25 }, duration: 380, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
         break;
       }
       case "chest":
-        this.chests.create(object.x, object.y, key).setDepth(depth);
+        this.tinted(this.chests.create(object.x, object.y, key) as Sprite, object).setDepth(depth);
         break;
       case "box":
       case "barrel": {
         const heavy = object.kind === "barrel";
-        const box = this.boxes.create(object.x, object.y, key) as Sprite;
+        const box = this.tinted(this.boxes.create(object.x, object.y, key) as Sprite, object);
         box.setDepth(depth).setDrag(heavy ? 700 : 400).setBounce(0.1).setCollideWorldBounds(true).setMass(heavy ? 4 : 2).setPushable(true);
         break;
       }
@@ -332,12 +333,13 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
-  private spawnEnemy(kind: Kind, x: number, y: number): void {
-    const stats = enemyStats(kind);
+  private spawnEnemy(kind: Kind, x: number, y: number, variant?: number): void {
+    const stats = playableEnemy(kind, variant);
     const enemy = this.enemies.create(x, y, stats.texture) as Sprite;
     const mass = { brute: 4, demon: 12, tank: 14, captain: 4 }[kind as string] ?? 1.5;
     enemy.setDepth(y / WORLD_HEIGHT).setBounce(0.2).setCollideWorldBounds(true).setMass(mass).setScale(stats.scale);
     (enemy.body as Body).setSize(22, 20).setOffset(5, 10);
+    if (stats.tint !== null) enemy.setTint(stats.tint);
     enemy.setData("kind", kind);
     enemy.setData("stats", stats);
     enemy.setData("hp", stats.health);
@@ -355,9 +357,23 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
-  private spawnItem(kind: Kind, x: number, y: number, float = true): Sprite {
+  /** Paints an object with the colour of the account's creation it is, if any. */
+  private tinted(sprite: Sprite, object: GameObject): Sprite {
+    const tint = variantTint(object.kind, object.variant);
+    if (tint !== null) sprite.setTint(tint);
+    return sprite;
+  }
+
+  /** Every weapon hits harder (or softer) by the hero's damage bonus, never below 1. */
+  private damageOf(weapon: Weapon): number {
+    return Math.max(1, weapon.damage + this.hero.damageBonus);
+  }
+
+  private spawnItem(kind: Kind, x: number, y: number, float = true, variant?: number): Sprite {
     const item = this.items.create(x, y, KIND_TEXTURE[kind].key) as Sprite;
-    item.setData("kind", kind).setDepth(y / WORLD_HEIGHT);
+    item.setData("kind", kind).setData("variant", variant).setDepth(y / WORLD_HEIGHT);
+    const tint = variantTint(kind, variant);
+    if (tint !== null) item.setTint(tint);
     (item.body as Body).setImmovable(true);
     if (float) this.tweens.add({ targets: item, y: y - 4, duration: 700, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
     return item;
@@ -365,6 +381,7 @@ export class PlayScene extends Phaser.Scene {
 
   private createPlayer(spawn: { x: number; y: number }): void {
     this.player = this.physics.add.sprite(spawn.x, spawn.y, this.hero.texture);
+    if (this.hero.tint !== null) this.player.setTint(this.hero.tint);
     this.playerShadow = this.add.image(spawn.x, spawn.y + 13, "shadow").setDepth(-1).setScale(2.4, 2).setAlpha(0.55);
     this.player.setCollideWorldBounds(true).setDepth(spawn.y / WORLD_HEIGHT);
     (this.player.body as Body).setSize(18, 20).setOffset(7, 11);
@@ -420,7 +437,7 @@ export class PlayScene extends Phaser.Scene {
     physics.overlap(this.player, this.arrows, (_player, shadow) => this.shotHitPlayer(shadow as Sprite));
     physics.overlap(this.player, this.coins, (_player, coin) => this.collect(coin as Sprite));
     physics.overlap(this.player, this.items, (_player, item) => this.pickUp(item as Sprite));
-    physics.overlap(this.player, this.spikes, (_player, spike) => this.hurt("spike", spike as Sprite, 1));
+    physics.overlap(this.player, this.spikes, (_player, spike) => this.hurt("spike", spike as Sprite, ((spike as Sprite).getData("damage") as number | undefined) ?? 1));
     physics.overlap(this.player, this.enemies, (_player, enemy) => {
       const e = enemy as Sprite;
       if (!e.body?.enable) return;
@@ -927,7 +944,7 @@ export class PlayScene extends Phaser.Scene {
     if (!item.active || !item.body?.enable) return;
     const kind = item.getData("kind") as Kind;
     if (kind === "potion" || kind === "medkit") {
-      const heal = kind === "medkit" ? MEDKIT_HEAL : POTION_HEAL;
+      const heal = objectValue(kind, item.getData("variant") as number | undefined);
       this.tracker.pickUp(kind, heal);
       playEffect(this, "potion", { volume: 0.7 });
       this.floatText(this.player.x, this.player.y - 20, `+${heal} ♥`, "#33e0a1");
@@ -1042,7 +1059,7 @@ export class PlayScene extends Phaser.Scene {
       for (const child of [...this.enemies.getChildren()]) {
         const enemy = child as Sprite;
         if (!enemy.body?.enable) continue;
-        if (inSwing(enemy.x - this.player.x, enemy.y - this.player.y, aim, weapon)) this.damageEnemy(enemy, weapon.damage, aim, weapon.knockback);
+        if (inSwing(enemy.x - this.player.x, enemy.y - this.player.y, aim, weapon)) this.damageEnemy(enemy, this.damageOf(weapon), aim, weapon.knockback);
       }
       for (const child of [...this.explosives.getChildren()]) {
         const keg = child as Sprite;
@@ -1079,7 +1096,7 @@ export class PlayScene extends Phaser.Scene {
       const enemy = child as Sprite;
       if (!enemy.body?.enable) continue;
       const distance = Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y);
-      if (distance <= weapon.shockwave) this.damageEnemy(enemy, weapon.damage, Phaser.Math.Angle.Between(x, y, enemy.x, enemy.y), weapon.knockback);
+      if (distance <= weapon.shockwave) this.damageEnemy(enemy, this.damageOf(weapon), Phaser.Math.Angle.Between(x, y, enemy.x, enemy.y), weapon.knockback);
     }
   }
 
@@ -1135,7 +1152,7 @@ export class PlayScene extends Phaser.Scene {
 
   private spawnShot(weapon: Weapon, spec: ProjectileSpec, x: number, y: number, angle: number, power: number): void {
     this.spawnProjectile({
-      spec, x, y, angle, range: weapon.range, power, damage: weapon.damage, knockback: weapon.knockback, hostile: false, source: "player",
+      spec, x, y, angle, range: weapon.range, power, damage: this.damageOf(weapon), knockback: weapon.knockback, hostile: false, source: "player",
     });
   }
 
@@ -1427,7 +1444,8 @@ export class PlayScene extends Phaser.Scene {
     if (!keg.active || keg.getData("gone")) return;
     keg.setData("gone", true);
     const { x, y } = keg;
-    const { damage, radius } = BARREL_BLAST;
+    const radius = BARREL_BLAST.radius;
+    const damage = (keg.getData("damage") as number | undefined) ?? BARREL_BLAST.damage;
     keg.destroy();
     this.boom(x, y, radius);
     for (const child of [...this.enemies.getChildren()]) {

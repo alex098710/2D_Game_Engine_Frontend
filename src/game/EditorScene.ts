@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { isCharacter, isEnemy, isGround, SIZES, WORLD_HEIGHT, WORLD_WIDTH, type GameObject, type Kind } from "../model/GameObject";
 import { clampToWorld, fitZoom, snap } from "../model/geometry";
 import type { SceneModel } from "../model/SceneModel";
+import { variantTint } from "./balance";
 import { bob, KIND_TEXTURE, loadTextures } from "./textures";
 
 export interface EditorOptions {
@@ -257,6 +258,11 @@ export class EditorScene extends Phaser.Scene {
     );
   }
 
+  /** Draw everything again (after the account's creations change colour). */
+  refresh(): void {
+    if (this.sys?.isActive()) this.redraw();
+  }
+
   private redraw(): void {
     this.drawnImages().forEach((image) => image.destroy());
     for (const object of this.model) {
@@ -271,6 +277,8 @@ export class EditorScene extends Phaser.Scene {
   private drawObject(object: GameObject): void {
     const texture = KIND_TEXTURE[object.kind];
     const sprite = this.add.sprite(object.x, object.y, texture.key);
+    const tint = variantTint(object.kind, object.variant);
+    if (tint !== null) sprite.setTint(tint);
     if (object.kind === "coin" || isEnemy(object.kind) || isCharacter(object.kind)) bob(this, sprite);
     // Taller objects further down the screen are drawn on top (fake depth).
     sprite.setDepth(object.kind === "water" ? -6 : isGround(object.kind) ? (object.kind === "bridge" ? -4 : -5) : object.y / WORLD_HEIGHT);
