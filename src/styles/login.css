@@ -303,6 +303,197 @@
 .link:hover { text-decoration: underline; }
 .login-footnote { margin: 0; color: var(--text-muted); font-size: 12px; text-align: center; }
 
+/* ---------- the professional card ---------- */
+/* The panel is a dark stage with a faint grid and two slow lights; the form
+   floats on it as a glass card whose border is a light running around it. */
+.login-panel {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(600px 420px at 85% 8%, rgba(56, 196, 255, 0.10), transparent 70%),
+    radial-gradient(520px 480px at 10% 100%, rgba(31, 123, 255, 0.12), transparent 70%),
+    var(--bg-elevated);
+}
+.login-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(120, 170, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 170, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  -webkit-mask: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+  mask: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+}
+
+@property --spin { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+.auth-card {
+  position: relative;
+  max-width: 440px;
+  padding: 30px 28px 24px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(16, 29, 54, 0.78), rgba(8, 15, 30, 0.86));
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: card-in 0.7s var(--ease) both 0.15s;
+}
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(from var(--spin), rgba(56, 196, 255, 0.05) 0deg, rgba(56, 196, 255, 0.9) 40deg, rgba(31, 123, 255, 0.15) 90deg, rgba(120, 170, 255, 0.12) 180deg, rgba(31, 123, 255, 0.15) 270deg, rgba(56, 196, 255, 0.05) 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: border-spin 6s linear infinite;
+}
+@keyframes border-spin { to { --spin: 360deg; } }
+@keyframes card-in { from { opacity: 0; transform: translateY(16px) scale(0.985); } }
+
+.auth-head { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+.auth-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 35%, rgba(56, 196, 255, 0.28), rgba(11, 63, 214, 0.18) 60%, rgba(5, 11, 24, 0.9));
+  border: 1px solid rgba(56, 196, 255, 0.35);
+  box-shadow: 0 0 22px rgba(31, 123, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.auth-badge img { width: 40px; height: auto; animation: float 4s ease-in-out infinite; }
+.auth-title { margin: 0; font-family: var(--font-brand); font-size: 21px; font-weight: 800; letter-spacing: 0.01em; color: #f2f6ff; }
+.auth-subtitle { margin: 4px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--text-muted); }
+
+/* Fields with an icon on the left. */
+.control.has-icon input { padding-left: 44px; }
+.field-icon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: stroke 0.2s;
+}
+.field:focus-within .field-icon { stroke: var(--forge-hi); }
+.field[data-state="bad"] .field-icon { stroke: var(--danger); }
+.field[data-state="ok"] .field-icon { stroke: var(--success); }
+.control input::placeholder { color: #4a5f86; }
+.msg:empty { display: none; }
+
+/* The guide box: opens under the field being filled in. */
+.hint {
+  display: grid;
+  grid-template-rows: 0fr;
+  gap: 2px;
+  margin: 0;
+  padding: 0 12px 0 34px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #b9c8e3;
+  background: rgba(31, 123, 255, 0.08);
+  border: 1px solid transparent;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.35s var(--ease), opacity 0.25s, padding 0.35s var(--ease), border-color 0.25s, margin 0.35s var(--ease);
+}
+.hint b { display: block; font-family: var(--font-tag); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--forge-hi); font-weight: 400; }
+.hint::before {
+  content: "i";
+  position: absolute;
+  left: 11px;
+  top: 10px;
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  font: 700 10px/1 var(--font);
+  color: #04101f;
+  background: var(--forge-hi);
+}
+.field:focus-within .hint {
+  opacity: 1;
+  max-height: 120px;
+  padding: 9px 12px 9px 34px;
+  border-color: rgba(56, 196, 255, 0.28);
+}
+.field[data-state="bad"]:focus-within .hint { background: rgba(255, 77, 109, 0.07); border-color: rgba(255, 77, 109, 0.3); }
+.field[data-state="bad"] .hint::before { background: var(--danger); color: #fff; content: "!"; }
+.field[data-state="bad"] .hint b { color: var(--danger); }
+
+/* "What you need": the required data and how much is ready. */
+.needs {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(5, 11, 24, 0.7);
+  border: 1px solid var(--border);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.needs.is-complete { border-color: rgba(51, 224, 161, 0.45); box-shadow: 0 0 22px rgba(51, 224, 161, 0.12); }
+.needs-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: var(--font-tag); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
+.needs-count { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0; color: var(--forge-hi); }
+.needs.is-complete .needs-count { color: var(--success); }
+.needs-bar { height: 4px; border-radius: 4px; background: #0d1a33; overflow: hidden; }
+.needs-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--forge-deep), var(--forge-hi)); box-shadow: 0 0 10px rgba(56, 196, 255, 0.6); transition: width 0.45s var(--ease), background 0.3s; }
+.needs.is-complete .needs-bar i { background: linear-gradient(90deg, #12a173, var(--success)); box-shadow: 0 0 10px rgba(51, 224, 161, 0.6); }
+.needs-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12.5px; }
+.needs-list li { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--text-muted); transition: color 0.2s; }
+.needs-list li[hidden] { display: none; }
+.needs-list li::before {
+  content: "";
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  transition: background 0.25s, border-color 0.25s, transform 0.25s var(--ease);
+}
+.needs-list li.is-ok { color: var(--text); }
+.needs-list li.is-ok::before {
+  border-color: var(--success);
+  background: var(--success) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2304120c' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center / 10px no-repeat;
+  transform: scale(1.08);
+}
+
+/* The main button: a light passes over it now and then. */
+.auth-form .btn-forge { position: relative; overflow: hidden; border-radius: 12px; min-height: 50px; font-weight: 700; }
+.auth-form .btn-forge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: btn-shine 3.6s ease-in-out infinite 1.2s;
+  pointer-events: none;
+}
+.auth-form .btn-forge:hover { box-shadow: 0 0 30px rgba(56, 160, 255, 0.65), 0 0 80px rgba(31, 123, 255, 0.3); transform: translateY(-1px); }
+@keyframes btn-shine { 0%, 60% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+
+.trust { list-style: none; margin: 2px 0 0; padding: 14px 0 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 16px; border-top: 1px solid rgba(120, 170, 255, 0.1); font-size: 11.5px; color: var(--text-muted); }
+.trust li { display: inline-flex; align-items: center; gap: 6px; }
+.trust svg { width: 14px; height: 14px; fill: none; stroke: var(--forge-hi); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
 @media (max-width: 900px) {
   /* One column that scrolls as a whole: the battle band on top, the form below.
      A column flexbox (not a grid row) so the band keeps its height. */
@@ -334,6 +525,8 @@
 }
 @media (max-width: 480px) {
   .rules { grid-template-columns: 1fr; }
+  .auth-card { padding: 22px 16px 18px; border-radius: 16px; }
+  .needs-list { grid-template-columns: 1fr; }
   .hero-chips li:nth-child(3) { display: none; }
 }
 /* A phone turned sideways: back to two columns so nothing is cut or squeezed,
@@ -362,5 +555,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .fx { display: none; }
-  .battle, .hero-copy > * { animation: none; }
+  .battle, .hero-copy > *, .auth-card, .auth-card::before, .auth-form .btn-forge::after, .auth-badge img { animation: none; }
 }

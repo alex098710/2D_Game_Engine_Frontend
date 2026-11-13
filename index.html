@@ -46,7 +46,14 @@
       </div>
 
       <div class="login-panel">
-        <form id="auth-form" class="auth-form" novalidate>
+        <form id="auth-form" class="auth-form auth-card" novalidate>
+          <header class="auth-head">
+            <span class="auth-badge" aria-hidden="true"><img src="/brand/emblem.png" alt="" width="44" height="31" /></span>
+            <div>
+              <h2 id="auth-title" class="auth-title">Bienvenido de vuelta</h2>
+              <p id="auth-subtitle" class="auth-subtitle">Inicia sesión para seguir construyendo tus mundos.</p>
+            </div>
+          </header>
           <div id="auth-tabs" class="seg" data-mode="login" role="tablist" aria-label="Acceso">
             <span class="seg-pill" aria-hidden="true"></span>
             <button id="tab-login" type="button" role="tab" aria-selected="true">Iniciar sesión</button>
@@ -57,24 +64,34 @@
 
           <div class="field is-register" id="field-username" hidden>
             <label for="auth-username">Nombre de usuario <span>3–20 caracteres</span></label>
-            <div class="control"><input id="auth-username" type="text" autocomplete="username" maxlength="20" spellcheck="false" /><span class="state" aria-hidden="true"></span></div>
+            <div class="control has-icon">
+              <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" /></svg>
+              <input id="auth-username" type="text" autocomplete="username" maxlength="20" placeholder="Ej: forjador_2d" spellcheck="false" aria-describedby="hint-username" /><span class="state" aria-hidden="true"></span>
+            </div>
             <p class="msg" id="msg-username"></p>
+            <div class="hint" id="hint-username"><b>Qué escribir</b><span data-hint="username"></span></div>
           </div>
           <div class="field" id="field-email">
             <label for="auth-email">Correo electrónico</label>
-            <div class="control"><input id="auth-email" type="email" autocomplete="email" maxlength="254" placeholder="tu@correo.com" spellcheck="false" /><span class="state" aria-hidden="true"></span></div>
+            <div class="control has-icon">
+              <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
+              <input id="auth-email" type="email" autocomplete="email" maxlength="254" placeholder="tu@correo.com" spellcheck="false" aria-describedby="hint-email" /><span class="state" aria-hidden="true"></span>
+            </div>
             <p class="msg" id="msg-email"></p>
+            <div class="hint" id="hint-email"><b>Qué escribir</b><span data-hint="email"></span></div>
           </div>
           <div class="field" id="field-password">
             <label for="auth-password">Contraseña <span id="caps-warning" class="caps" hidden>Bloq Mayús activado</span></label>
-            <div class="control">
-              <input id="auth-password" type="password" autocomplete="current-password" maxlength="128" /><span class="state" aria-hidden="true"></span>
+            <div class="control has-icon">
+              <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+              <input id="auth-password" type="password" autocomplete="current-password" maxlength="128" placeholder="••••••••" aria-describedby="hint-password" /><span class="state" aria-hidden="true"></span>
               <button class="eye" type="button" data-toggle-password="auth-password" aria-label="Mostrar contraseña" aria-pressed="false">
                   <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><circle cx="12" cy="12" r="3" /></svg>
                   <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
               </button>
             </div>
             <p class="msg" id="msg-password"></p>
+            <div class="hint" id="hint-password"><b>Qué escribir</b><span data-hint="password"></span></div>
           </div>
           <div id="password-help" class="password-help is-register" hidden>
             <div id="strength" class="meter" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -88,16 +105,33 @@
           </div>
           <div class="field is-register" id="field-confirm" hidden>
             <label for="auth-confirm">Confirmar contraseña</label>
-            <div class="control">
-              <input id="auth-confirm" type="password" autocomplete="new-password" maxlength="128" /><span class="state" aria-hidden="true"></span>
+            <div class="control has-icon">
+              <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /><path d="m9.5 16 1.8 1.8 3.2-3.3" /></svg>
+              <input id="auth-confirm" type="password" autocomplete="new-password" maxlength="128" placeholder="Repite la contraseña" aria-describedby="hint-confirm" /><span class="state" aria-hidden="true"></span>
               <button class="eye" type="button" data-toggle-password="auth-confirm" aria-label="Mostrar contraseña" aria-pressed="false">
                   <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><circle cx="12" cy="12" r="3" /></svg>
                   <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
               </button>
             </div>
             <p class="msg" id="msg-confirm"></p>
+            <div class="hint" id="hint-confirm"><b>Qué escribir</b><span data-hint="confirm"></span></div>
           </div>
           <label class="check is-register" id="terms-row" hidden><input id="auth-terms" type="checkbox" /> <span>Acepto las condiciones de uso y la política de privacidad.</span></label>
+
+          <div id="auth-needs" class="needs" aria-live="polite">
+            <div class="needs-head">
+              <span id="needs-title">Para entrar necesitas</span>
+              <span id="needs-count" class="needs-count">0 / 2</span>
+            </div>
+            <div class="needs-bar" aria-hidden="true"><i id="needs-bar"></i></div>
+            <ul class="needs-list">
+              <li class="is-register" data-need="username" hidden>Un nombre de usuario válido</li>
+              <li data-need="email">Tu correo electrónico</li>
+              <li data-need="password">Tu contraseña</li>
+              <li class="is-register" data-need="confirm" hidden>La contraseña repetida</li>
+              <li class="is-register" data-need="terms" hidden>Aceptar las condiciones</li>
+            </ul>
+          </div>
 
           <p id="auth-message" class="form-message" role="alert"></p>
           <button id="auth-submit" class="btn btn-forge btn-block" type="submit">
@@ -110,7 +144,11 @@
             <p>Preparando tu forja…</p>
           </div>
           <p class="form-foot"><span id="auth-switch-text">¿No tienes cuenta?</span> <button id="auth-switch" class="link" type="button">Crea una</button></p>
-          <p class="login-footnote">Tu sesión usa tokens seguros que se renuevan solos.</p>
+          <ul class="trust" aria-label="Seguridad">
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg>Conexión cifrada</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></svg>Sesión que se renueva</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Tus datos son privados</li>
+          </ul>
         </form>
       </div>
     </section>

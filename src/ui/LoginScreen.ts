@@ -13,6 +13,27 @@ type FieldName = "username" | "email" | "password" | "confirm";
 
 const STRENGTH_COLORS = ["#ff4d6d", "#ff8a3d", "#ffc547", "#33e0a1"];
 
+/** The guide box under each field: what to write there, for each mode. */
+const HINTS: Record<Mode, Record<FieldName, string>> = {
+  login: {
+    username: "",
+    email: "El correo con el que creaste tu cuenta, por ejemplo nombre@gmail.com.",
+    password: "La contraseña de tu cuenta. Distingue mayúsculas de minúsculas; usa el ojo para verla.",
+    confirm: "",
+  },
+  register: {
+    username: "Entre 3 y 20 caracteres: letras, números o guion bajo (_). Es el nombre que verán los demás.",
+    email: "Un correo que uses de verdad, por ejemplo nombre@gmail.com. Con él iniciarás sesión.",
+    password: "Mínimo 8 caracteres, con letras y números o símbolos. Una frase que recuerdes es lo más seguro.",
+    confirm: "Escribe otra vez la misma contraseña para confirmar que no hay errores.",
+  },
+};
+
+const COPY: Record<Mode, { title: string; subtitle: string; needs: string }> = {
+  login: { title: "Bienvenido de vuelta", subtitle: "Inicia sesión para seguir construyendo tus mundos.", needs: "Para entrar necesitas" },
+  register: { title: "Crea tu cuenta", subtitle: "Unos datos y empiezas a forjar tus propios niveles.", needs: "Para crear tu cuenta necesitas" },
+};
+
 /**
  * The full-screen access page, the only thing shown before logging in.
  *
@@ -59,7 +80,10 @@ export class LoginScreen {
       input.addEventListener("keyup", (event) => this.showCapsLock(event));
       input.addEventListener("keydown", (event) => this.showCapsLock(event));
     }
-    this.terms.addEventListener("change", () => byId("terms-row").classList.remove("is-bad"));
+    this.terms.addEventListener("change", () => {
+      byId("terms-row").classList.remove("is-bad");
+      this.showNeeds();
+    });
     this.form.addEventListener("submit", (event) => {
       event.preventDefault();
       void this.send();
@@ -77,11 +101,38 @@ export class LoginScreen {
     this.submit.querySelector(".btn-label")!.textContent = register ? "Crear cuenta" : "Entrar a la forja";
     byId("auth-switch-text").textContent = register ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?";
     byId("auth-switch").textContent = register ? "Inicia sesión" : "Crea una";
+    byId("auth-title").textContent = COPY[mode].title;
+    byId("auth-subtitle").textContent = COPY[mode].subtitle;
+    byId("needs-title").textContent = COPY[mode].needs;
+    for (const hint of this.form.querySelectorAll<HTMLElement>("[data-hint]")) {
+      hint.textContent = HINTS[mode][hint.dataset.hint as FieldName];
+    }
     this.touched.clear();
     this.banner.hidden = true;
     this.setMessage("");
     for (const name of Object.keys(this.inputs) as FieldName[]) this.paint(name, { state: "", message: "" });
     this.showPasswordHelp();
+    this.showNeeds();
+  }
+
+  /** The "what you need" box: which required data is already filled in correctly. */
+  private showNeeds(): void {
+    const names: FieldName[] = this.mode === "register" ? ["username", "email", "password", "confirm"] : ["email", "password"];
+    let done = 0;
+    for (const name of names) {
+      const ok = this.mode === "login" && name === "password" ? this.inputs.password.value !== "" : this.checkOf(name).state === "ok";
+      this.form.querySelector(`[data-need="${name}"]`)!.classList.toggle("is-ok", ok);
+      if (ok) done += 1;
+    }
+    let total = names.length;
+    if (this.mode === "register") {
+      total += 1;
+      this.form.querySelector('[data-need="terms"]')!.classList.toggle("is-ok", this.terms.checked);
+      if (this.terms.checked) done += 1;
+    }
+    byId("needs-count").textContent = `${done} / ${total}`;
+    byId("needs-bar").style.width = `${(done / total) * 100}%`;
+    byId("auth-needs").classList.toggle("is-complete", done === total);
   }
 
   /** The check of one field for the current mode. */
@@ -109,6 +160,7 @@ export class LoginScreen {
   private refresh(name: FieldName): void {
     this.setMessage("");
     this.live(name);
+    this.showNeeds();
     if (this.mode !== "register") return;
     this.showPasswordHelp();
     if (name !== "confirm" && this.inputs.confirm.value !== "") this.live("confirm");
