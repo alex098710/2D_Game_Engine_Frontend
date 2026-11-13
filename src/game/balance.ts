@@ -31,6 +31,8 @@ export interface CreationDto {
   damage: number;
   speed: number;
   value: number;
+  /** One of the account's own pictures, drawn instead of the base's (null: the base's drawing). */
+  sprite_id?: number | null;
 }
 
 /** A hero ready to play: its health and a bonus added to every weapon's damage. */
@@ -41,10 +43,13 @@ export interface PlayableHero extends Omit<Hero, "id"> {
   damageBonus: number;
   tint: number | null;
   custom: boolean;
+  /** The account's picture this hero is drawn with, or null for its own drawing. */
+  spriteId: number | null;
 }
 
 export interface PlayableEnemy extends EnemyStats {
   tint: number | null;
+  spriteId: number | null;
 }
 
 /** Same limits as the backend (app/admin/rules.py). */
@@ -110,8 +115,10 @@ export function playableHero(id: string | null | undefined): PlayableHero {
       speed: custom.speed || base.speed,
       damage: custom.damage,
       damageBonus: custom.damage - heroBaseDamage(base),
-      tint: tintValue(custom.tint),
+      // A picture of its own is shown as uploaded, without a colour on top.
+      tint: custom.sprite_id ? null : tintValue(custom.tint),
       custom: true,
+      spriteId: custom.sprite_id ?? null,
       bars: { health: Math.min(10, custom.health), speed: Math.round((custom.speed || base.speed) / 25) - 2, power: Math.min(10, custom.damage * 3) },
     };
   }
@@ -125,6 +132,7 @@ export function playableHero(id: string | null | undefined): PlayableHero {
     damageBonus: damage - heroBaseDamage(base),
     tint: null,
     custom: false,
+    spriteId: null,
   };
 }
 
@@ -141,10 +149,13 @@ export function playableEnemy(kind: Kind, variant?: number): PlayableEnemy {
   const base = enemyStats(kind);
   const custom = creationById(variant);
   if (custom && custom.category === "enemy" && custom.base_kind === kind) {
-    return { ...base, name: custom.name, health: custom.health, damage: custom.damage, speed: custom.speed, tint: tintValue(custom.tint) };
+    return {
+      ...base, name: custom.name, health: custom.health, damage: custom.damage, speed: custom.speed,
+      tint: custom.sprite_id ? null : tintValue(custom.tint), spriteId: custom.sprite_id ?? null,
+    };
   }
   const own = balance.enemies[kind];
-  return { ...base, health: own?.health ?? base.health, damage: own?.damage ?? base.damage, tint: null };
+  return { ...base, health: own?.health ?? base.health, damage: own?.damage ?? base.damage, tint: null, spriteId: null };
 }
 
 /** What a potion heals, a spike hurts or a keg blasts, with the account's own objects. */
@@ -161,8 +172,15 @@ export function objectValue(kind: Kind, variant?: number): number {
 /** The colour an object of the map is drawn with (its creation's tint), or null. */
 export function variantTint(kind: Kind, variant?: number): number | null {
   const custom = creationById(variant);
-  if (!custom || custom.base_kind !== kind || custom.category === "hero") return null;
+  if (!custom || custom.base_kind !== kind || custom.category === "hero" || custom.sprite_id) return null;
   return tintValue(custom.tint);
+}
+
+/** The account's picture an object of the map is drawn with, or null for the base's drawing. */
+export function variantSprite(kind: Kind, variant?: number): number | null {
+  const custom = creationById(variant);
+  if (!custom || custom.base_kind !== kind || custom.category === "hero") return null;
+  return custom.sprite_id ?? null;
 }
 
 /** The name an object of the map shows (its creation's), or null for the base name. */

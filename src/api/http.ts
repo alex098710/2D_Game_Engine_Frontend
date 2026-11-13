@@ -40,8 +40,15 @@ const MESSAGES: Record<string, string> = {
 const SEAL_EXPIRED = "Sealed request invalid or expired";
 
 /** Spanish text for an error. The backend speaks English; the user never sees it. */
+/** A server message written in Spanish for the player (not a technical one in English). */
+export function isForThePlayer(detail: string): boolean {
+  return detail.length > 0 && detail.length <= 200 && (/[áéíóúñ¿¡]/i.test(detail) || /^(El|La|Los|Las|Esa|Ese|Esta|Este|Puedes|Una|Un|No|Tu|Hay|Pide|Escribe) /.test(detail));
+}
+
 export function friendlyMessage(status: number, detail: string): string {
   if (MESSAGES[detail]) return MESSAGES[detail];
+  // Messages the server already wrote for the player, in Spanish (e.g. why a picture was refused).
+  if ([400, 409, 413, 422, 503].includes(status) && isForThePlayer(detail)) return detail;
   if (status === 0) return "No se pudo conectar con el servidor.";
   if (status === 401) return "Tu sesión terminó. Vuelve a iniciar sesión.";
   if (status === 403) return "No tienes permiso para hacer esto.";

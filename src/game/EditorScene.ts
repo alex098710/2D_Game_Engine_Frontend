@@ -2,7 +2,8 @@ import Phaser from "phaser";
 import { isCharacter, isEnemy, isGround, SIZES, WORLD_HEIGHT, WORLD_WIDTH, type GameObject, type Kind } from "../model/GameObject";
 import { clampToWorld, containZoom, fitZoom, snap, viewMargins } from "../model/geometry";
 import type { SceneModel } from "../model/SceneModel";
-import { variantTint } from "./balance";
+import { variantSprite, variantTint } from "./balance";
+import { spriteTexture } from "./sprites";
 import { bob, KIND_TEXTURE, loadTextures } from "./textures";
 
 export interface EditorOptions {
@@ -306,7 +307,7 @@ export class EditorScene extends Phaser.Scene {
 
   private drawObject(object: GameObject): void {
     const texture = KIND_TEXTURE[object.kind];
-    const sprite = this.add.sprite(object.x, object.y, texture.key);
+    const sprite = this.add.sprite(object.x, object.y, spriteTexture(this, variantSprite(object.kind, object.variant), texture.key));
     const tint = variantTint(object.kind, object.variant);
     if (tint !== null) sprite.setTint(tint);
     if (object.kind === "coin" || isEnemy(object.kind) || isCharacter(object.kind)) bob(this, sprite);

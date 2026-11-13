@@ -1,14 +1,16 @@
-import { createCreation, deleteCreation, saveBalance, updateCreation, type CreationInput } from "../api/client";
+import { createCreation, deleteCreation, deleteSprite, saveBalance, updateCreation, uploadSprite, type CreationInput } from "../api/client";
 import { iconUrl, TEXTURE_BASE } from "../game/assets";
 import {
   baseKinds, currentBalance, currentCreations, enemyDefaults, heroBaseDamage, LIMITS, OBJECT_BASES, tintValue,
   type BalanceDto, type CreationCategory, type CreationDto, type Stats,
 } from "../game/balance";
 import { HEROES, heroById, WEAPONS } from "../game/combat";
+import { currentSprites, setSprites, spritesReady, spriteUrl } from "../game/sprites";
 import { KIND_INFO, type Kind } from "../model/GameObject";
 import { byId, errorText, make } from "./dom";
 import { trackActive } from "./editorFx";
 import { NightScene } from "./NightScene";
+import { nameFromFile, prepareSprite, UploadError } from "./spriteUpload";
 import { toast } from "./toast";
 
 type Section = "overview" | "heroes" | "enemies" | "creations";
@@ -59,6 +61,7 @@ export class AdminPanel {
 
   constructor(onBack: () => void, onRules: (balance: BalanceDto, creations: CreationDto[]) => void) {
     this.onBack = onBack;
+    watchValues(this.screen);
     this.onRules = onRules;
     byId("adm-back").addEventListener("click", () => this.leave());
     for (const item of this.screen.querySelectorAll<HTMLButtonElement>(".adm-nav-item")) {
@@ -133,8 +136,19 @@ export class AdminPanel {
       item.classList.toggle("is-active", active);
       item.setAttribute("aria-current", active ? "page" : "false");
     }
-    for (const panel of this.screen.querySelectorAll<HTMLElement>(".adm-section")) panel.hidden = panel.dataset.section !== section;
+    for (const panel of this.screen.querySelectorAll<HTMLElement>(".adm-section")) {
+      panel.hidden = panel.dataset.section !== section;
+      // The cards of the section come in one after another (CSS: .is-entering).
+      panel.classList.remove("is-entering");
+      if (!panel.hidden) {
+        void panel.offsetWidth;
+        panel.classList.add("is-entering");
+      }
+    }
     this.screen.querySelector(".adm-main")?.scrollTo({ top: 0 });
+    if (section === "overview") {
+      for (const id of ["adm-kpi-heroes", "adm-kpi-enemies", "adm-kpi-creations"]) countUp(byId(id));
+    }
   }
 
   // --- balance ---------------------------------------------------------------------------------
@@ -318,7 +332,7 @@ export class AdminPanel {
       item.addEventListener("click", () => {
         if (this.editing !== null) return; // the type of an existing creation stays
         const category = item.dataset.type as CreationCategory;
-        this.form = { ...blankCreation(category), name: this.form.name, tint: this.form.tint };
+        this.form = { ...blankCreation(category), name: this.form.name, tint: this.form.tint, sprite_id: this.form.sprite_id ?? null };
         this.paintForm();
       });
     }
@@ -334,6 +348,12 @@ export class AdminPanel {
       void this.submit();
     });
     byId("adm-delete").addEventListener("click", () => void this.remove());
+    const upload = byId<HTMLInputElement>("adm-upload");
+    upload.addEventListener("change", () => {
+      const file = upload.files?.[0];
+      upload.value = ""; // the same file can be chosen again after an error
+      if (file) void this.upload(file);
+    });
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !byId("adm-drawer").hidden) this.closeDrawer();
     });
@@ -347,6 +367,8 @@ export class AdminPanel {
     byId("adm-submit").querySelector(".btn-label")!.textContent = creation ? "Guardar" : "Crear";
     byId("adm-delete").hidden = creation === null;
     byId("adm-form-error").textContent = "";
+    byId("adm-upload-error").textContent = "";
+    byId("adm-scan").hidden = true;
     const name = byId<HTMLInputElement>("adm-name");
     name.value = this.form.name;
     byId("adm-name-count").textContent = `${name.value.length}/24`;
@@ -385,11 +407,13 @@ export class AdminPanel {
       button.title = label;
       button.append(img, make("span", "", label));
       button.addEventListener("click", () => {
-        this.form = { ...blankCreation(this.form.category, kind), name: this.form.name, tint: this.form.tint };
+        this.form = { ...blankCreation(this.form.category, kind), name: this.form.name, tint: this.form.tint, sprite_id: this.form.sprite_id ?? null };
         this.paintForm();
       });
       return button;
     }));
+    this.paintPictures();
+    byId("adm-colors-field").hidden = Boolean(this.form.sprite_id);
     const colors = byId("adm-colors");
     colors.replaceChildren(...TINTS.map((tint) => {
       const swatch = make("button", "adm-swatch");
@@ -406,6 +430,114 @@ export class AdminPanel {
     }));
     this.paintStats();
     this.paintPreview();
+  }
+
+  /** "Dibujo original" and the account's pictures; the chosen one is what the creation looks like. */
+  private paintPictures(): void {
+    const original = make("button", "adm-picture is-original");
+    original.type = "button";
+    original.setAttribute("role", "radio");
+    const chosen = this.form.sprite_id ?? null;
+    original.setAttribute("aria-checked", String(chosen === null));
+    original.classList.toggle("is-active", chosen === null);
+    const img = make("img");
+    img.src = textureOf(this.form.category, this.form.base_kind);
+    img.alt = "";
+    original.append(img, make("span", "", "Dibujo original"));
+    original.addEventListener("click", () => {
+      this.form.sprite_id = null;
+      this.paintForm();
+    });
+    const tiles = currentSprites().map((sprite) => {
+      const tile = make("div", "adm-picture-tile");
+      const pick = make("button", "adm-picture");
+      pick.type = "button";
+      pick.setAttribute("role", "radio");
+      pick.setAttribute("aria-checked", String(chosen === sprite.id));
+      pick.classList.toggle("is-active", chosen === sprite.id);
+      pick.title = sprite.name;
+      const picture = make("img");
+      picture.src = sprite.data_url;
+      picture.alt = "";
+      pick.append(picture, make("span", "", sprite.name));
+      pick.addEventListener("click", () => {
+        this.form.sprite_id = sprite.id;
+        this.paintForm();
+      });
+      const remove = make("button", "adm-picture-delete", "✕");
+      remove.type = "button";
+      remove.setAttribute("aria-label", `Borrar la imagen «${sprite.name}»`);
+      remove.addEventListener("click", () => void this.removePicture(sprite.id, sprite.name));
+      tile.append(pick, remove);
+      return tile;
+    });
+    byId("adm-pictures").replaceChildren(original, ...tiles);
+  }
+
+  /** Check, upload and pick a picture; the steps of the server's analysis light up as it goes. */
+  private async upload(file: File): Promise<void> {
+    const error = byId("adm-upload-error");
+    const scan = byId("adm-scan");
+    const steps = [...scan.querySelectorAll<HTMLLIElement>("li")];
+    error.textContent = "";
+    scan.hidden = false;
+    for (const step of steps) {
+      step.className = "";
+      step.querySelector("em")!.textContent = "";
+    }
+    // The steps start one after another while the file travels and is checked.
+    const timers = steps.map((step, i) => window.setTimeout(() => step.classList.add("is-checking"), i * 140));
+    const label = document.querySelector<HTMLElement>(".adm-upload")!;
+    label.classList.add("is-busy");
+    try {
+      const prepared = await prepareSprite(file);
+      const name = this.form.name.trim() || nameFromFile(file.name);
+      const sprite = await uploadSprite(name, prepared.data);
+      const passed = new Set(sprite.checks ?? []);
+      timers.forEach((timer) => window.clearTimeout(timer));
+      steps.forEach((step, i) => {
+        window.setTimeout(() => {
+          const check = step.dataset.check!;
+          step.classList.remove("is-checking");
+          if (passed.has(check)) {
+            step.classList.add("is-ok");
+          } else {
+            step.classList.add("is-skip");
+            step.querySelector("em")!.textContent = check === "antivirus" ? "no configurado en este servidor" : "";
+          }
+        }, i * 90);
+      });
+      setSprites([...currentSprites().filter((other) => other.id !== sprite.id), sprite]);
+      await spritesReady();
+      this.form.sprite_id = sprite.id;
+      this.paintForm();
+      toast(`Imagen «${sprite.name}» revisada y lista.`, "success");
+    } catch (failure) {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      for (const step of steps) step.classList.remove("is-checking");
+      steps.find((step) => !step.classList.contains("is-ok"))?.classList.add("is-fail");
+      error.textContent = failure instanceof UploadError ? failure.message : errorText(failure);
+    } finally {
+      label.classList.remove("is-busy");
+    }
+  }
+
+  private async removePicture(id: number, name: string): Promise<void> {
+    const users = this.creations.filter((creation) => creation.sprite_id === id);
+    const note = users.length > 0 ? ` ${users.length === 1 ? "La creación que la usa volverá" : "Las creaciones que la usan volverán"} a su dibujo original.` : "";
+    if (!window.confirm(`¿Borrar la imagen «${name}»?${note}`)) return;
+    try {
+      await deleteSprite(id);
+      setSprites(currentSprites().filter((sprite) => sprite.id !== id));
+      this.creations = this.creations.map((creation) => (creation.sprite_id === id ? { ...creation, sprite_id: null } : creation));
+      if (this.form.sprite_id === id) this.form.sprite_id = null;
+      this.onRules(this.saved, this.creations);
+      this.renderCreations();
+      this.paintForm();
+      toast(`Imagen «${name}» borrada.`, "success");
+    } catch (failure) {
+      byId("adm-upload-error").textContent = errorText(failure);
+    }
   }
 
   private paintStats(): void {
@@ -449,7 +581,7 @@ export class AdminPanel {
     button.classList.add("is-loading");
     button.disabled = true;
     try {
-      const input: CreationInput = { category: this.form.category, base_kind: this.form.base_kind, name, tint: this.form.tint, health: this.form.health, damage: this.form.damage, speed: this.form.speed, value: this.form.value };
+      const input: CreationInput = { category: this.form.category, base_kind: this.form.base_kind, name, tint: this.form.tint, health: this.form.health, damage: this.form.damage, speed: this.form.speed, value: this.form.value, sprite_id: this.form.sprite_id ?? null };
       const saved = this.editing ? await updateCreation(this.editing.id, input) : await createCreation(input);
       this.creations = this.editing ? this.creations.map((c) => (c.id === saved.id ? saved : c)) : [...this.creations, saved];
       toast(this.editing ? `«${saved.name}» actualizado.` : `«${saved.name}» creado. Ya lo tienes en ${saved.category === "hero" ? "la elección de héroe" : "la Biblioteca"}.`, "success");
@@ -482,19 +614,47 @@ export class AdminPanel {
 }
 
 /** A creation that starts from a base: the base's own numbers. */
+/** A number counts up from 0 to its value in 600 ms (at once for reduced motion). */
+function countUp(element: HTMLElement): void {
+  const target = Number(element.textContent);
+  if (!Number.isFinite(target) || target <= 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const start = performance.now();
+  const step = (now: number) => {
+    const t = Math.min(1, (now - start) / 600);
+    element.textContent = String(Math.round(target * (1 - Math.pow(1 - t, 3))));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  element.textContent = "0";
+  requestAnimationFrame(step);
+}
+
+/** Values that change pop for a moment, so the eye sees what moved. */
+function watchValues(root: HTMLElement): void {
+  const observer = new MutationObserver((records) => {
+    for (const record of records) {
+      const target = (record.target instanceof HTMLElement ? record.target : record.target.parentElement)?.closest<HTMLElement>(".adm-stat-value, .adm-nav-count");
+      if (!target) continue;
+      target.classList.remove("is-bumped");
+      void target.offsetWidth;
+      target.classList.add("is-bumped");
+    }
+  });
+  observer.observe(root, { subtree: true, childList: true, characterData: true });
+}
+
 export function blankCreation(category: CreationCategory, base?: string): CreationInput {
   const kind = base ?? baseKinds(category)[0];
   if (category === "hero") {
     const hero = heroById(kind);
-    return { category, base_kind: kind, name: "", tint: "#ffffff", health: hero.maxHealth, damage: heroBaseDamage(hero), speed: hero.speed, value: 0 };
+    return { category, base_kind: kind, name: "", tint: "#ffffff", health: hero.maxHealth, damage: heroBaseDamage(hero), speed: hero.speed, value: 0, sprite_id: null };
   }
   if (category === "enemy") {
     const enemy = enemyDefaults()[kind];
-    return { category, base_kind: kind, name: "", tint: "#ffffff", health: enemy.health, damage: enemy.damage, speed: enemy.speed, value: 0 };
+    return { category, base_kind: kind, name: "", tint: "#ffffff", health: enemy.health, damage: enemy.damage, speed: enemy.speed, value: 0, sprite_id: null };
   }
   const effect = OBJECT_BASES[kind];
   const value = effect === "heal" ? (kind === "medkit" ? 3 : 2) : effect === "damage" ? (kind === "explosive" ? 3 : 1) : 0;
-  return { category, base_kind: kind, name: "", tint: "#ffffff", health: 0, damage: 0, speed: 0, value };
+  return { category, base_kind: kind, name: "", tint: "#ffffff", health: 0, damage: 0, speed: 0, value, sprite_id: null };
 }
 
 function baseName(category: CreationCategory, kind: string): string {
@@ -509,13 +669,15 @@ function textureOf(category: CreationCategory, kind: string): string {
   return iconUrl(kind as Kind);
 }
 
-function spriteOf(creation: Pick<CreationDto, "category" | "base_kind" | "tint">, big = false): HTMLElement {
+function spriteOf(creation: Pick<CreationDto, "category" | "base_kind" | "tint" | "sprite_id">, big = false): HTMLElement {
   const portrait = make("span", big ? "adm-portrait is-big" : "adm-portrait");
   const img = make("img");
-  img.src = textureOf(creation.category, creation.base_kind);
+  const picture = spriteUrl(creation.sprite_id);
+  img.src = picture ?? textureOf(creation.category, creation.base_kind);
   img.alt = "";
   portrait.append(img);
-  if (tintValue(creation.tint) !== null) {
+  if (picture !== null) portrait.classList.add("is-picture");
+  else if (tintValue(creation.tint) !== null) {
     portrait.classList.add("is-tinted");
     portrait.style.setProperty("--icon", `url("${img.src}")`);
     portrait.style.setProperty("--tint", creation.tint);

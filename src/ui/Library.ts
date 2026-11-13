@@ -1,5 +1,6 @@
 import { iconUrl } from "../game/assets";
 import { tintValue, type CreationDto } from "../game/balance";
+import { spriteUrl } from "../game/sprites";
 import { CATEGORIES, isKind, KIND_INFO, type Kind } from "../model/GameObject";
 import { byId, make } from "./dom";
 import { trackActive } from "./editorFx";
@@ -26,8 +27,15 @@ const CATEGORY_ICON: Record<string, Kind> = {
   industrial: "reactor",
 };
 
-export function iconElement(kind: Kind, tint?: string): HTMLElement {
+export function iconElement(kind: Kind, tint?: string, spriteId?: number | null): HTMLElement {
   const icon = make("span", "palette-icon");
+  // A creation with its own picture shows it as uploaded (no colour on top).
+  const picture = spriteUrl(spriteId);
+  if (picture !== null) {
+    icon.classList.add("is-picture");
+    icon.style.backgroundImage = `url("${picture}")`;
+    return icon;
+  }
   icon.style.backgroundImage = `url("${iconUrl(kind)}")`;
   // A creation's colour is laid over the sprite, masked by it (like Phaser's tint).
   if (tintValue(tint) !== null) {
@@ -165,7 +173,7 @@ export class Library {
     }
     const grip = make("span", "palette-grip", "⠿");
     grip.setAttribute("aria-hidden", "true");
-    card.append(grip, iconElement(kind, creation?.tint), make("span", "palette-name", name));
+    card.append(grip, iconElement(kind, creation?.tint, creation?.sprite_id), make("span", "palette-name", name));
     card.addEventListener("click", () => {
       const same = this.active === kind && this.activeVariant === creation?.id;
       this.pick(same ? null : kind, same ? undefined : creation?.id);

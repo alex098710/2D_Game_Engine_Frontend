@@ -1,6 +1,7 @@
 import { TEXTURE_BASE } from "../game/assets";
 import { playableHero, playableHeroes, type PlayableHero } from "../game/balance";
 import { WEAPONS } from "../game/combat";
+import { spriteUrl } from "../game/sprites";
 import { byId, make } from "./dom";
 
 const STORAGE_KEY = "pixelforge-hero";
@@ -39,7 +40,7 @@ function card(hero: PlayableHero): HTMLButtonElement {
   button.setAttribute("role", "radio");
   const portrait = make("div", "portrait");
   const body = make("img");
-  body.src = `${TEXTURE_BASE}${hero.texture}.png`;
+  body.src = spriteUrl(hero.spriteId) ?? `${TEXTURE_BASE}${hero.texture}.png`;
   body.alt = "";
   if (hero.tint !== null) {
     // The hero's own colour over the sprite, masked by it.

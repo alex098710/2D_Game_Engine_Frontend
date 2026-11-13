@@ -460,7 +460,26 @@
             </div>
             <label class="adm-field"><span class="adm-label-row"><span class="adm-label">Nombre</span><span id="adm-name-count" class="name-count">0/24</span></span><input id="adm-name" maxlength="24" placeholder="Ej.: Ogro de hielo" autocomplete="off" /></label>
             <div class="adm-field"><span class="adm-label">Basado en</span><div id="adm-bases" class="adm-bases" role="radiogroup" aria-label="Basado en"></div></div>
-            <div class="adm-field"><span class="adm-label">Color</span><div id="adm-colors" class="adm-colors"></div></div>
+            <div class="adm-field adm-upload-field">
+              <span class="adm-label-row"><span class="adm-label">Imagen propia</span><span class="adm-label-note">Opcional</span></span>
+              <div id="adm-pictures" class="adm-pictures" role="radiogroup" aria-label="Imagen propia"></div>
+              <label class="adm-upload">
+                <input id="adm-upload" type="file" accept="image/png,image/jpeg,image/gif,image/webp" />
+                <span class="adm-upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" /></svg></span>
+                <span class="adm-upload-text"><b>Subir mi imagen</b><small>PNG, JPG, GIF o WebP · hasta 5 MB · se revisa antes de guardarla</small></span>
+              </label>
+              <ol id="adm-scan" class="adm-scan" aria-live="polite" hidden>
+                <li data-check="type"><i aria-hidden="true"></i><span>Tipo de archivo</span><em></em></li>
+                <li data-check="size"><i aria-hidden="true"></i><span>Tamaño</span><em></em></li>
+                <li data-check="structure"><i aria-hidden="true"></i><span>Estructura del archivo</span><em></em></li>
+                <li data-check="content"><i aria-hidden="true"></i><span>Código oculto</span><em></em></li>
+                <li data-check="antivirus"><i aria-hidden="true"></i><span>Antivirus</span><em></em></li>
+                <li data-check="pixels"><i aria-hidden="true"></i><span>Píxeles de la imagen</span><em></em></li>
+                <li data-check="rebuilt"><i aria-hidden="true"></i><span>Copia limpia</span><em></em></li>
+              </ol>
+              <p id="adm-upload-error" class="form-message is-error" role="alert"></p>
+            </div>
+            <div class="adm-field" id="adm-colors-field"><span class="adm-label">Color</span><div id="adm-colors" class="adm-colors"></div></div>
             <div id="adm-stats" class="adm-field adm-stats"></div>
             <p id="adm-form-error" class="form-message is-error" role="alert"></p>
           </div>

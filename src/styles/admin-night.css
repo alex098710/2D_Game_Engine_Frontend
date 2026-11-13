@@ -151,3 +151,172 @@
 @media (prefers-reduced-motion: reduce) {
   .admin .adm-save-state[data-state="dirty"]::before { animation: none; }
 }
+
+/* ==========================================================================
+   Own pictures: the gallery, the upload area and the steps of the analysis.
+   ========================================================================== */
+.admin .adm-label-note { font-size: 11.5px; color: var(--text-muted); }
+.admin .adm-pictures { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.admin .adm-picture-tile { position: relative; min-width: 0; }
+.admin .adm-picture {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 4px;
+  border: 1px solid rgba(120, 170, 255, 0.14);
+  border-radius: 4px;
+  background: rgba(10, 19, 38, 0.75);
+  color: var(--text);
+  font: 600 11px var(--font);
+  cursor: pointer;
+  transition: border-color var(--m-150) var(--out), transform var(--m-150) var(--out);
+}
+.admin .adm-picture img { width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; }
+.admin .adm-picture span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin .adm-picture:hover { transform: translateY(-2px); border-color: rgba(56, 196, 255, 0.45); }
+.admin .adm-picture.is-active { border-color: var(--glow-hi); background: rgba(31, 123, 255, 0.18); box-shadow: inset 0 0 0 1px var(--glow-hi); }
+.admin .adm-picture:focus-visible { outline: 2px solid var(--glow-hi); outline-offset: 2px; }
+.admin .adm-picture.is-original img { opacity: 0.85; }
+.admin .adm-picture-delete {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(255, 77, 109, 0.6);
+  border-radius: 4px;
+  background: #1a0b16;
+  color: #ff8fa3;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--m-150) var(--out);
+}
+.admin .adm-picture-tile:hover .adm-picture-delete, .admin .adm-picture-delete:focus-visible { opacity: 1; }
+@media (hover: none) { .admin .adm-picture-delete { opacity: 1; } }
+
+/* The upload area: a dashed window with cut corners; the real input covers it, so it is one click. */
+.admin .adm-upload {
+  --cut: 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1.5px dashed rgba(56, 196, 255, 0.5);
+  background: rgba(31, 123, 255, 0.07);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  cursor: pointer;
+  transition: background var(--m-150) var(--out), border-color var(--m-150) var(--out);
+}
+.admin .adm-upload input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.admin .adm-upload:hover { background: rgba(31, 123, 255, 0.14); border-color: var(--glow-hi); }
+.admin .adm-upload:focus-within { border-color: var(--glow-hi); background: rgba(31, 123, 255, 0.16); }
+.admin .adm-upload.is-busy { pointer-events: none; opacity: 0.7; }
+.admin .adm-upload-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 38px;
+  color: #04121f;
+  background: linear-gradient(180deg, #9fe6ff, #38c4ff);
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  transition: transform var(--m-200) var(--out);
+}
+.admin .adm-upload:hover .adm-upload-icon { transform: translateY(-2px); }
+.admin .adm-upload-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.admin .adm-upload-text { display: grid; gap: 2px; min-width: 0; }
+.admin .adm-upload-text b { font-size: 14px; color: #f2f6ff; }
+.admin .adm-upload-text small { font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+
+/* The analysis: one row per check, which lights up as it passes. */
+.admin .adm-scan { list-style: none; margin: 0; padding: 10px 12px; display: grid; gap: 6px; border: 1px solid rgba(120, 170, 255, 0.16); border-radius: 4px; background: rgba(5, 11, 28, 0.85); }
+.admin .adm-scan[hidden] { display: none; }
+.admin .adm-scan li { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; column-gap: 10px; font-size: 13px; color: #6f84aa; transition: color var(--m-200) var(--out); }
+.admin .adm-scan li em { grid-column: 2; font-style: normal; font-size: 11.5px; color: var(--text-muted); }
+.admin .adm-scan li em:empty { display: none; }
+.admin .adm-scan i { width: 14px; height: 14px; border: 1.5px solid rgba(120, 170, 255, 0.3); border-radius: 3px; transition: background var(--m-200) var(--out), border-color var(--m-200) var(--out), transform var(--m-200) var(--out); }
+/* While it is being checked: a spinning square (it shows real work, so it may loop). */
+.admin .adm-scan li.is-checking { color: #dce6f7; }
+.admin .adm-scan li.is-checking i { border-color: var(--glow-hi); border-right-color: transparent; animation: spin 0.8s linear infinite; }
+.admin .adm-scan li.is-ok { color: #b8f5da; }
+.admin .adm-scan li.is-ok i {
+  border-color: #33e0a1;
+  background: #33e0a1 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2304120c' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center / 10px no-repeat;
+  animation: check-pop var(--m-200) var(--out);
+}
+.admin .adm-scan li.is-skip i { border-style: dashed; }
+.admin .adm-scan li.is-fail { color: #ff8fa3; }
+.admin .adm-scan li.is-fail i { border-color: var(--danger); background: var(--danger); }
+@keyframes check-pop { from { transform: scale(0.5); opacity: 0; } }
+.admin .adm-portrait.is-picture img, .palette-icon.is-picture { image-rendering: pixelated; }
+.palette-icon.is-picture { background-size: contain; background-repeat: no-repeat; background-position: center; }
+
+/* ==========================================================================
+   More life in the panel (the motion skill: transform and opacity, 150-300 ms,
+   ease-out; loops only on the brand mark and the night behind).
+   ========================================================================== */
+/* The cards of a section come in one after another when it opens. */
+.admin .adm-section { animation: none; }
+.admin .adm-section.is-entering > *, .admin .adm-section.is-entering .adm-grid > *, .admin .adm-section.is-entering .adm-kpis > *, .admin .adm-section.is-entering .adm-steps > * {
+  animation: adm-rise var(--m-300) var(--out) both;
+}
+.admin .adm-section.is-entering > :nth-child(2), .admin .adm-section.is-entering .adm-grid > :nth-child(2), .admin .adm-section.is-entering .adm-kpis > :nth-child(2), .admin .adm-section.is-entering .adm-steps > :nth-child(2) { animation-delay: 40ms; }
+.admin .adm-section.is-entering > :nth-child(3), .admin .adm-section.is-entering .adm-grid > :nth-child(3), .admin .adm-section.is-entering .adm-kpis > :nth-child(3), .admin .adm-section.is-entering .adm-steps > :nth-child(3) { animation-delay: 80ms; }
+.admin .adm-section.is-entering .adm-grid > :nth-child(n + 4) { animation-delay: 120ms; }
+.admin .adm-section.is-entering .adm-grid > :nth-child(n + 7) { animation-delay: 160ms; }
+.admin .adm-section.is-entering .adm-grid > :nth-child(n + 10) { animation-delay: 200ms; }
+@keyframes adm-rise { from { opacity: 0; transform: translateY(10px); } }
+
+/* The shield: a light runs around its hexagon (the brand mark of the panel). */
+@property --shield-run { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.admin .adm-shield { position: relative; isolation: isolate; background: conic-gradient(from var(--shield-run), #1f6dff, #1f6dff 55%, #9fe6ff 70%, #ffffff 75%, #9fe6ff 80%, #1f6dff 95%); animation: shield-run 4s linear infinite; }
+.admin .adm-shield::before { content: ""; position: absolute; inset: 2px; z-index: -1; background: radial-gradient(circle at 50% 38%, #1f4fae, #071233 75%); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+@keyframes shield-run { to { --shield-run: 360deg; } }
+
+/* The active section: its light bar grows in. */
+.admin .adm-nav-item.is-active::before { animation: bar-in var(--m-200) var(--out); }
+@keyframes bar-in { from { transform: scaleY(0); } }
+.admin .adm-nav-item svg { transition: transform var(--m-150) var(--out); }
+.admin .adm-nav-item:hover svg { transform: translateX(2px); }
+
+/* Values that change pop for a moment (AdminPanel adds .is-bumped). */
+.admin .is-bumped { animation: value-pop var(--m-200) var(--out); }
+@keyframes value-pop { 40% { transform: scale(1.18); color: #fff; } }
+
+/* Cards: the portrait hops and the edge brightens on hover. */
+.admin .adm-card .adm-portrait img { transition: transform var(--m-200) var(--out); }
+.admin .adm-card:hover .adm-portrait img { transform: translateY(-3px) scale(1.06); }
+.admin .adm-kpi .adm-kpi-icon { transition: transform var(--m-200) var(--out); }
+.admin .adm-kpi:hover .adm-kpi-icon { transform: translateY(-2px); }
+
+/* Sliders: the thumb grows and glows while it is held. */
+.admin .adm-range::-webkit-slider-thumb { transition: transform var(--m-150) var(--out), box-shadow var(--m-150) var(--out); }
+.admin .adm-range:active::-webkit-slider-thumb { transform: scale(1.25); box-shadow: 0 0 0 8px rgba(var(--tone, 56, 196, 255), 0.25), 0 0 14px rgba(var(--tone, 56, 196, 255), 0.6); }
+
+/* The save button wakes up when there is something to save. */
+.admin .adm-save-btn { transition: transform var(--m-150) var(--out), opacity var(--m-200) var(--out); }
+.admin .adm-save-btn:not(:disabled) { animation: save-ready var(--m-300) var(--out); }
+@keyframes save-ready { 50% { transform: translateY(-2px); } }
+
+/* The hero banner: a light sweeps over it once when the panel opens. */
+.admin .adm-hero::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgba(159, 230, 255, 0.16) 50%, transparent 65%); transform: translateX(-110%); }
+.admin .adm-section.is-entering .adm-hero::after { animation: hero-sweep 900ms var(--out) 200ms both; }
+@keyframes hero-sweep { to { transform: translateX(110%); } }
+.admin .adm-hero > * { position: relative; z-index: 2; }
+
+/* The wizard stands at the bottom of the side menu on big screens (the night shows through there). */
+@media (min-width: 901px) and (min-height: 720px) {
+  .adm-wizard-spot { left: 30px; width: 180px; height: 210px; }
+  .admin .adm-nav { background: linear-gradient(180deg, rgba(5, 10, 24, 0.94) 0%, rgba(5, 10, 24, 0.9) 55%, rgba(5, 10, 24, 0.2) 80%, transparent 100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin .adm-section.is-entering *, .admin .adm-shield, .admin .is-bumped, .admin .adm-save-btn:not(:disabled), .admin .adm-nav-item.is-active::before, .admin .adm-scan li.is-ok i { animation: none; }
+}

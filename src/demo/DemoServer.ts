@@ -5,6 +5,7 @@ import type {
 import { ApiError } from "../api/http";
 import { baseKinds, LIMITS, OBJECT_BASES, type BalanceDto, type CreationDto } from "../game/balance";
 import { HEROES } from "../game/combat";
+import type { SpriteDto } from "../game/sprites";
 import { ENEMY_KINDS, isKind, type GameObject } from "../model/GameObject";
 import { generate, MAX_TOTAL, obstacles, parseEdit } from "./demoAi";
 
@@ -34,6 +35,8 @@ const MAX_PROJECTS = 8;
 const MAX_VERSIONS = 20;
 const MAX_CREATIONS = 60;
 const PROMPT_MAX = 500;
+const MAX_SPRITES = 10;
+const MAX_SPRITE_BYTES = 300_000;
 const LEVELS: Record<DifficultyLevel, number> = { easy: 0.2, medium: 0.45, hard: 0.7, extreme: 0.95 };
 const ACHIEVEMENTS: Omit<AchievementDto, "unlocked_at">[] = [
   { code: "first-coin", name: "Primera moneda", description: "Recoge tu primera moneda", points: 5 },
@@ -57,7 +60,21 @@ interface State {
   creations: CreationDto[];
   scores: Record<number, number>;
   openRuns: Record<number, number>;
+  sprites: SpriteDto[];
 }
+
+/** Redraw a PNG from its pixels alone, as the server's clean copy does (the browser's decoder and canvas). */
+export type Rebuild = (png: Uint8Array) => Promise<{ dataUrl: string; width: number; height: number }>;
+
+const browserRebuild: Rebuild = async (png) => {
+  const bitmap = await createImageBitmap(new Blob([new Uint8Array(png)], { type: "image/png" }));
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  canvas.getContext("2d")!.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  return { dataUrl: canvas.toDataURL("image/png"), width: canvas.width, height: canvas.height };
+};
 
 function fresh(): State {
   return {
@@ -70,6 +87,7 @@ function fresh(): State {
     creations: [],
     scores: {},
     openRuns: {},
+    sprites: [],
   };
 }
 
@@ -108,9 +126,11 @@ export class DemoServer {
   private templates: Promise<TemplateDto[]> | null = null;
 
   private readonly storage: Storage | null;
+  private readonly rebuild: Rebuild;
 
-  constructor(storage: Storage | null = typeof sessionStorage === "undefined" ? null : sessionStorage) {
+  constructor(storage: Storage | null = typeof sessionStorage === "undefined" ? null : sessionStorage, rebuild: Rebuild = browserRebuild) {
     this.storage = storage;
+    this.rebuild = rebuild;
     this.state = this.load() ?? fresh();
   }
 
@@ -216,6 +236,7 @@ export class DemoServer {
       if (second === "settings") return method === "PUT" ? this.saveSettings(body) : this.state.settings;
       if (second === "balance") return method === "PUT" ? this.saveBalance(body) : this.state.balance;
       if (second === "creations") return this.creations(method, Number(third), body);
+      if (second === "sprites") return this.sprites(method, Number(third), body);
       return fail(404, "No encontrado");
     }
     if (root !== "projects") return fail(404, "No encontrado");
@@ -399,6 +420,9 @@ export class DemoServer {
       this.state.creations = this.state.creations.filter((item) => item.id !== id);
       return undefined;
     }
+    if (body.sprite_id !== undefined && body.sprite_id !== null && !this.state.sprites.some((sprite) => sprite.id === body.sprite_id)) {
+      fail(422, "Esa imagen no existe o no es tuya");
+    }
     const input = this.checkCreation(body);
     if (method === "POST") {
       if (this.state.creations.length >= MAX_CREATIONS) fail(422, `Puedes tener hasta ${MAX_CREATIONS} creaciones`);
@@ -412,6 +436,40 @@ export class DemoServer {
     return this.state.creations[index];
   }
 
+  /** The demo's pictures: the same first checks as the server, then a clean redraw in the browser. */
+  private async sprites(method: string, id: number, body: Record<string, unknown>): Promise<unknown> {
+    if (method === "GET") return this.state.sprites;
+    if (method === "DELETE") {
+      if (!this.state.sprites.some((sprite) => sprite.id === id)) fail(404, "No se encontró la imagen");
+      this.state.sprites = this.state.sprites.filter((sprite) => sprite.id !== id);
+      this.state.creations = this.state.creations.map((creation) => (creation.sprite_id === id ? { ...creation, sprite_id: null } : creation));
+      return undefined;
+    }
+    if (this.state.sprites.length >= MAX_SPRITES) fail(422, `En la demo puedes tener hasta ${MAX_SPRITES} imágenes`);
+    const name = typeof body.name === "string" ? body.name.trim().replace(/\s+/g, " ") : "";
+    if (name.length === 0 || name.length > 24) fail(422, "El nombre debe tener entre 1 y 24 caracteres");
+    let bytes: Uint8Array;
+    try {
+      bytes = Uint8Array.from(atob(String(body.data ?? "")), (ch) => ch.charCodeAt(0));
+    } catch {
+      return fail(422, "El archivo no llegó bien; vuelve a subirlo");
+    }
+    if (bytes.length === 0) fail(422, "El archivo está vacío");
+    if (bytes.length > MAX_SPRITE_BYTES) fail(422, "La imagen pesa demasiado (máximo 300 KB)");
+    const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+    if (!signature.every((value, i) => bytes[i] === value)) fail(422, "El archivo no es una imagen PNG válida");
+    let clean: Awaited<ReturnType<Rebuild>>;
+    try {
+      clean = await this.rebuild(bytes);
+    } catch {
+      return fail(422, "Los píxeles de la imagen están dañados");
+    }
+    if (clean.width < 8 || clean.height < 8 || clean.width > 256 || clean.height > 256) fail(422, "La imagen debe medir entre 8 y 256 píxeles por lado");
+    const sprite: SpriteDto = { id: this.state.nextId++, name, width: clean.width, height: clean.height, data_url: clean.dataUrl, created_at: now() };
+    this.state.sprites.push(sprite);
+    return { ...sprite, checks: ["size", "type", "structure", "pixels", "rebuilt"] };
+  }
+
   private checkCreation(body: Record<string, unknown>): Omit<CreationDto, "id"> {
     const category = body.category as CreationDto["category"];
     if (!["hero", "enemy", "object"].includes(category)) fail(422, "Tipo desconocido");
@@ -422,7 +480,8 @@ export class DemoServer {
     const tint = typeof body.tint === "string" ? body.tint.toLowerCase() : "#ffffff";
     if (!/^#[0-9a-f]{6}$/.test(tint)) fail(422, "El color no es válido");
     const value = (key: string) => Number(body[key] ?? 0);
-    const creation = { category, base_kind: base, name, tint, health: 0, damage: 0, speed: 0, value: 0 };
+    const spriteId = typeof body.sprite_id === "number" ? body.sprite_id : null;
+    const creation = { category, base_kind: base, name, tint, health: 0, damage: 0, speed: 0, value: 0, sprite_id: spriteId };
     if (category === "hero") {
       if (!inRange(value("health"), LIMITS.heroHealth) || !inRange(value("damage"), LIMITS.heroDamage) || !inRange(value("speed"), LIMITS.heroSpeed)) fail(422, "Valores fuera de rango");
       Object.assign(creation, { health: value("health"), damage: value("damage"), speed: value("speed") });

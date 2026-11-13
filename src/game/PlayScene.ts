@@ -8,7 +8,8 @@ import {
   type EnemyStats, type ProjectileSpec, type Weapon, type WeaponId,
 } from "./combat";
 import { loadSounds, playEffect, playJingle, type Effect } from "./audio";
-import { objectValue, playableEnemy, playableHero, variantTint, type PlayableHero } from "./balance";
+import { objectValue, playableEnemy, playableHero, variantSprite, variantTint, type PlayableHero } from "./balance";
+import { spriteTexture } from "./sprites";
 import { touch } from "./touchInput";
 import { approach, fanAngles, launch, screenAngle, step, type Flight } from "./projectiles";
 import { RunTracker } from "./RunTracker";
@@ -352,7 +353,7 @@ export class PlayScene extends Phaser.Scene {
 
   private spawnEnemy(kind: Kind, x: number, y: number, variant?: number): void {
     const stats = playableEnemy(kind, variant);
-    const enemy = this.enemies.create(x, y, stats.texture) as Sprite;
+    const enemy = this.enemies.create(x, y, spriteTexture(this, stats.spriteId, stats.texture)) as Sprite;
     const mass = { brute: 4, demon: 12, tank: 14, captain: 4 }[kind as string] ?? 1.5;
     enemy.setDepth(y / WORLD_HEIGHT).setBounce(0.2).setCollideWorldBounds(true).setMass(mass).setScale(stats.scale);
     (enemy.body as Body).setSize(22, 20).setOffset(5, 10);
@@ -376,6 +377,9 @@ export class PlayScene extends Phaser.Scene {
 
   /** Paints an object with the colour of the account's creation it is, if any. */
   private tinted(sprite: Sprite, object: GameObject): Sprite {
+    // The account's own picture, fitted to the same frame, so the body does not change.
+    const picture = spriteTexture(this, variantSprite(object.kind, object.variant), sprite.texture.key);
+    if (picture !== sprite.texture.key) sprite.setTexture(picture);
     const tint = variantTint(object.kind, object.variant);
     if (tint !== null) sprite.setTint(tint);
     return sprite;
@@ -387,7 +391,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private spawnItem(kind: Kind, x: number, y: number, float = true, variant?: number): Sprite {
-    const item = this.items.create(x, y, KIND_TEXTURE[kind].key) as Sprite;
+    const item = this.items.create(x, y, spriteTexture(this, variantSprite(kind, variant), KIND_TEXTURE[kind].key)) as Sprite;
     item.setData("kind", kind).setData("variant", variant).setDepth(y / WORLD_HEIGHT);
     const tint = variantTint(kind, variant);
     if (tint !== null) item.setTint(tint);
@@ -397,7 +401,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private createPlayer(spawn: { x: number; y: number }): void {
-    this.player = this.physics.add.sprite(spawn.x, spawn.y, this.hero.texture);
+    this.player = this.physics.add.sprite(spawn.x, spawn.y, spriteTexture(this, this.hero.spriteId, this.hero.texture));
     if (this.hero.tint !== null) this.player.setTint(this.hero.tint);
     this.playerShadow = this.add.image(spawn.x, spawn.y + 13, "shadow").setDepth(-1).setScale(2.4, 2).setAlpha(0.55);
     this.player.setCollideWorldBounds(true).setDepth(spawn.y / WORLD_HEIGHT);
@@ -561,7 +565,8 @@ export class PlayScene extends Phaser.Scene {
     this.playerShadow.setPosition(this.player.x, this.player.y + 13).setScale(2.4 * (1 - 0.4 * air), 2 * (1 - 0.4 * air)).setAlpha(0.55 - 0.25 * air);
     this.player.setDepth(this.player.y / WORLD_HEIGHT);
     // The walking poses: one step, standing, the other step, standing (130 ms each).
-    const pose = moving && time >= this.dashUntil ? WALK_CYCLE[Math.floor(time / 130) % WALK_CYCLE.length] : "idle";
+    // A hero drawn with the account's own picture has no walking poses: it keeps its picture.
+    const pose = this.hero.spriteId === null && moving && time >= this.dashUntil ? WALK_CYCLE[Math.floor(time / 130) % WALK_CYCLE.length] : "idle";
     const frame = this.hero.texture.replace(/-idle$/, `-${pose}`);
     if (frame !== this.player.texture.key && this.textures.exists(frame)) this.player.setTexture(frame);
     this.player.setAlpha(time < this.invulnerableUntil ? 0.45 + 0.4 * Math.sin(time / 40) : 1);

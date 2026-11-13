@@ -1,4 +1,5 @@
 import type { BalanceDto, CreationDto } from "../game/balance";
+import type { SpriteDto } from "../game/sprites";
 import type { GameObject } from "../model/GameObject";
 import { HttpClient } from "./http";
 import { TokenStore, type TokenPair } from "./tokens";
@@ -293,7 +294,7 @@ export function myActivity(): Promise<ActivityDto[]> {
 
 // --- Admin panel of the account (balance and own creations) ---------------------------------
 
-export type { BalanceDto, CreationDto };
+export type { BalanceDto, CreationDto, SpriteDto };
 
 /** Fields of a creation the panel sends (the id and dates come from the backend). */
 export type CreationInput = Omit<CreationDto, "id">;
@@ -316,6 +317,19 @@ export function createCreation(creation: CreationInput): Promise<CreationDto> {
 
 export function updateCreation(id: number, creation: CreationInput): Promise<CreationDto> {
   return http.request<CreationDto>(`/me/creations/${id}`, { method: "PUT", body: JSON.stringify(creation) });
+}
+
+export function listSprites(): Promise<SpriteDto[]> {
+  return http.request<SpriteDto[]>("/me/sprites");
+}
+
+/** Upload a picture (PNG as base64); the server checks it and keeps only a clean copy. */
+export function uploadSprite(name: string, data: string): Promise<SpriteDto> {
+  return http.request<SpriteDto>("/me/sprites", { method: "POST", body: JSON.stringify({ name, data }) });
+}
+
+export function deleteSprite(id: number): Promise<void> {
+  return http.request<void>(`/me/sprites/${id}`, { method: "DELETE" });
 }
 
 export function deleteCreation(id: number): Promise<void> {

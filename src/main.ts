@@ -5,8 +5,10 @@ import {
   askAi,
   getBalance,
   listCreations,
+  listSprites,
   type BalanceDto,
   type CreationDto,
+  type SpriteDto,
   createProject,
   finishRun,
   getCharacterLines,
@@ -43,6 +45,7 @@ import { Intro } from "./ui/Intro";
 import { Inspector } from "./ui/Inspector";
 import { DRAG_TYPE, Library, VARIANT_TYPE } from "./ui/Library";
 import { setRules, variantName } from "./game/balance";
+import { setSprites, spritesReady } from "./game/sprites";
 import { hideLoader, showLoader } from "./ui/loader";
 import { LoginScreen } from "./ui/LoginScreen";
 import { askNewProject } from "./ui/NewProjectDialog";
@@ -631,9 +634,11 @@ async function go(to: Destination, project?: ProjectDto): Promise<void> {
 
 /** The admin panel's rules of this account: numbers of heroes and enemies, and own creations. */
 async function loadRules(): Promise<void> {
-  const [balance, creations] = await Promise.all([getBalance(), listCreations()]).catch(
-    () => [{ heroes: {}, enemies: {} }, []] as [BalanceDto, CreationDto[]],
+  const [balance, creations, pictures] = await Promise.all([getBalance(), listCreations(), listSprites().catch(() => [])]).catch(
+    () => [{ heroes: {}, enemies: {} }, [], []] as [BalanceDto, CreationDto[], SpriteDto[]],
   );
+  setSprites(pictures);
+  await spritesReady();
   applyRules(balance, creations);
 }
 
@@ -700,7 +705,8 @@ async function leaveApp(callBackend: boolean, note = ""): Promise<void> {
   byId("app").hidden = true;
   home.hide();
   admin.hide();
-  // Another account may log in next: its rules are loaded after login.
+  // Another account may log in next: its rules and pictures are loaded after login.
+  setSprites([]);
   applyRules({ heroes: {}, enemies: {} }, []);
   if (callBackend && isDemo()) await logOut();
   document.body.classList.remove("is-demo");
