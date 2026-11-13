@@ -700,7 +700,8 @@
           <div class="ai-card">
             <div class="panel-head"><span>Pedir a la IA</span><span class="ai-badge">Texto</span></div>
             <form id="ai-form" class="form form-compact">
-              <textarea id="ai-prompt" rows="3" maxlength="500" placeholder="Ej.: 3 tanques y 2 fusileros · borra los enemigos · elimina todo y pon 5 monedas"></textarea>
+              <textarea id="ai-prompt" rows="3" maxlength="500" placeholder="Ej.: 3 tanques y 2 fusileros · borra los enemigos · elimina todo y pon 5 monedas" aria-describedby="ai-prompt-note"></textarea>
+              <p id="ai-prompt-note" class="ai-prompt-note" hidden>Escribe qué debe crear o borrar la IA, o elige un ejemplo.</p>
               <div class="chips" id="ai-examples">
                 <button type="button" class="chip" data-prompt="un aldeano, un caballero y un mago">Personajes</button>
                 <button type="button" class="chip" data-prompt="5 monedas y 2 enemigos">Monedas y enemigos</button>

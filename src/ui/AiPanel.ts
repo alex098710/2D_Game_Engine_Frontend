@@ -33,6 +33,8 @@ export class AiPanel {
   private readonly count = byId<HTMLInputElement>("ai-count");
   private working = false;
   private level: DifficultyLevel = "medium";
+  /** When the last request ended (performance.now()), to ignore a press that comes right after. */
+  private finishedAt = -Infinity;
 
   /** beforeRequest saves pending edits: the AI works on the scene stored in the backend. */
   constructor(getProjectId: () => number | null, onScene: (project: ProjectDto) => void, beforeRequest: () => Promise<void>) {
@@ -44,6 +46,14 @@ export class AiPanel {
       event.preventDefault();
       void this.ask();
     });
+    // "Pedir a la IA" only works with something written, and only once at a time.
+    const prompt = byId<HTMLTextAreaElement>("ai-prompt");
+    prompt.addEventListener("input", () => {
+      prompt.classList.remove("is-needed");
+      byId("ai-prompt-note").hidden = true;
+      this.syncAsk();
+    });
+    this.syncAsk();
     byId("btn-ai-obstacles").addEventListener("click", () => void this.obstacles());
     for (const button of byId("ai-difficulty").querySelectorAll<HTMLButtonElement>("[data-level]")) {
       button.addEventListener("click", () => void this.choose(button.dataset.level as DifficultyLevel));
@@ -51,16 +61,29 @@ export class AiPanel {
     this.showLevel(this.level);
   }
 
+  /** The ask button: off while the box is empty or a request is running. */
+  private syncAsk(): void {
+    const empty = byId<HTMLTextAreaElement>("ai-prompt").value.trim() === "";
+    const button = byId<HTMLButtonElement>("btn-ai-ask");
+    button.disabled = this.working || empty;
+    button.title = empty ? "Escribe primero qué quieres que haga la IA" : "";
+  }
+
   private async ask(): Promise<void> {
-    if (this.working) return;
-    const id = this.requireProject();
+    // One request at a time, and none again right after one ends (a double press sends one).
+    if (this.working || performance.now() - this.finishedAt < 700) return;
     const prompt = byId<HTMLTextAreaElement>("ai-prompt");
-    if (id === null) return;
     if (prompt.value.trim() === "") {
-      toast("Escribe qué debe crear o borrar la IA.", "error");
+      // Said once, next to the box: no new notice for every press.
+      prompt.classList.remove("is-needed");
+      void prompt.offsetWidth;
+      prompt.classList.add("is-needed");
+      byId("ai-prompt-note").hidden = false;
       prompt.focus();
       return;
     }
+    const id = this.requireProject();
+    if (id === null) return;
     await this.busy(byId<HTMLButtonElement>("btn-ai-ask"), "Pensando…", "La IA está creando lo que pediste", async () => {
       await this.beforeRequest();
       const project = await askAi(id, prompt.value.trim());
@@ -165,12 +188,14 @@ export class AiPanel {
       toast(errorText(error), "error");
     } finally {
       this.working = false;
+      this.finishedAt = performance.now();
       if (label) label.textContent = idle;
       button.classList.remove("is-loading");
       button.removeAttribute("aria-busy");
       panel.classList.remove("is-ai-working");
       for (const control of controls) control.disabled = false;
       byId("ai-working").hidden = true;
+      this.syncAsk();
     }
   }
 

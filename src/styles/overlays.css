@@ -92,3 +92,8 @@ html.is-touch-play .toasts { top: calc(max(10px, env(safe-area-inset-top)) + 110
 @media (max-width: 640px) {
   .toasts { left: 12px; right: 12px; bottom: calc(40px + env(safe-area-inset-bottom)); align-items: center; }
 }
+
+/* The same notice again does not stack: the one on screen pulses once (toast.ts). */
+.toast.is-repeated { animation: toast-again 200ms cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes toast-again { 50% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .toast.is-repeated { animation: none; } }

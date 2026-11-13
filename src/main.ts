@@ -431,6 +431,7 @@ for (const chip of document.querySelectorAll<HTMLButtonElement>("[data-prompt]")
   chip.addEventListener("click", () => {
     const prompt = byId<HTMLTextAreaElement>("ai-prompt");
     prompt.value = chip.dataset.prompt!;
+    prompt.dispatchEvent(new Event("input")); // the ask button wakes up
     prompt.focus();
   });
 }
