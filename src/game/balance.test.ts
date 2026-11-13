@@ -24,7 +24,7 @@ describe("the account's rules in the game", () => {
     expect(playableEnemy("brute", 7)).toMatchObject({ name: "Ogro de hielo", health: 12, damage: 3, tint: 0x7fd4ff });
     expect(playableEnemy("ghost", 7).name).toBe("Fantasma"); // a creation only applies to its own kind
     const hero = playableHero("custom-8");
-    expect(hero).toMatchObject({ name: "Sargento", maxHealth: 9, damage: 4, damageBonus: 2, custom: true, texture: "ally" });
+    expect(hero).toMatchObject({ name: "Sargento", maxHealth: 9, damage: 4, damageBonus: 2, custom: true, texture: "hero-soldier-idle" });
     expect(playableHeroes().map((h) => h.id)).toContain("custom-8");
     expect(objectValue("potion", 9)).toBe(6);
     expect(objectValue("potion")).toBe(2);

@@ -77,6 +77,9 @@ const TILE = 32;
 const tileKey = (x: number, y: number) => `${Math.floor(x / TILE)},${Math.floor(y / TILE)}`;
 
 /** What the HUD shows; sent to the page a few times per second. */
+/** The hero's walking poses, in order (see tools/make_heroes.py). */
+const WALK_CYCLE = ["walk1", "idle", "walk2", "idle"] as const;
+
 export interface HudState {
   score: number;
   health: number;
@@ -557,6 +560,10 @@ export class PlayScene extends Phaser.Scene {
     if (air > 0) this.player.setScale(1 + 0.32 * air);
     this.playerShadow.setPosition(this.player.x, this.player.y + 13).setScale(2.4 * (1 - 0.4 * air), 2 * (1 - 0.4 * air)).setAlpha(0.55 - 0.25 * air);
     this.player.setDepth(this.player.y / WORLD_HEIGHT);
+    // The walking poses: one step, standing, the other step, standing (130 ms each).
+    const pose = moving && time >= this.dashUntil ? WALK_CYCLE[Math.floor(time / 130) % WALK_CYCLE.length] : "idle";
+    const frame = this.hero.texture.replace(/-idle$/, `-${pose}`);
+    if (frame !== this.player.texture.key && this.textures.exists(frame)) this.player.setTexture(frame);
     this.player.setAlpha(time < this.invulnerableUntil ? 0.45 + 0.4 * Math.sin(time / 40) : 1);
     // The attack button on screen works like the space bar: press to attack, hold to draw the bow.
     const touchAttack = touch.enabled && touch.attackHeld;

@@ -137,18 +137,18 @@ export interface Hero {
 }
 
 export const HEROES: readonly Hero[] = [
-  { id: "knight", name: "Caballero", texture: "hero-knight", maxHealth: 6, speed: 175, agility: 12, weapon: "sword", description: "Resistente y equilibrado. Da un paso al frente y corta en arco.", bars: { health: 6, speed: 5, power: 4 } },
-  { id: "wizard", name: "Mago", texture: "hero-wizard", maxHealth: 4, speed: 180, agility: 10, weapon: "wand", description: "Frágil pero letal. Concentra un orbe que acelera y explota al chocar.", bars: { health: 4, speed: 5, power: 8 } },
-  { id: "archer", name: "Arquero", texture: "hero-archer", maxHealth: 5, speed: 200, agility: 14, weapon: "bow", description: "El más rápido. Tensa el arco: mantén Espacio y la flecha llega más lejos.", bars: { health: 5, speed: 8, power: 4 } },
-  { id: "barbarian", name: "Bárbaro", texture: "hero-barbarian", maxHealth: 7, speed: 160, agility: 8, weapon: "axe", description: "Lento y muy duro. Levanta el hacha y derriba a lo que tenga delante.", bars: { health: 7, speed: 4, power: 9 } },
-  { id: "rogue", name: "Pícaro", texture: "hero-rogue", maxHealth: 4, speed: 215, agility: 18, weapon: "dagger", description: "Ágil y escurridizo. Lanza tres dagas que giran en el aire.", bars: { health: 4, speed: 9, power: 5 } },
-  { id: "viking", name: "Vikingo", texture: "hero-viking", maxHealth: 8, speed: 150, agility: 7, weapon: "hammer", description: "Una muralla. Golpea el suelo con el martillo y empuja a todos a su alrededor.", bars: { health: 8, speed: 3, power: 9 } },
-  { id: "lancer", name: "Lancero", texture: "hero-lancer", maxHealth: 6, speed: 185, agility: 12, weapon: "spear", description: "Alcance largo. Se lanza hacia delante con una estocada que atraviesa.", bars: { health: 6, speed: 6, power: 6 } },
-  { id: "druid", name: "Druida", texture: "hero-druid", maxHealth: 5, speed: 180, agility: 11, weapon: "staff", description: "Juega con los rebotes: su chispa salta en las paredes y atraviesa enemigos.", bars: { health: 5, speed: 5, power: 6 } },
+  { id: "knight", name: "Caballero", texture: "hero-knight-idle", maxHealth: 6, speed: 175, agility: 12, weapon: "sword", description: "Resistente y equilibrado. Da un paso al frente y corta en arco.", bars: { health: 6, speed: 5, power: 4 } },
+  { id: "wizard", name: "Mago", texture: "hero-wizard-idle", maxHealth: 4, speed: 180, agility: 10, weapon: "wand", description: "Frágil pero letal. Concentra un orbe que acelera y explota al chocar.", bars: { health: 4, speed: 5, power: 8 } },
+  { id: "archer", name: "Arquero", texture: "hero-archer-idle", maxHealth: 5, speed: 200, agility: 14, weapon: "bow", description: "El más rápido. Tensa el arco: mantén Espacio y la flecha llega más lejos.", bars: { health: 5, speed: 8, power: 4 } },
+  { id: "barbarian", name: "Bárbaro", texture: "hero-barbarian-idle", maxHealth: 7, speed: 160, agility: 8, weapon: "axe", description: "Lento y muy duro. Levanta el hacha y derriba a lo que tenga delante.", bars: { health: 7, speed: 4, power: 9 } },
+  { id: "rogue", name: "Pícaro", texture: "hero-rogue-idle", maxHealth: 4, speed: 215, agility: 18, weapon: "dagger", description: "Ágil y escurridizo. Lanza tres dagas que giran en el aire.", bars: { health: 4, speed: 9, power: 5 } },
+  { id: "viking", name: "Vikingo", texture: "hero-viking-idle", maxHealth: 8, speed: 150, agility: 7, weapon: "hammer", description: "Una muralla. Golpea el suelo con el martillo y empuja a todos a su alrededor.", bars: { health: 8, speed: 3, power: 9 } },
+  { id: "lancer", name: "Lancero", texture: "hero-lancer-idle", maxHealth: 6, speed: 185, agility: 12, weapon: "spear", description: "Alcance largo. Se lanza hacia delante con una estocada que atraviesa.", bars: { health: 6, speed: 6, power: 6 } },
+  { id: "druid", name: "Druida", texture: "hero-druid-idle", maxHealth: 5, speed: 180, agility: 11, weapon: "staff", description: "Juega con los rebotes: su chispa salta en las paredes y atraviesa enemigos.", bars: { health: 5, speed: 5, power: 6 } },
   // Soldiers of the blue army: the heroes of the firearms.
-  { id: "soldier", name: "Soldado", texture: "ally", maxHealth: 6, speed: 180, agility: 11, weapon: "rifle", description: "Soldado del ejército azul. Su fusil dispara lejos y con fuerza.", bars: { health: 6, speed: 5, power: 7 } },
-  { id: "commando", name: "Comando", texture: "guard", maxHealth: 5, speed: 200, agility: 15, weapon: "shotgun", description: "Asalto a corta distancia: la escopeta lanza una ráfaga en abanico.", bars: { health: 5, speed: 7, power: 7 } },
-  { id: "warrior", name: "Guerrero", texture: "legionary", maxHealth: 7, speed: 165, agility: 9, weapon: "grenade", description: "Guerrero de batalla. Lanza granadas que explotan y dañan en área.", bars: { health: 7, speed: 4, power: 9 } },
+  { id: "soldier", name: "Soldado", texture: "hero-soldier-idle", maxHealth: 6, speed: 180, agility: 11, weapon: "rifle", description: "Soldado del ejército azul. Su fusil dispara lejos y con fuerza.", bars: { health: 6, speed: 5, power: 7 } },
+  { id: "commando", name: "Comando", texture: "hero-commando-idle", maxHealth: 5, speed: 200, agility: 15, weapon: "shotgun", description: "Asalto a corta distancia: la escopeta lanza una ráfaga en abanico.", bars: { health: 5, speed: 7, power: 7 } },
+  { id: "warrior", name: "Guerrero", texture: "hero-warrior-idle", maxHealth: 7, speed: 165, agility: 9, weapon: "grenade", description: "Guerrero de batalla. Lanza granadas que explotan y dañan en área.", bars: { health: 7, speed: 4, power: 9 } },
 ];
 
 export function heroById(id: string | null | undefined): Hero {
