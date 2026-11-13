@@ -1,0 +1,140 @@
+/* ==========================================================================
+   The welcome of the home, as a game's player card: who you are (left),
+   your party walking on a ledge (centre), your rank and how far the next one
+   is (right), then four stats with a detail each. Same frame as the rest of
+   the night world. Motion: entering 200-300 ms, hover 150 ms; loops only on
+   the artwork (walking heroes, sparks), never on the controls.
+   ========================================================================== */
+.home .welcome { justify-items: stretch; gap: 22px; padding: 26px clamp(18px, 3vw, 34px) 24px; }
+
+.welcome-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px minmax(250px, 300px);
+  grid-template-areas: "hero party rank";
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* ---------- who you are ---------- */
+.home .welcome-hero { grid-area: hero; display: flex; align-items: center; gap: 22px; max-width: none; min-width: 0; text-align: left; }
+.home .welcome-hero .avatar-ring { flex: none; margin: 0; }
+.welcome-text { display: grid; justify-items: start; gap: 6px; min-width: 0; }
+.home .welcome-eyebrow { justify-content: flex-start; }
+.home .welcome h1 { margin: 0; font-size: clamp(22px, 2.3vw, 32px); text-align: left; overflow-wrap: anywhere; }
+.home .welcome-eyebrow { letter-spacing: 0.18em; flex-wrap: wrap; max-width: 100%; }
+.home .welcome-eyebrow::after { content: none; }
+.home .welcome-sub { margin: 0; text-align: left; }
+.home .welcome-chips { justify-content: flex-start; margin-top: 4px; }
+.welcome-text > * { animation: welcome-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.welcome-text > :nth-child(2) { animation-delay: 60ms; }
+.welcome-text > :nth-child(3) { animation-delay: 120ms; }
+.welcome-text > :nth-child(4) { animation-delay: 180ms; }
+@keyframes welcome-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------- your party ---------- */
+.welcome-party { grid-area: party; position: relative; justify-self: center; width: 100%; max-width: 240px; height: 132px; display: grid; justify-items: center; align-items: end; overflow: hidden; }
+.party-heroes { position: relative; z-index: 1; display: flex; align-items: flex-end; gap: 4px; margin-bottom: 16px; }
+.party-hero { display: block; width: 52px; height: 52px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(3, 6, 15, 0.45)); animation: party-bob 1.6s ease-in-out infinite; }
+.party-hero.is-0 { order: 1; width: 64px; height: 64px; }
+.party-hero.is-1 { order: 0; animation-delay: -0.5s; }
+.party-hero.is-2 { order: 2; animation-delay: -1s; }
+@keyframes party-bob { 50% { transform: translateY(-3px); } }
+/* The grassy ledge they stand on, with stepped pixel ends. */
+.party-ledge {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 0;
+  height: 20px;
+  background: linear-gradient(180deg, #7cf0a8 0 2px, #4fd68a 2px 5px, #2fa866 5px 8px, #1d3a6a 8px 10px, #16274f 10px);
+  clip-path: polygon(0 0, 100% 0, 100% 50%, calc(100% - 6px) 50%, calc(100% - 6px) 100%, 6px 100%, 6px 50%, 0 50%);
+}
+/* Sparks rising from the ledge (the magic of the forge). */
+.party-sparks { position: absolute; inset: 0; pointer-events: none; }
+.party-sparks i { position: absolute; bottom: 18px; width: 3px; height: 3px; background: #9fe6ff; box-shadow: 0 0 6px #38c4ff; opacity: 0; animation: party-spark 3.2s linear infinite; }
+.party-sparks i:nth-child(1) { left: 18%; }
+.party-sparks i:nth-child(2) { left: 34%; animation-delay: 1.1s; background: #ffd65c; box-shadow: 0 0 6px #ffc547; }
+.party-sparks i:nth-child(3) { left: 52%; animation-delay: 2.2s; }
+.party-sparks i:nth-child(4) { left: 68%; animation-delay: 0.6s; background: #c9b8ff; box-shadow: 0 0 6px #a991ff; }
+.party-sparks i:nth-child(5) { left: 82%; animation-delay: 1.7s; }
+@keyframes party-spark { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-96px); } }
+
+/* ---------- your rank ---------- */
+.rank-card {
+  --cut: 12px;
+  --tone: 255, 197, 71;
+  grid-area: rank;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: linear-gradient(160deg, rgba(var(--tone), 0.75), rgba(var(--tone), 0.12) 45%, rgba(var(--tone), 0.45));
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  animation: welcome-in 300ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+}
+.rank-card::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(40, 30, 6, 0.55), #060d22 70%);
+  clip-path: polygon(calc(var(--cut) - 0.6px) 0, calc(100% - var(--cut) + 0.6px) 0, 100% calc(var(--cut) - 0.6px), 100% calc(100% - var(--cut) + 0.6px), calc(100% - var(--cut) + 0.6px) 100%, calc(var(--cut) - 0.6px) 100%, 0 calc(100% - var(--cut) + 0.6px), 0 calc(var(--cut) - 0.6px));
+}
+.rank-badge {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 50px;
+  color: #3a2a06;
+  background: linear-gradient(180deg, #ffe7a3, #ffc547 55%, #e0a020);
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+}
+.rank-badge svg { position: absolute; width: 30px; height: 30px; fill: rgba(58, 42, 6, 0.18); stroke: #6b4a08; stroke-width: 1.6; stroke-linejoin: round; }
+.rank-badge b { position: relative; font: 800 16px var(--font-brand); color: #3a2a06; }
+.rank-text { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.rank-text small { font-size: 11.5px; color: var(--text-muted); }
+.rank-text > small:first-child { font-family: var(--font-tag); font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #ffd78a; }
+.rank-text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 15px var(--font-brand); color: #fff3d6; }
+/* The bar to the next rank, cut into pixel blocks. */
+.rank-bar { position: relative; display: block; height: 10px; overflow: hidden; background: #1a1406; border: 1px solid rgba(255, 197, 71, 0.4); }
+.rank-bar i { display: block; height: 100%; background: linear-gradient(180deg, #ffe7a3, #ffc547); box-shadow: 0 0 10px rgba(255, 197, 71, 0.6); transform: scaleX(var(--rank, 0)); transform-origin: left; transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1) 300ms; }
+.rank-bar::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 8px, #1a1406 8px 10px); }
+
+/* ---------- the stats ---------- */
+.home .welcome .kpis { width: 100%; max-width: none; }
+.home .kpi { gap: 4px; padding: 16px 12px 14px; }
+.kpi-note { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; color: rgba(var(--tone), 0.95); }
+.kpi-blocks { display: flex; gap: 4px; margin-top: 2px; }
+.kpi-blocks i { width: 14px; height: 8px; background: rgba(169, 145, 255, 0.18); border: 1px solid rgba(169, 145, 255, 0.35); }
+.kpi-blocks i.is-on { background: #a991ff; border-color: #c9b8ff; box-shadow: 0 0 8px rgba(169, 145, 255, 0.7); animation: block-on 200ms cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: calc(400ms + var(--i, 0) * 80ms); }
+@keyframes block-on { from { opacity: 0; transform: scaleY(0.2); } }
+.home .kpis > .kpi { animation: welcome-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.home .kpis > .kpi:nth-child(2) { animation-delay: 60ms; }
+.home .kpis > .kpi:nth-child(3) { animation-delay: 120ms; }
+.home .kpis > .kpi:nth-child(4) { animation-delay: 180ms; }
+
+/* ---------- smaller screens: everything stays inside the card ---------- */
+@media (max-width: 1100px) {
+  .welcome-top { grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); grid-template-areas: "hero hero" "party rank"; }
+}
+@media (max-width: 680px) {
+  .welcome-top { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "party" "rank"; justify-items: center; gap: 16px; }
+  .home .welcome-hero { flex-direction: column; text-align: center; }
+  .welcome-text { justify-items: center; }
+  .home .welcome-eyebrow, .home .welcome-chips { justify-content: center; }
+  .home .welcome h1, .home .welcome-sub { text-align: center; }
+  .welcome-party { width: min(260px, 100%); height: 112px; }
+  .rank-card { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-text > *, .party-hero, .party-sparks i, .rank-card, .kpi-blocks i.is-on, .home .kpis > .kpi { animation: none; }
+  .rank-bar i { transition: none; }
+  .party-sparks { display: none; }
+}

@@ -1,9 +1,12 @@
 import { myAchievements, myStats, type ProjectDto, type UserDto } from "../api/client";
-import { iconUrl } from "../game/assets";
+import { iconUrl, TEXTURE_BASE } from "../game/assets";
+import { playableHeroes } from "../game/balance";
+import { spriteUrl } from "../game/sprites";
 import { isEnemy, type Kind } from "../model/GameObject";
 import { byId, make } from "./dom";
 import { NightScene } from "./NightScene";
 import { QuickAccess, type QuickSettings } from "./QuickAccess";
+import { remembered } from "./HeroDialog";
 import { relativeTime } from "./ProjectList";
 
 export type Destination = "home" | "editor" | "play" | "projects" | "settings" | "admin";
@@ -23,6 +26,30 @@ export function greeting(hour: number): string {
   if (hour >= 5 && hour < 12) return "Buenos días";
   if (hour >= 12 && hour < 19) return "Buenas tardes";
   return "Buenas noches";
+}
+
+/** The ranks, from the number of games played (forgeRank's thresholds). */
+const RANKS: { from: number; name: string }[] = [
+  { from: 0, name: "Aprendiz de la forja" },
+  { from: 1, name: "Herrero novato" },
+  { from: 10, name: "Forjador" },
+  { from: 30, name: "Maestro forjador" },
+  { from: 100, name: "Leyenda de la forja" },
+];
+
+/** Where the player stands: rank level (1-5), its name, how far to the next one (0-1) and what is left. */
+export function rankProgress(games: number): { level: number; name: string; progress: number; next: string } {
+  const index = RANKS.reduce((found, rank, i) => (games >= rank.from ? i : found), 0);
+  const current = RANKS[index];
+  const following = RANKS[index + 1];
+  if (following === undefined) return { level: index + 1, name: current.name, progress: 1, next: "Rango máximo: eres una leyenda." };
+  const left = following.from - games;
+  return {
+    level: index + 1,
+    name: current.name,
+    progress: (games - current.from) / (following.from - current.from),
+    next: `Te ${left === 1 ? "falta 1 partida" : `faltan ${left} partidas`} para ser ${following.name}.`,
+  };
 }
 
 /** A title earned by playing: it only depends on the number of games. */
@@ -64,6 +91,7 @@ export class HomeScreen {
   private readonly screen = byId("home");
   private readonly onGo: (to: Destination, project?: ProjectDto) => void;
   private readonly quick: QuickAccess;
+  private partyTimer = 0;
   /** The night behind the menu: runs only while the home is on screen. */
   private readonly scene = new NightScene(byId<HTMLCanvasElement>("home-scene"), byId("home-castle"), byId("home-wizard-spot"));
 
@@ -125,6 +153,10 @@ export class HomeScreen {
     byId("welcome-greeting").textContent = greeting(now.getHours());
     byId("welcome-date").textContent = now.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" });
     countUp(byId("kpi-projects"), projects.length);
+    byId("kpi-projects-note").textContent = projects[0] ? `Último: ${projects[0].name}` : "Crea el primero";
+    byId("kpi-projects-note").title = projects[0]?.name ?? "";
+    this.showRank(0);
+    this.showParty();
     byId("option-editor-go").textContent = projects[0] ? `Continuar con “${projects[0].name}”` : "Crear mi primer nivel";
     byId("option-projects-go").textContent = projects.length > 0 ? `Ver los ${projects.length} proyectos` : "Crear un proyecto";
     this.renderRecent(projects);
@@ -139,6 +171,7 @@ export class HomeScreen {
 
   hide(): void {
     this.screen.hidden = true;
+    window.clearInterval(this.partyTimer);
     this.quick.hide();
     this.scene.stop();
   }
@@ -195,12 +228,49 @@ export class HomeScreen {
     });
   }
 
+  /** The rank card: level, name, the bar to the next rank and what is left. */
+  private showRank(games: number): void {
+    const rank = rankProgress(games);
+    byId("welcome-rank").textContent = rank.name;
+    byId("rank-level").textContent = String(rank.level);
+    byId("rank-next").textContent = rank.next;
+    byId("rank-bar").style.setProperty("--rank", rank.progress.toFixed(3));
+    byId("rank-progress").setAttribute("aria-valuenow", String(Math.round(rank.progress * 100)));
+  }
+
+  /** Three heroes walking in place on their ledge: the chosen one first, then two companions. */
+  private showParty(): void {
+    const heroes = playableHeroes();
+    const chosen = heroes.find((hero) => hero.id === remembered()) ?? heroes[0];
+    const party = [chosen, ...heroes.filter((hero) => hero !== chosen && !hero.custom)].slice(0, 3);
+    const root = byId("welcome-party");
+    root.replaceChildren(...party.map((hero, i) => {
+      const picture = make("img", `party-hero is-${i}`);
+      picture.src = spriteUrl(hero.spriteId) ?? `${TEXTURE_BASE}${hero.texture}.png`;
+      picture.alt = "";
+      return picture;
+    }));
+    window.clearInterval(this.partyTimer);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const steps = ["walk1", "idle", "walk2", "idle"];
+    let tick = 0;
+    this.partyTimer = window.setInterval(() => {
+      tick += 1;
+      party.forEach((hero, i) => {
+        if (hero.spriteId !== null || !hero.texture.endsWith("-idle")) return;
+        const image = root.children[i] as HTMLImageElement | undefined;
+        if (image) image.src = `${TEXTURE_BASE}${hero.texture.replace(/-idle$/, `-${steps[(tick + i) % steps.length]}`)}.png`;
+      });
+    }, 180);
+  }
+
   private async loadNumbers(): Promise<void> {
     const [stats, achievements] = await Promise.all([myStats(), myAchievements()]).catch(() => [null, null] as const);
     if (stats !== null) {
       countUp(byId("kpi-games"), stats.games_played);
       countUp(byId("kpi-best"), stats.best_score);
-      byId("welcome-rank").textContent = forgeRank(stats.games_played);
+      this.showRank(stats.games_played);
+      byId("kpi-games-note").textContent = `${stats.games_won} ${stats.games_won === 1 ? "ganada" : "ganadas"}`;
       byId("welcome-sub").textContent = stats.games_played === 0
         ? "Tu forja está lista. Juega tu primera partida y la IA empezará a aprender."
         : `Has jugado ${stats.games_played} ${stats.games_played === 1 ? "partida" : "partidas"} · la IA aprende de cada una.`;
@@ -208,7 +278,11 @@ export class HomeScreen {
     if (achievements !== null) {
       countUp(byId("kpi-achievements"), achievements.length, `/${ACHIEVEMENTS_TOTAL}`);
       // The ring around the star fills with the share of achievements earned.
-      byId("kpi-ring").style.setProperty("--p", String(Math.min(1, achievements.length / ACHIEVEMENTS_TOTAL)));
+      // One block lights up per achievement, one after another.
+      [...byId("kpi-blocks").children].forEach((block, i) => {
+        block.classList.toggle("is-on", i < achievements.length);
+        (block as HTMLElement).style.setProperty("--i", String(i));
+      });
     }
   }
 }

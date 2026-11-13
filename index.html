@@ -237,18 +237,37 @@
         <!-- Welcome banner: a centred greeting over a living background, then four
              stat cards that count up when the home opens. -->
         <div class="welcome">
-          
-          <div class="welcome-hero">
-            <span class="avatar-ring">
-                            <span class="avatar avatar-big" id="welcome-avatar" aria-hidden="true">?</span>
-              <span class="avatar-status" aria-hidden="true"></span>
-            </span>
-            <p class="welcome-eyebrow"><span id="welcome-greeting">Hola</span><i aria-hidden="true"></i><span id="welcome-date"></span></p>
-            <h1 id="welcome-title">Bienvenido</h1>
-            <p id="welcome-sub" class="welcome-sub">Tu forja está lista.</p>
-            <div class="welcome-chips">
-              <span class="chip-live"><i></i>IA aprendiendo de tus partidas</span>
-              <span class="chip-rank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /></svg><span id="welcome-rank">Aprendiz de la forja</span></span>
+          <div class="welcome-top">
+            <div class="welcome-hero">
+              <span class="avatar-ring">
+                <span class="avatar avatar-big" id="welcome-avatar" aria-hidden="true">?</span>
+                <span class="avatar-status" aria-hidden="true"></span>
+              </span>
+              <div class="welcome-text">
+                <p class="welcome-eyebrow"><span id="welcome-greeting">Hola</span><i aria-hidden="true"></i><span id="welcome-date"></span></p>
+                <h1 id="welcome-title">Bienvenido</h1>
+                <p id="welcome-sub" class="welcome-sub">Tu forja está lista.</p>
+                <div class="welcome-chips">
+                  <span class="chip-live"><i></i>IA aprendiendo de tus partidas</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Your party: the hero you play with and two companions, walking on a ledge. -->
+            <div class="welcome-party" aria-hidden="true">
+              <span class="party-sparks"><i></i><i></i><i></i><i></i><i></i></span>
+              <div id="welcome-party" class="party-heroes"></div>
+              <span class="party-ledge"></span>
+            </div>
+
+            <div class="rank-card">
+              <span class="rank-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /></svg><b id="rank-level">1</b></span>
+              <div class="rank-text">
+                <small>Tu rango</small>
+                <b id="welcome-rank">Aprendiz de la forja</b>
+                <span class="rank-bar" role="progressbar" aria-label="Progreso al siguiente rango" id="rank-progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="rank-bar"></i></span>
+                <small id="rank-next">Juega tu primera partida para subir de rango.</small>
+              </div>
             </div>
           </div>
 
@@ -256,18 +275,22 @@
             <div class="kpi tone-blue">
               <span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg></span>
               <b id="kpi-projects">0</b><span class="kpi-label">Proyectos</span>
+              <small id="kpi-projects-note" class="kpi-note">Crea el primero</small>
             </div>
             <div class="kpi tone-green">
               <span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg></span>
               <b id="kpi-games">0</b><span class="kpi-label">Partidas</span>
+              <small id="kpi-games-note" class="kpi-note">0 ganadas</small>
             </div>
             <div class="kpi tone-gold">
               <span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6" /></svg></span>
               <b id="kpi-best">0</b><span class="kpi-label">Mejor puntuación</span>
+              <small id="kpi-best-note" class="kpi-note">puntos en una partida</small>
             </div>
             <div class="kpi tone-violet">
-              <span class="kpi-ring" id="kpi-ring" aria-hidden="true"><span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg></span></span>
+              <span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg></span>
               <b id="kpi-achievements">0/5</b><span class="kpi-label">Logros</span>
+              <span id="kpi-blocks" class="kpi-blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
             </div>
           </div>
         </div>
