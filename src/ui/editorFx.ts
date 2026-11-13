@@ -13,7 +13,7 @@ export function splitShortcut(title: string): { tip: string; key: string } {
   return match ? { tip: match[1], key: match[2] } : { tip: title, key: "" };
 }
 
-function trackActive(container: HTMLElement, pill: HTMLElement, activeSelector: string): void {
+export function trackActive(container: HTMLElement, pill: HTMLElement, activeSelector: string): void {
   const place = (): void => {
     const active = container.querySelector<HTMLElement>(activeSelector);
     if (active === null || active.offsetWidth === 0) {

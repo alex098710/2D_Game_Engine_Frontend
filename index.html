@@ -378,6 +378,11 @@
       <header class="topbar">
         <!-- Three zones: the centre (tools, Jugar, history) sits exactly in the middle. -->
         <div class="topbar-left">
+          <button id="btn-back" class="btn-back" type="button" title="Volver al inicio" aria-label="Volver al inicio">
+            <span class="btn-back-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></span>
+            <span class="btn-back-label">Inicio</span>
+          </button>
+          <span class="topbar-divider" aria-hidden="true"></span>
           <button id="btn-home" class="brand brand-small" type="button" title="Volver al inicio">
             <img src="/brand/emblem.png" alt="" width="30" />
             <strong><span class="mark-pixel">PIXEL</span><span class="mark-forge">FORGE</span></strong>
@@ -432,12 +437,18 @@
         </nav>
 
         <section class="dock-panel" role="tabpanel" data-panel="library">
-          <label class="search">
-            <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
-            <input id="library-search" type="search" placeholder="Buscar objetos…" aria-label="Buscar objetos" />
-          </label>
+          <div class="library-head">
+            <label class="search">
+              <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+              <input id="library-search" type="search" placeholder="Buscar objetos…" aria-label="Buscar objetos" autocomplete="off" />
+              <button id="library-clear" class="search-clear" type="button" aria-label="Borrar búsqueda" hidden>✕</button>
+            </label>
+            <!-- Category filter: a lit pill slides to the chosen one. -->
+            <div id="library-filter" class="library-filter" role="toolbar" aria-label="Filtrar por categoría"><span class="tab-pill filter-pill" aria-hidden="true"></span></div>
+            <p class="library-count"><span id="library-count">0 objetos</span><span class="library-tip">Arrastra o haz clic</span></p>
+          </div>
           <div id="library" class="library"></div>
-          <p class="hint">Arrastra un objeto al mapa, o elígelo y pinta con clic. <kbd>Esc</kbd> vuelve a seleccionar.</p>
+          <p class="hint"><kbd>Esc</kbd> vuelve a seleccionar · <kbd>B</kbd> pincel · <kbd>E</kbd> borrar</p>
         </section>
 
         <section class="dock-panel" role="tabpanel" data-panel="scene" hidden>

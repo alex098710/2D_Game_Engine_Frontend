@@ -457,6 +457,7 @@ bind("zoom-fit", () => host.editor.fitView());
 bind("zoom-center", () => host.editor.fitView());
 bind("btn-logout", () => leaveApp(true));
 bind("btn-home", () => goHome());
+bind("btn-back", () => goHome());
 
 bindShortcuts(
   {
