@@ -29,9 +29,10 @@ const HINTS: Record<Mode, Record<FieldName, string>> = {
   },
 };
 
-const COPY: Record<Mode, { title: string; subtitle: string; needs: string }> = {
-  login: { title: "Bienvenido de vuelta", subtitle: "Inicia sesión para seguir construyendo tus mundos.", needs: "Para entrar necesitas" },
-  register: { title: "Crea tu cuenta", subtitle: "Unos datos y empiezas a forjar tus propios niveles.", needs: "Para crear tu cuenta necesitas" },
+/** The card title is two parts: the second one is painted in the accent blue. */
+const COPY: Record<Mode, { title: string; accent: string; subtitle: string; needs: string }> = {
+  login: { title: "Tu próximo mundo comienza", accent: "aquí.", subtitle: "Inicia sesión y continúa creando experiencias extraordinarias.", needs: "Para entrar necesitas" },
+  register: { title: "Tu aventura empieza", accent: "hoy.", subtitle: "Crea tu cuenta y empieza a forjar tus propios mundos 2D.", needs: "Para crear tu cuenta necesitas" },
 };
 
 /**
@@ -64,7 +65,7 @@ export class LoginScreen {
 
   constructor(onLoggedIn: (user: UserDto) => Promise<void>) {
     this.onLoggedIn = onLoggedIn;
-    this.living = new LivingLogo(byId("login-art"), byId<HTMLCanvasElement>("login-battle"), byId<HTMLCanvasElement>("login-fx"), byId("login-emblem"));
+    this.living = new LivingLogo(byId("login-art"), byId<HTMLCanvasElement>("login-scene"), byId<HTMLCanvasElement>("login-fx"), byId("login-emblem"), byId("wizard-spot"));
     byId("tab-login").addEventListener("click", () => this.setMode("login"));
     byId("tab-register").addEventListener("click", () => this.setMode("register"));
     byId("auth-switch").addEventListener("click", () => this.setMode(this.mode === "login" ? "register" : "login"));
@@ -101,7 +102,8 @@ export class LoginScreen {
     this.submit.querySelector(".btn-label")!.textContent = register ? "Crear cuenta" : "Entrar a la forja";
     byId("auth-switch-text").textContent = register ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?";
     byId("auth-switch").textContent = register ? "Inicia sesión" : "Crea una";
-    byId("auth-title").textContent = COPY[mode].title;
+    byId("auth-title-text").textContent = COPY[mode].title;
+    byId("auth-title-accent").textContent = COPY[mode].accent;
     byId("auth-subtitle").textContent = COPY[mode].subtitle;
     byId("needs-title").textContent = COPY[mode].needs;
     for (const hint of this.form.querySelectorAll<HTMLElement>("[data-hint]")) {
@@ -255,7 +257,7 @@ export class LoginScreen {
     byId("auth-success-title").textContent = this.mode === "login" ? "¡Bienvenido de nuevo!" : "¡Cuenta creada!";
     this.form.classList.add("is-done");
     byId("auth-success").hidden = false;
-    this.living.fx.strikeNow();
+    this.living.celebrate();
     await new Promise((resolve) => window.setTimeout(resolve, 900));
   }
 

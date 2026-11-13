@@ -1,27 +1,33 @@
-import { BattleDiorama } from "./BattleDiorama";
 import { LogoFx } from "./fx";
+import { NightScene } from "./NightScene";
 
 /**
- * The left side of the access screen is alive: a battlefield drawn with the
- * engine's textures moves behind the logo (BattleDiorama), and the emblem
- * throws sparks and lightning (LogoFx).
+ * The access screen is alive: a pixel-art night with a castle and a wizard
+ * casting spells fills the background (NightScene), and the emblem throws
+ * sparks and lightning (LogoFx).
  */
 export class LivingLogo {
   readonly fx: LogoFx;
-  private readonly battle: BattleDiorama;
+  private readonly scene: NightScene;
 
-  constructor(host: HTMLElement, battleCanvas: HTMLCanvasElement, fxCanvas: HTMLCanvasElement, emblem: HTMLElement) {
+  constructor(host: HTMLElement, sceneCanvas: HTMLCanvasElement, fxCanvas: HTMLCanvasElement, emblem: HTMLElement, spot: HTMLElement) {
     this.fx = new LogoFx(fxCanvas, host, emblem);
-    this.battle = new BattleDiorama(battleCanvas);
+    this.scene = new NightScene(sceneCanvas, host, spot);
   }
 
   start(): void {
-    this.battle.start();
+    this.scene.start();
     this.fx.start();
   }
 
   stop(): void {
-    this.battle.stop();
+    this.scene.stop();
     this.fx.stop();
+  }
+
+  /** The celebration when the user gets in: the emblem strikes and the wizard casts. */
+  celebrate(): void {
+    this.fx.strikeNow();
+    this.scene.castNow();
   }
 }

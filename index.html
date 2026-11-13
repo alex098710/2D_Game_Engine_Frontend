@@ -26,33 +26,42 @@
 
     <!-- Login / register: the only thing shown until the user is in -->
     <section id="login-screen" class="login" hidden>
+      <canvas id="login-scene" class="night" aria-hidden="true"></canvas>
+      <div class="night-shade" aria-hidden="true"></div>
       <div id="login-art" class="login-art">
-        <canvas id="login-battle" class="battle" aria-hidden="true"></canvas>
-        <div class="scrim" aria-hidden="true"></div>
         <div class="hero-copy">
           <div class="logo">
             <div class="emblem-wrap"><img id="login-emblem" class="emblem" src="/brand/emblem.png" alt="" width="240" height="168" /></div>
-            <div class="wordmark-wrap"><img class="wordmark" src="/brand/wordmark.png" alt="PixelForge · 2D Game Engine" width="420" height="76" /><i class="sweep" aria-hidden="true"></i></div>
+            <div class="logo-text">
+              <div class="wordmark-wrap"><img class="wordmark" src="/brand/wordmark.png" alt="PixelForge" width="420" height="76" /><i class="sweep" aria-hidden="true"></i></div>
+              <p class="logo-tag"><span>2D Game Engine</span></p>
+            </div>
           </div>
           <h1 class="hero-title">Crea mundos 2D y <em>juégalos</em> al instante.</h1>
-          <p class="hero-sub">Editor visual, armas de fuego, mapas de batalla y una IA que ajusta la dificultad a cómo juegas.</p>
+          <p class="hero-sub">Diseña videojuegos 2D desde cero. Crea mapas, configura enemigos y construye batallas con una IA que aprende de ti.</p>
           <ul class="hero-features" aria-label="Lo que incluye">
-            <li><span class="feature-icon"><img src="/textures/house.png" alt="" /></span><span><b>Editor visual</b><small>Arrastra casas, muros, enemigos y armas al mapa.</small></span></li>
-            <li><span class="feature-icon"><img src="/textures/tank.png" alt="" /></span><span><b>Batallas y física</b><small>15 armas, tanques, explosiones y 11 héroes.</small></span></li>
-            <li><span class="feature-icon"><img src="/textures/wizard.png" alt="" /></span><span><b>IA que aprende</b><small>Crea mapas con palabras y ajusta la dificultad.</small></span></li>
+            <li><span class="feature-icon"><img src="/textures/house.png" alt="" /></span><b>Editor visual</b><small>Arrastra casas, muros, enemigos y armas al mapa.</small></li>
+            <li><span class="feature-icon"><img src="/textures/tank.png" alt="" /></span><b>Batallas y física</b><small>15 armas, tanques, explosiones y 11 héroes.</small></li>
+            <li><span class="feature-icon"><img src="/textures/wizard.png" alt="" /></span><b>IA que aprende</b><small>Crea mapas con palabras y ajusta la dificultad.</small></li>
           </ul>
         </div>
+        <div id="wizard-spot" class="wizard-spot" aria-hidden="true"></div>
+        <p class="login-motto" aria-hidden="true"><span>//</span> Crea <i>•</i> Juega <i>•</i> Comparte <span>//</span></p>
         <canvas id="login-fx" class="fx" aria-hidden="true"></canvas>
       </div>
 
       <div class="login-panel">
+        <div class="auth-frame">
         <form id="auth-form" class="auth-form auth-card" novalidate>
           <header class="auth-head">
-            <span class="auth-badge" aria-hidden="true"><img src="/brand/emblem.png" alt="" width="44" height="31" /></span>
-            <div>
-              <h2 id="auth-title" class="auth-title">Bienvenido de vuelta</h2>
-              <p id="auth-subtitle" class="auth-subtitle">Inicia sesión para seguir construyendo tus mundos.</p>
-            </div>
+            <span class="auth-hex" aria-hidden="true">
+              <i class="hex-halo"></i>
+              <img class="hex-emblem" src="/brand/emblem.png" alt="" width="48" height="34" />
+              <i class="hex-orbit"><b></b><b></b><b></b></i>
+            </span>
+            <h2 id="auth-title" class="auth-title"><span id="auth-title-text">Tu próximo mundo comienza</span> <em id="auth-title-accent">aquí.</em></h2>
+            <p id="auth-subtitle" class="auth-subtitle">Inicia sesión y continúa creando experiencias extraordinarias.</p>
+            <div class="auth-divider" aria-hidden="true"><i></i></div>
           </header>
           <div id="auth-tabs" class="seg" data-mode="login" role="tablist" aria-label="Acceso">
             <span class="seg-pill" aria-hidden="true"></span>
@@ -63,25 +72,28 @@
           <div id="auth-banner" class="banner" role="alert" hidden></div>
 
           <div class="field is-register" id="field-username" hidden>
-            <label for="auth-username">Nombre de usuario <span>3–20 caracteres</span></label>
-            <div class="control">
+            <label for="auth-username"><span class="label-main"><svg class="label-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>Nombre de usuario</span> <span>3–20 caracteres</span></label>
+            <div class="control has-icon">
+              <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
               <input id="auth-username" type="text" autocomplete="username" maxlength="20" placeholder="Ej: forjador_2d" spellcheck="false" aria-describedby="hint-username" /><span class="state" aria-hidden="true"></span>
             </div>
             <p class="msg" id="msg-username"></p>
             <div class="hint" id="hint-username"><b>Qué escribir</b><span data-hint="username"></span></div>
           </div>
           <div class="field" id="field-email">
-            <label for="auth-email">Correo electrónico</label>
-            <div class="control">
+            <label for="auth-email"><span class="label-main"><svg class="label-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>Correo electrónico</span></label>
+            <div class="control has-icon">
+              <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
               <input id="auth-email" type="email" autocomplete="email" maxlength="254" placeholder="tu@correo.com" spellcheck="false" aria-describedby="hint-email" /><span class="state" aria-hidden="true"></span>
             </div>
             <p class="msg" id="msg-email"></p>
             <div class="hint" id="hint-email"><b>Qué escribir</b><span data-hint="email"></span></div>
           </div>
           <div class="field" id="field-password">
-            <label for="auth-password">Contraseña <span id="caps-warning" class="caps" hidden>Bloq Mayús activado</span></label>
-            <div class="control">
-              <input id="auth-password" type="password" autocomplete="current-password" maxlength="128" aria-describedby="hint-password" /><span class="state" aria-hidden="true"></span>
+            <label for="auth-password"><span class="label-main"><svg class="label-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Contraseña</span> <span id="caps-warning" class="caps" hidden>Bloq Mayús activado</span></label>
+            <div class="control has-icon">
+              <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /><path d="M12 15v2" /></svg>
+              <input id="auth-password" type="password" autocomplete="current-password" maxlength="128" placeholder="Tu contraseña" aria-describedby="hint-password" /><span class="state" aria-hidden="true"></span>
               <button class="eye" type="button" data-toggle-password="auth-password" aria-label="Mostrar contraseña" aria-pressed="false">
                   <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><circle cx="12" cy="12" r="3" /></svg>
                   <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
@@ -101,8 +113,9 @@
             </ul>
           </div>
           <div class="field is-register" id="field-confirm" hidden>
-            <label for="auth-confirm">Confirmar contraseña</label>
-            <div class="control">
+            <label for="auth-confirm"><span class="label-main"><svg class="label-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg>Confirmar contraseña</span></label>
+            <div class="control has-icon">
+              <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /><path d="M12 15v2" /></svg>
               <input id="auth-confirm" type="password" autocomplete="new-password" maxlength="128" placeholder="Repite la contraseña" aria-describedby="hint-confirm" /><span class="state" aria-hidden="true"></span>
               <button class="eye" type="button" data-toggle-password="auth-confirm" aria-label="Mostrar contraseña" aria-pressed="false">
                   <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -117,7 +130,7 @@
           <div id="auth-needs" class="needs" aria-live="polite">
             <div class="needs-head">
               <span id="needs-title">Para entrar necesitas</span>
-              <span id="needs-count" class="needs-count">0 / 2</span>
+              <span class="needs-score"><span id="needs-count" class="needs-count">0 / 2</span><svg class="needs-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></span>
             </div>
             <div class="needs-bar" aria-hidden="true"><i id="needs-bar"></i></div>
             <ul class="needs-list">
@@ -130,11 +143,14 @@
           </div>
 
           <p id="auth-message" class="form-message" role="alert"></p>
+          <div class="btn-glow">
           <button id="auth-submit" class="btn btn-forge btn-block" type="submit">
             <span class="btn-spinner" aria-hidden="true"></span>
+            <svg class="btn-rocket" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 15c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.1 2.1 0 0 0-2.9-.1z" /><path d="M12 15 9 12a22 22 0 0 1 2-4A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22.4 22.4 0 0 1-4 2z" /><path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5" /></svg>
             <span class="btn-label">Entrar a la forja</span>
             <svg class="btn-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </button>
+          </div>
           <div id="auth-success" class="success" aria-live="polite" hidden>
             <div class="success-ring" aria-hidden="true">✓</div>
             <h2 id="auth-success-title">¡Bienvenido!</h2>
@@ -147,6 +163,7 @@
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Tus datos son privados</li>
           </ul>
         </form>
+        </div>
       </div>
     </section>
 
