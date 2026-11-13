@@ -202,41 +202,15 @@
 
     <!-- Home: the menu of the engine, only after the intro -->
     <section id="home" class="home" hidden>
-      <!-- The world behind the menu: a night sky over a pixel kingdom, with the
-           forge's sparks rising. Fixed, so the content scrolls over it. -->
+      <!-- The night of the access screen behind the menu (NightScene): the castle
+           on the right, the wizard on his cliff in the bottom-left corner. Fixed,
+           so the content scrolls over it; drawn on one canvas, so scrolling stays
+           smooth (no blur, no animated CSS layers). -->
       <div class="home-backdrop" aria-hidden="true">
-        <div class="bd-sky"></div>
-        <div class="bd-stars"></div>
-        <div class="bd-stars is-far"></div>
-        <div class="bd-moon"></div>
-        <span class="bd-comet"></span>
-        <svg class="bd-mountains" viewBox="0 0 480 120" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges">
-          <path d="M0 120V80h20v-8h16v-8h16v-8h12v8h16v8h20V60h16V48h12v-8h12v8h12v12h20v10h28v-8h16v-8h16v8h16v10h32V58h16V46h12v-8h12v8h12v12h20v10h28V56h16v8h24V52h16v8h20v10h24v50z" />
-        </svg>
-        <svg class="bd-kingdom" viewBox="0 0 480 120" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges">
-          <path class="land" d="M0 120V98h24v-6h24v6h24v-8h24v4h24v-6h30v8h30v-4h30v6h30v-4h20v-6h110v6h24v-6h24v4h20v-4h12v28z" />
-          <g class="land">
-            <rect x="296" y="56" width="16" height="42" /><rect x="294" y="52" width="4" height="6" /><rect x="302" y="52" width="4" height="6" /><rect x="310" y="52" width="4" height="6" />
-            <rect x="358" y="56" width="16" height="42" /><rect x="356" y="52" width="4" height="6" /><rect x="364" y="52" width="4" height="6" /><rect x="372" y="52" width="4" height="6" />
-            <rect x="312" y="70" width="46" height="28" /><rect x="312" y="66" width="4" height="4" /><rect x="320" y="66" width="4" height="4" /><rect x="346" y="66" width="4" height="4" /><rect x="354" y="66" width="4" height="4" />
-            <rect x="328" y="40" width="14" height="30" /><rect x="326" y="36" width="4" height="6" /><rect x="333" y="36" width="4" height="6" /><rect x="340" y="36" width="4" height="6" />
-            <rect x="334" y="22" width="2" height="14" />
-            <rect x="40" y="80" width="6" height="12" /><rect x="36" y="72" width="14" height="10" /><rect x="39" y="66" width="8" height="6" />
-            <rect x="60" y="84" width="6" height="10" /><rect x="56" y="76" width="14" height="10" /><rect x="59" y="70" width="8" height="6" />
-            <rect x="150" y="80" width="22" height="16" /><rect x="146" y="74" width="30" height="6" /><rect x="152" y="68" width="18" height="6" />
-            <rect x="420" y="82" width="6" height="12" /><rect x="416" y="74" width="14" height="10" /><rect x="419" y="68" width="8" height="6" />
-            <rect x="440" y="84" width="6" height="10" /><rect x="436" y="76" width="14" height="10" />
-          </g>
-          <rect class="flag" x="336" y="22" width="10" height="6" />
-          <g class="lights">
-            <rect x="302" y="64" width="4" height="5" /><rect x="364" y="64" width="4" height="5" /><rect x="333" y="48" width="4" height="6" />
-            <rect x="320" y="80" width="4" height="5" /><rect x="346" y="80" width="4" height="5" /><rect x="333" y="84" width="4" height="14" />
-            <rect x="158" y="84" width="4" height="4" />
-          </g>
-        </svg>
-        <div class="bd-floor"></div>
-        <div class="bd-embers"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="bd-vignette"></div>
+        <canvas id="home-scene" class="night"></canvas>
+        <div class="home-shade"></div>
+        <div id="home-castle" class="home-castle"></div>
+        <div id="home-wizard-spot" class="home-wizard-spot"></div>
       </div>
       <header class="topnav">
         <div class="mark"><img src="/brand/emblem.png" alt="" width="36" /><b><span class="mark-pixel">PIXEL</span><span class="mark-forge">FORGE</span></b></div>
@@ -254,17 +228,10 @@
         <!-- Welcome banner: a centred greeting over a living background, then four
              stat cards that count up when the home opens. -->
         <div class="welcome">
-          <div class="welcome-bg" aria-hidden="true">
-            <div class="welcome-aurora"></div>
-            <div class="welcome-grid"></div>
-            <span class="px p1"></span><span class="px p2"></span><span class="px p3"></span><span class="px p4"></span><span class="px p5"></span><span class="px p6"></span><span class="px p7"></span><span class="px p8"></span>
-            <div class="welcome-sweep"></div>
-          </div>
-
+          
           <div class="welcome-hero">
             <span class="avatar-ring">
-              <span class="avatar-orbit" aria-hidden="true"><i></i><i></i></span>
-              <span class="avatar avatar-big" id="welcome-avatar" aria-hidden="true">?</span>
+                            <span class="avatar avatar-big" id="welcome-avatar" aria-hidden="true">?</span>
               <span class="avatar-status" aria-hidden="true"></span>
             </span>
             <p class="welcome-eyebrow"><span id="welcome-greeting">Hola</span><i aria-hidden="true"></i><span id="welcome-date"></span></p>
@@ -310,7 +277,7 @@
               <img class="sprite s-house" src="/textures/house.png" alt="" />
               <img class="sprite s-tree" src="/textures/tree.png" alt="" />
               <img class="sprite s-tree2" src="/textures/tree.png" alt="" />
-              <img class="sprite s-hero" src="/textures/hero-knight.png" alt="" />
+              <img class="sprite s-hero" src="/textures/hero-wizard-idle.png" alt="" />
               <img class="sprite s-slime" src="/textures/enemy-slime.png" alt="" />
               <img class="sprite s-coin" src="/textures/coin.png" alt="" />
               <img class="sprite s-chest" src="/textures/chest.png" alt="" />
@@ -327,7 +294,7 @@
           <button class="option option-wide tone-green" type="button" data-go="play">
             <span class="option-glow" aria-hidden="true"></span>
             <span class="option-art" aria-hidden="true">
-              <img src="/textures/hero-wizard.png" alt="" /><img src="/textures/hero-archer.png" alt="" /><img src="/textures/hero-viking.png" alt="" />
+              <img src="/textures/hero-wizard-idle.png" alt="" /><img src="/textures/hero-archer-idle.png" alt="" /><img src="/textures/hero-viking-idle.png" alt="" />
             </span>
             <span class="option-body">
               <span class="option-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg></span>
@@ -383,6 +350,12 @@
 
     <!-- Admin panel of the account: numbers of heroes and enemies, and own creations -->
     <section id="admin" class="admin" hidden aria-label="Panel de administración">
+      <div class="adm-night" aria-hidden="true">
+        <canvas id="admin-scene" class="night"></canvas>
+        <div class="adm-shade"></div>
+        <div id="admin-castle" class="adm-castle"></div>
+        <div id="admin-wizard-spot" class="adm-wizard-spot"></div>
+      </div>
       <header class="adm-top">
         <button id="adm-back" class="btn-back" type="button" aria-label="Volver al inicio">
           <span class="btn-back-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></span>
@@ -416,7 +389,7 @@
                 <h2>Ajusta el juego a tu medida</h2>
                 <p>Cambia la vida y el daño de cada héroe y enemigo, y crea tus propios héroes, enemigos y objetos. Todo se aplica a tus partidas y a tu editor, y nadie más lo ve.</p>
               </div>
-              <div class="adm-hero-art" aria-hidden="true"><img src="/textures/ally.png" alt="" /><img src="/textures/hero-knight.png" alt="" /><img src="/textures/demon.png" alt="" /><img src="/textures/chest.png" alt="" /></div>
+              <div class="adm-hero-art" aria-hidden="true"><img src="/textures/ally.png" alt="" /><img src="/textures/hero-wizard-idle.png" alt="" /><img src="/textures/demon.png" alt="" /><img src="/textures/chest.png" alt="" /></div>
             </div>
             <div class="adm-kpis">
               <button class="adm-kpi tone-blue" type="button" data-go-section="heroes"><span class="adm-kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" /></svg></span><b id="adm-kpi-heroes">0</b><span>Héroes ajustados</span></button>

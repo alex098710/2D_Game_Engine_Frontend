@@ -2,6 +2,7 @@ import { myAchievements, myStats, type ProjectDto, type UserDto } from "../api/c
 import { iconUrl } from "../game/assets";
 import { isEnemy, type Kind } from "../model/GameObject";
 import { byId, make } from "./dom";
+import { NightScene } from "./NightScene";
 import { relativeTime } from "./ProjectList";
 
 export type Destination = "home" | "editor" | "play" | "projects" | "settings" | "admin";
@@ -61,6 +62,8 @@ export function objectCount(count: number): string {
 export class HomeScreen {
   private readonly screen = byId("home");
   private readonly onGo: (to: Destination, project?: ProjectDto) => void;
+  /** The night behind the menu: runs only while the home is on screen. */
+  private readonly scene = new NightScene(byId<HTMLCanvasElement>("home-scene"), byId("home-castle"), byId("home-wizard-spot"));
 
   constructor(onGo: (to: Destination, project?: ProjectDto) => void, onLogout: () => void) {
     this.onGo = onGo;
@@ -119,11 +122,13 @@ export class HomeScreen {
     this.screen.classList.remove("is-entering");
     void this.screen.offsetWidth;
     this.screen.classList.add("is-entering");
+    this.scene.start();
     void this.loadNumbers();
   }
 
   hide(): void {
     this.screen.hidden = true;
+    this.scene.stop();
   }
 
   get visible(): boolean {

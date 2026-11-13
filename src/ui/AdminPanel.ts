@@ -8,6 +8,7 @@ import { HEROES, heroById, WEAPONS } from "../game/combat";
 import { KIND_INFO, type Kind } from "../model/GameObject";
 import { byId, errorText, make } from "./dom";
 import { trackActive } from "./editorFx";
+import { NightScene } from "./NightScene";
 import { toast } from "./toast";
 
 type Section = "overview" | "heroes" | "enemies" | "creations";
@@ -44,6 +45,8 @@ function enemyBase(): Record<string, Stats> {
  * them at once.
  */
 export class AdminPanel {
+  /** The night of the app behind the panel; runs only while the panel is open. */
+  private readonly scene = new NightScene(byId<HTMLCanvasElement>("admin-scene"), byId("admin-castle"), byId("admin-wizard-spot"));
   private readonly screen = byId("admin");
   private readonly onBack: () => void;
   private readonly onRules: (balance: BalanceDto, creations: CreationDto[]) => void;
@@ -104,11 +107,13 @@ export class AdminPanel {
     this.renderBalance();
     this.renderCreations();
     this.showSection("overview");
+    this.scene.start();
   }
 
   hide(): void {
     this.closeDrawer();
     this.screen.hidden = true;
+    this.scene.stop();
   }
 
   /** Unsaved numbers are lost only if the player says so. */

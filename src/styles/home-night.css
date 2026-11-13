@@ -1,0 +1,296 @@
+/* ==========================================================================
+   Home, night edition: the same world as the access screen and the intro.
+   - Behind: the pixel night (NightScene) on one fixed canvas, the castle on
+     the right and the wizard on his cliff in the bottom-left corner.
+   - Surfaces: cut corners with a glowing edge in the card's tone (the access
+     card's language), hexagon badges, "//" tags and pixel bars.
+   - Smooth scrolling: no backdrop blur, no blur filters, no animated
+     gradients or background positions, no border that spins forever. The
+     only continuous motion is on the canvas and in small sprites (transform
+     only); each card is its own paint island (contain: paint).
+   - Motion tokens: 150 ms hover, 200-300 ms enter, ease-out, transform and
+     opacity only.
+   ========================================================================== */
+@property --edge-a { syntax: "<number>"; inherits: true; initial-value: 0.45; }
+
+.home {
+  --m-150: 150ms;
+  --m-200: 200ms;
+  --m-300: 300ms;
+  --out: cubic-bezier(0.16, 1, 0.3, 1);
+  --glow-hi: #38c4ff;
+  --surface: #0a1430;
+  --surface-2: #060d22;
+  --cut: 18px;
+  background: #03060f;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+.home .welcome, .home .kpi, .home .option, .home .recent-list, .home .recent-empty {
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+}
+
+/* ---------- the night behind ---------- */
+.home .night { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.home-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(3, 6, 15, 0.55) 0%, rgba(3, 6, 15, 0.35) 40%, rgba(3, 6, 15, 0.1) 80%),
+    radial-gradient(ellipse 60% 80% at 50% 40%, rgba(3, 6, 15, 0.45), transparent 75%);
+}
+.home-castle { position: absolute; top: 0; bottom: 0; left: 0; width: 86%; }
+/* The wizard stands in the free margin left of the content (1240 px wide), so
+   he only appears when that margin fits him (3x scale: 120 x 180 px). */
+.home-wizard-spot { position: absolute; left: 12px; bottom: 0; width: 150px; height: 0; }
+@media (min-width: 1600px) { .home-wizard-spot { height: 200px; } }
+
+/* ---------- top bar: a solid strip with a line of light ---------- */
+.home .topnav {
+  background: rgba(4, 8, 20, 0.94);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(56, 196, 255, 0.16);
+}
+.home .topnav::after { opacity: 1; background: linear-gradient(90deg, transparent, rgba(56, 196, 255, 0.8) 50%, transparent); }
+.home .mark img { filter: none; }
+.home .mark b { font-size: 16px; }
+.home .mark-pixel { background: none; color: #f2f6ff; }
+.home .mark-forge { background: none; color: var(--glow-hi); }
+
+/* "Inicio": a pixel-edged button, no loops. */
+.home .nav-home {
+  --cut: 6px;
+  border-radius: 0;
+  padding: 10px 22px 10px 18px;
+  background: linear-gradient(180deg, #49a6ff, #1f6dff 60%, #1653d6);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px), 0 6px, 3px 6px, 3px 3px, 6px 3px);
+  animation: none;
+  transition: transform var(--m-150) var(--out);
+}
+.home .nav-home-ring, .home .nav-home-spark { display: none; }
+.home .nav-home-icon { animation: none; filter: none; }
+.home .nav-home-label { text-shadow: none; }
+.home .nav-home:hover { transform: translateY(-1px); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.22); }
+.home .userchip { border-radius: 8px; background: rgba(6, 13, 34, 0.9); border-color: rgba(56, 196, 255, 0.2); }
+.home .userchip .btn { border-radius: 6px; }
+
+/* ---------- welcome: the access card's frame ---------- */
+.home .welcome {
+  --cut: 26px;
+  overflow: visible;
+  contain: paint;
+  border-radius: 0;
+  background: linear-gradient(160deg, #5cd2ff, #1f6dff 30%, #163e9e 55%, #2a7dff 80%, #5cd2ff);
+  box-shadow: none;
+}
+.home .welcome::before {
+  inset: 1.5px;
+  z-index: -1;
+  padding: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(640px 300px at 50% 0%, rgba(56, 196, 255, 0.14), transparent 70%),
+    linear-gradient(180deg, rgba(11, 22, 51, 0.97), rgba(6, 13, 34, 0.98));
+  -webkit-mask: none;
+  mask: none;
+  animation: none;
+  clip-path: polygon(calc(var(--cut) - 0.6px) 0, calc(100% - var(--cut) + 0.6px) 0, 100% calc(var(--cut) - 0.6px), 100% calc(100% - var(--cut) + 0.6px), calc(100% - var(--cut) + 0.6px) 100%, calc(var(--cut) - 0.6px) 100%, 0 calc(100% - var(--cut) + 0.6px), 0 calc(var(--cut) - 0.6px));
+}
+/* Two glowing pixels on the cut corners, like the access card. */
+.home .welcome::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  width: 6px;
+  height: 6px;
+  background: var(--glow-hi);
+  box-shadow: 0 0 10px 2px rgba(56, 196, 255, 0.8);
+  transform: rotate(45deg);
+}
+
+/* The avatar in a hexagon whose edge carries a light (one small loop on the brand mark). */
+@property --hex-run { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.home .avatar-ring {
+  width: 96px;
+  height: 84px;
+  margin: 4px 0 10px;
+  border-radius: 0;
+  background: conic-gradient(from var(--hex-run), #1f6dff, #1f6dff 55%, #9fe6ff 70%, #ffffff 75%, #9fe6ff 80%, #1f6dff 95%);
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  box-shadow: none;
+  animation: hex-run 4s linear infinite;
+}
+@keyframes hex-run { to { --hex-run: 360deg; } }
+.home .avatar-ring .avatar {
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: radial-gradient(circle at 50% 38%, #17418f, #071233 72%);
+  color: #9fe6ff;
+  font-size: 30px;
+  animation: none;
+}
+.home .avatar-status { right: 10px; bottom: 6px; border-radius: 0; width: 12px; height: 12px; border-width: 2px; animation: none; transform: rotate(45deg); }
+
+.home .welcome-eyebrow { font-size: 10px; letter-spacing: 0.3em; color: #a9bde0; }
+.home .welcome-eyebrow::before, .home .welcome-eyebrow::after { content: "//"; color: var(--glow-hi); letter-spacing: 0.05em; }
+.home .welcome-eyebrow i { border-radius: 0; background: var(--glow-hi); opacity: 1; transform: rotate(45deg); }
+.home .welcome h1 { font-size: clamp(24px, 3.2vw, 38px); }
+.home .welcome-name { background: none; color: var(--glow-hi); animation: none; filter: none; text-shadow: 0 0 22px rgba(56, 196, 255, 0.45); }
+.home .welcome-sub { color: #bccbe6; }
+.home .welcome-chips > span { border-radius: 6px; background: rgba(5, 11, 28, 0.9); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.home .chip-live i { border-radius: 0; box-shadow: 0 0 8px var(--success); animation: blink-dot 1.2s steps(2, jump-none) infinite; }
+@keyframes blink-dot { 50% { opacity: 0.3; } }
+
+/* KPIs: four cut-corner tiles with an edge in their tone. */
+.home .kpi {
+  --cut: 12px;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: linear-gradient(160deg, rgba(var(--tone), calc(var(--edge-a) + 0.2)), rgba(var(--tone), 0.12) 45%, rgba(var(--tone), var(--edge-a)));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  contain: paint;
+  transition: transform var(--m-150) var(--out), --edge-a var(--m-200) var(--out);
+}
+.home .kpi::before {
+  inset: 1px;
+  left: 1px;
+  right: 1px;
+  top: 1px;
+  height: auto;
+  z-index: -1;
+  border-radius: 0;
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(var(--tone), 0.08), var(--surface-2) 60%);
+  clip-path: polygon(calc(var(--cut) - 0.5px) 0, calc(100% - var(--cut) + 0.5px) 0, 100% calc(var(--cut) - 0.5px), 100% calc(100% - var(--cut) + 0.5px), calc(100% - var(--cut) + 0.5px) 100%, calc(var(--cut) - 0.5px) 100%, 0 calc(100% - var(--cut) + 0.5px), 0 calc(var(--cut) - 0.5px));
+  transition: none;
+}
+.home .kpi::after { display: none; }
+.home .kpi:hover { --edge-a: 0.85; transform: translateY(-3px); box-shadow: none; }
+.home .kpi:hover::before { left: 1px; right: 1px; }
+.home .kpi-icon { border-radius: 0; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); width: 46px; height: 40px; box-shadow: none; background: rgba(var(--tone), 0.16); }
+.home .kpi b { font-size: clamp(22px, 2.2vw, 28px); text-shadow: 0 0 14px rgba(var(--tone), 0.4); }
+.home .kpi-label { font-family: var(--font-tag); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
+.home .kpi-ring::before { filter: none; }
+
+/* ---------- section titles: the "//" tag with a line ---------- */
+.home .section-head .eyebrow { gap: 10px; color: #dce6f7; font-size: 11px; letter-spacing: 0.3em; }
+.home .section-head .eyebrow::before { content: "//"; color: var(--glow-hi); letter-spacing: 0.05em; }
+.home .section-head .eyebrow::after { width: 72px; background: linear-gradient(90deg, var(--glow-hi), transparent); }
+.home .count-badge { border-radius: 4px; }
+.home .btn-outline { border-radius: 6px; background: rgba(6, 13, 34, 0.9); }
+
+/* ---------- quick access: cut-corner cards with an edge in their tone ---------- */
+.home .menu { perspective: none; }
+.home .option {
+  --cut: 16px;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(160deg, rgba(var(--tone), calc(var(--edge-a) + 0.25)), rgba(var(--tone), 0.1) 42%, rgba(var(--tone), var(--edge-a)));
+  transform: none;
+  transform-style: flat;
+  contain: paint;
+  transition: transform var(--m-200) var(--out), --edge-a var(--m-200) var(--out);
+}
+/* The surface, 1.5 px inside the edge. */
+.home .option::after {
+  inset: 1.5px;
+  z-index: -2;
+  opacity: 1;
+  background:
+    linear-gradient(rgba(var(--tone), 0.05) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, rgba(var(--tone), 0.05) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(165deg, rgba(14, 27, 58, 0.97), rgba(6, 13, 34, 0.98));
+  -webkit-mask: none;
+  mask: none;
+  clip-path: polygon(calc(var(--cut) - 0.6px) 0, calc(100% - var(--cut) + 0.6px) 0, 100% calc(var(--cut) - 0.6px), 100% calc(100% - var(--cut) + 0.6px), calc(100% - var(--cut) + 0.6px) 100%, calc(var(--cut) - 0.6px) 100%, 0 calc(100% - var(--cut) + 0.6px), 0 calc(var(--cut) - 0.6px));
+  transition: none;
+}
+.home .option::before { display: none; }
+.home .option-glow { z-index: -1; }
+.home .option:hover, .home .option:focus-visible { --edge-a: 0.9; transform: translateY(-4px); box-shadow: none; }
+.home .option:focus-visible { outline: 2px solid #fff; outline-offset: -6px; }
+.home .option:active { transform: translateY(-1px); transition-duration: 100ms; }
+.home .option-body, .home .option-art, .home .feature-stage { transform: none; }
+.home .option-wide .option-art { transform: translateY(-50%); }
+.home .option-icon { border-radius: 0; width: 46px; height: 40px; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); box-shadow: none; background: rgba(var(--tone), 0.16); }
+.home .option:hover .option-icon { transform: translateY(-2px); box-shadow: none; }
+.home .option:hover .option-icon.is-gear { transform: rotate(60deg); }
+.home .option h3 { font-size: 16px; letter-spacing: 0.04em; }
+.home .option-art img { filter: none; transition: transform var(--m-200) var(--out); }
+.home .option:hover .option-art img { transform: translateY(-4px); }
+
+/* The featured editor card: a living level in a cut-corner window. */
+.home .option-feature { --cut: 24px; box-shadow: none; }
+.home .feature-stage { --cut: 12px; border: 0; border-radius: 0; clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut)); background: radial-gradient(ellipse at 50% 120%, rgba(51, 224, 161, 0.2), transparent 60%), linear-gradient(180deg, #0b1a3a, #0f2a3a 70%, #133a2c); }
+.home .stage-floor { animation: none; }
+.home .sprite { filter: none; }
+.home .stage-select { border-radius: 0; box-shadow: none; }
+.home .option-tag { border-radius: 4px; }
+.home .option-tag i { border-radius: 0; animation: blink-dot 1.2s steps(2, jump-none) infinite; }
+.home .go-pill {
+  border-radius: 0;
+  background: linear-gradient(180deg, #49a6ff, #1f6dff 55%, #1653d6);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px), 0 6px, 3px 6px, 3px 3px, 6px 3px);
+  font-family: var(--font-brand);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.home .option-feature:hover .go-pill { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.22); }
+
+/* ---------- recent projects ---------- */
+.home .recent-list {
+  --cut: 18px;
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  padding: 10px;
+  background: linear-gradient(160deg, rgba(56, 196, 255, 0.6), rgba(31, 109, 255, 0.15) 45%, rgba(56, 196, 255, 0.4));
+  box-shadow: none;
+  contain: paint;
+}
+.home .recent-list::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  z-index: -2;
+  background: linear-gradient(180deg, rgba(11, 22, 51, 0.97), rgba(6, 13, 34, 0.98));
+  clip-path: polygon(calc(var(--cut) - 0.6px) 0, calc(100% - var(--cut) + 0.6px) 0, 100% calc(var(--cut) - 0.6px), 100% calc(100% - var(--cut) + 0.6px), calc(100% - var(--cut) + 0.6px) 100%, calc(var(--cut) - 0.6px) 100%, 0 calc(100% - var(--cut) + 0.6px), 0 calc(var(--cut) - 0.6px));
+}
+.home .recent-row { border-radius: 6px; transition: background var(--m-150) var(--out), border-color var(--m-150) var(--out); }
+.home .recent-row::after { border-radius: 0; box-shadow: none; transition: transform var(--m-200) var(--out); height: 60%; transform: translateY(-50%) scaleY(0); }
+.home .recent-row:hover::after, .home .recent-row:focus-visible::after { height: 60%; transform: translateY(-50%) scaleY(1); }
+.home .recent-thumb { border-radius: 0; clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px); }
+.home .recent-row:hover .recent-thumb { transform: none; box-shadow: none; }
+.home .recent-index { font-family: var(--font-mono); color: rgba(56, 196, 255, 0.55); }
+/* The size bar in blocks, like the intro's loading bar. */
+.home .recent-bar { position: relative; height: 8px; border-radius: 0; background: #0b1730; border: 1px solid rgba(56, 196, 255, 0.2); }
+.home .recent-bar i { border-radius: 0; background: linear-gradient(180deg, #7fdcff, #1f7bff); }
+.home .recent-bar::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 6px, #060d22 6px 8px); }
+.home .recent-open { border-radius: 4px; }
+.home .recent-row:hover .recent-open { box-shadow: none; }
+.home .recent-empty { --cut: 14px; background: rgba(6, 13, 34, 0.9); }
+
+/* Phones: smaller cuts. */
+@media (max-width: 680px) {
+  .home { --cut: 12px; }
+  .home .welcome { --cut: 18px; }
+  .home .option-feature { --cut: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home { scroll-behavior: auto; }
+  .home .avatar-ring, .home .chip-live i, .home .option-tag i { animation: none; }
+}

@@ -1,0 +1,44 @@
+/* ==========================================================================
+   Smooth scrolling everywhere (loaded last).
+   Lag while scrolling came from work the browser had to redo on every frame:
+   - backdrop blurs over moving content (the game canvas, the night scene):
+     the blur is recomputed each frame for every blurred panel;
+   - endless decorative loops that repaint: pulsing box-shadows, spinning
+     conic borders, running gradient lines, glowing drop-shadow filters.
+   This layer removes them (surfaces get opaque backgrounds instead), keeps
+   the functional loops (spinners, "saving" and "working" indicators), and
+   isolates scrolling areas so scrolling one does not repaint the rest.
+   ========================================================================== */
+
+/* 1. No blur anywhere: solid surfaces read as well and cost nothing. */
+*, *::before, *::after, ::backdrop {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.topbar { background: linear-gradient(180deg, rgba(8, 15, 31, 0.97), rgba(6, 12, 26, 0.97)); }
+.stage-label { background: rgba(6, 12, 25, 0.92); }
+.viewport-controls { background: rgba(8, 15, 31, 0.95); }
+.dialog::backdrop { background: rgba(2, 5, 12, 0.72); }
+.dialog-new::backdrop { background: rgba(2, 5, 12, 0.8); }
+.hud-card { background: rgba(3, 6, 13, 0.92); }
+.touch-round { background: rgba(3, 6, 13, 0.82); }
+
+/* 2. No endless decorative loops on the interface (they repaint every frame). */
+.topbar::after { animation: none; background-size: 100% 100%; }
+.btn-play { animation: none; }
+.play-controls::before { animation: none; opacity: 0.6; }
+.corner { animation: corner-in 0.6s var(--decel, ease-out) both 0.2s; filter: none; box-shadow: 0 0 8px rgba(56, 196, 255, 0.35); }
+.stage-label i { animation: none; box-shadow: 0 0 6px var(--success); }
+.empty-card::before { animation: none; }
+.empty-floor { animation: none; }
+.dialog-new::before { animation: none; }
+.np-badge img { animation: none; }
+.drop-zone { animation: none; }
+.level.is-active[data-level="extreme"] .level-bars i { animation: none; }
+
+/* 3. Scrolling areas: momentum stays inside, and their content is painted on its own. */
+.dock-panel, .library-body, .drawer-body, .templates, .project-list, .adm-main, .adm-nav, .adm-form-body, .adm-bases, .dialog-heroes, .new-project, .home, .login-panel {
+  overscroll-behavior: contain;
+}
+.adm-card, .recent-row { contain: layout paint; }
+.palette-item, .tree-item, .hero { contain: layout style; }

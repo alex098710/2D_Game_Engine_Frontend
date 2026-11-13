@@ -1,0 +1,153 @@
+/* ==========================================================================
+   Admin panel, night edition: the world of the access screen, the intro and
+   the home. The pixel night (NightScene) behind, solid surfaces with cut
+   corners and an edge in their tone, hexagon badges, "//" tags, pixel bars.
+   Smooth scrolling: no blur, no endless decorative loops, each card is its
+   own paint island. Motion: 150-300 ms, ease-out, transform and opacity.
+   ========================================================================== */
+.admin {
+  --m-150: 150ms;
+  --m-200: 200ms;
+  --m-300: 300ms;
+  --out: cubic-bezier(0.16, 1, 0.3, 1);
+  --glow-hi: #38c4ff;
+  --surface: #0a1430;
+  --surface-2: #060d22;
+  --cut: 14px;
+  background: #03060f;
+}
+.admin::before { display: none; }
+.admin .adm-hero, .admin .adm-kpi, .admin .adm-card, .admin .adm-step, .admin .adm-empty-card, .admin .adm-stats {
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+}
+
+/* ---------- the night behind ---------- */
+.adm-night { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.admin .night { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.adm-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(3, 6, 15, 0.7), rgba(3, 6, 15, 0.45) 40%, rgba(3, 6, 15, 0.25)); }
+.adm-castle { position: absolute; top: 0; bottom: 0; left: 0; width: 88%; }
+.adm-wizard-spot { position: absolute; left: 0; bottom: 0; width: 0; height: 0; }
+.admin > .adm-top, .admin > .adm-body { position: relative; z-index: 1; }
+
+/* ---------- top bar ---------- */
+.admin .adm-top {
+  background: rgba(4, 8, 20, 0.95);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(56, 196, 255, 0.16);
+}
+.admin .adm-top::after { animation: none; background: linear-gradient(90deg, transparent, rgba(56, 196, 255, 0.85) 50%, transparent); background-size: 100% 100%; }
+.admin .adm-top h1 { font-size: clamp(15px, 1.6vw, 19px); letter-spacing: 0.04em; }
+/* The shield in a hexagon. */
+.admin .adm-shield {
+  width: 48px;
+  height: 42px;
+  border-radius: 0;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: radial-gradient(circle at 50% 38%, #1f4fae, #071233 75%);
+  box-shadow: none;
+  color: #9fe6ff;
+}
+.admin .adm-save-state { border-radius: 6px; background: rgba(6, 13, 34, 0.9); }
+.admin .adm-save-state[data-state="dirty"]::before { animation: blink-dot 1.2s steps(2, jump-none) infinite; }
+@keyframes blink-dot { 50% { opacity: 0.3; } }
+
+/* ---------- side navigation ---------- */
+.admin .adm-nav { background: rgba(5, 10, 24, 0.9); border-right: 1px solid rgba(56, 196, 255, 0.14); }
+.admin .adm-nav-item { border-radius: 4px; transition: background var(--m-150) var(--out), color var(--m-150) var(--out), border-color var(--m-150) var(--out); }
+.admin .adm-nav-item.is-active {
+  background: linear-gradient(90deg, rgba(31, 123, 255, 0.32), rgba(31, 123, 255, 0.06));
+  border-color: rgba(56, 196, 255, 0.4);
+  box-shadow: none;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.admin .adm-nav-item.is-active::before { border-radius: 0; box-shadow: 0 0 8px var(--glow-hi); }
+.admin .adm-nav-count { border-radius: 4px; }
+
+/* ---------- the content ---------- */
+.admin .adm-main { overscroll-behavior: contain; }
+.admin .adm-hero {
+  --cut: 22px;
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(160deg, #5cd2ff, #1f6dff 30%, #163e9e 55%, #2a7dff 80%, #5cd2ff);
+  contain: paint;
+}
+.admin .adm-hero::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  background:
+    radial-gradient(520px 260px at 20% 0%, rgba(56, 196, 255, 0.16), transparent 70%),
+    linear-gradient(180deg, rgba(11, 22, 51, 0.97), rgba(6, 13, 34, 0.98));
+  clip-path: polygon(calc(var(--cut) - 0.6px) 0, calc(100% - var(--cut) + 0.6px) 0, 100% calc(var(--cut) - 0.6px), 100% calc(100% - var(--cut) + 0.6px), calc(100% - var(--cut) + 0.6px) 100%, calc(var(--cut) - 0.6px) 100%, 0 calc(100% - var(--cut) + 0.6px), 0 calc(var(--cut) - 0.6px));
+}
+.admin .adm-hero-art img { filter: none; }
+.admin .eyebrow::before { content: "// "; color: var(--glow-hi); }
+.admin .adm-hero h2, .admin .adm-head h2 { letter-spacing: 0.02em; }
+
+/* Cards with an edge in their tone (the access card's frame, smaller). */
+.admin .adm-kpi, .admin .adm-card, .admin .adm-step, .admin .adm-stats {
+  --edge: rgba(var(--tone, 56, 196, 255), 0.45);
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(160deg, rgba(var(--tone, 56, 196, 255), 0.7), rgba(var(--tone, 56, 196, 255), 0.12) 45%, rgba(var(--tone, 56, 196, 255), 0.4));
+  box-shadow: none;
+  contain: paint;
+}
+.admin .adm-kpi::before, .admin .adm-card::before, .admin .adm-step::before, .admin .adm-stats::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(var(--tone, 56, 196, 255), 0.08), var(--surface-2) 55%);
+  clip-path: polygon(calc(var(--cut) - 0.6px) 0, calc(100% - var(--cut) + 0.6px) 0, 100% calc(var(--cut) - 0.6px), 100% calc(100% - var(--cut) + 0.6px), calc(100% - var(--cut) + 0.6px) 100%, calc(var(--cut) - 0.6px) 100%, 0 calc(100% - var(--cut) + 0.6px), 0 calc(var(--cut) - 0.6px));
+}
+.admin .adm-step { --tone: 56, 196, 255; }
+.admin .adm-stats { --tone: 56, 196, 255; }
+.admin .adm-kpi { transition: transform var(--m-150) var(--out); }
+.admin .adm-kpi:hover { transform: translateY(-3px); box-shadow: none; }
+.admin .adm-card { transition: transform var(--m-200) var(--out); }
+.admin .adm-card:hover { transform: translateY(-3px); box-shadow: none; }
+.admin .adm-kpi-icon, .admin .adm-portrait {
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  box-shadow: none;
+}
+.admin .adm-kpi-icon { width: 46px; height: 40px; }
+.admin .adm-portrait { width: 56px; height: 50px; background: radial-gradient(circle at 50% 38%, rgba(var(--tone), 0.35), #071233 75%); }
+.admin .adm-kpi b { font-family: var(--font-brand); text-shadow: 0 0 14px rgba(var(--tone), 0.4); }
+.admin .adm-step span { border-radius: 0; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+
+/* Small controls: squarer, like the rest of the app. */
+.admin .adm-icon-btn, .admin .adm-stepper, .admin .adm-close, .admin .adm-stat-value, .admin .adm-fact, .admin .adm-base { border-radius: 4px; }
+.admin .adm-edit { border-radius: 4px; }
+.admin .adm-filter, .admin .adm-type { border-radius: 6px; }
+.admin .adm-filter-item, .admin .adm-type-item { border-radius: 4px; }
+.admin .adm-badge { border-radius: 4px; }
+.admin .adm-empty-card { --cut: 16px; border-radius: 0; background: rgba(6, 13, 34, 0.9); }
+.admin .adm-empty-card img { animation: none; }
+
+/* ---------- the editing drawer ---------- */
+.admin .adm-backdrop { background: rgba(2, 5, 12, 0.72); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.admin .adm-drawer { background: linear-gradient(180deg, #0b1633, #060d22); border-left: 1px solid rgba(56, 196, 255, 0.35); box-shadow: -24px 0 60px rgba(0, 0, 0, 0.6); }
+.admin .adm-drawer::before { content: ""; position: absolute; left: -1px; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, transparent, var(--glow-hi), transparent); }
+.admin .adm-form-body { overscroll-behavior: contain; }
+/* The preview is a sticky band across the top of the form: a solid band with a line of light under it. */
+.admin .adm-preview { border-bottom: 1px solid rgba(var(--tone), 0.55); box-shadow: 0 1px 0 rgba(var(--tone), 0.25), 0 8px 18px rgba(0, 0, 0, 0.35); }
+.admin .adm-preview-glow { animation: none; opacity: 0.8; }
+.admin .adm-drawer-foot { background: #050b1c; }
+
+@media (max-width: 680px) {
+  .admin { --cut: 10px; }
+  .admin .adm-hero { --cut: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin .adm-save-state[data-state="dirty"]::before { animation: none; }
+}

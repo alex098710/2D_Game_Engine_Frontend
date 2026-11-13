@@ -337,8 +337,11 @@ export class NightScene {
     const dt = Math.min(50, now - this.last);
     this.last = now;
     this.time += dt;
-    this.update(dt);
-    this.draw();
+    // Nothing to paint while the screen that holds the canvas is hidden.
+    if (this.canvas.getClientRects().length > 0) {
+      this.update(dt);
+      this.draw();
+    }
     this.frameId = requestAnimationFrame((next) => this.frame(next));
   }
 
