@@ -9,6 +9,8 @@ export const KINDS = [
   "pistol", "rifle", "shotgun", "smg", "sniper", "launcher", "grenade", "explosive", "banner",
   // The Western town.
   "saloon", "cabin", "wagon", "hay", "crates", "trough", "cactus", "lamp", "boardwalk", "dirt", "bandit",
+  // The industrial arena.
+  "metalfloor", "hazard", "steelwall", "container", "pipes", "reactor", "beacon", "barrier", "turret", "drone",
 ] as const;
 export type Kind = (typeof KINDS)[number];
 
@@ -77,6 +79,16 @@ export const SIZES: Record<Kind, [number, number]> = {
   boardwalk: [32, 32],
   dirt: [32, 32],
   bandit: [24, 28],
+  metalfloor: [32, 32],
+  hazard: [32, 32],
+  steelwall: [32, 32],
+  container: [64, 32],
+  pipes: [64, 32],
+  reactor: [64, 64],
+  beacon: [32, 48],
+  barrier: [32, 16],
+  turret: [32, 28],
+  drone: [24, 24],
   grenadier: [24, 28],
   tank: [52, 44],
   artillery: [30, 28],
@@ -150,6 +162,16 @@ export const KIND_INFO: Record<Kind, { name: string; hint: string }> = {
   lamp: { name: "Farol", hint: "Farol de calle encendido. Decora y bloquea una casilla." },
   boardwalk: { name: "Pasarela de tablas", hint: "Suelo de tablones para las aceras del pueblo. Se pisa." },
   dirt: { name: "Tierra", hint: "Suelo de tierra seca del pueblo. Se pisa." },
+  metalfloor: { name: "Suelo de metal", hint: "Placas de acero remachadas para el suelo de la arena. Se pisa." },
+  hazard: { name: "Franja de peligro", hint: "Suelo con franjas amarillas y negras para marcar zonas. Se pisa." },
+  steelwall: { name: "Muro de acero", hint: "Bloque de acero blindado: muro sólido de la arena." },
+  container: { name: "Contenedor", hint: "Contenedor de carga: gran cobertura de 2 × 1 casillas." },
+  pipes: { name: "Tuberías", hint: "Tubos de vapor con válvula. Bloquean el paso." },
+  reactor: { name: "Reactor", hint: "Núcleo de energía brillante: el centro de la arena. 2 × 2 casillas." },
+  beacon: { name: "Baliza", hint: "Luz roja de aviso en un poste. Sólida." },
+  barrier: { name: "Barrera", hint: "Barrera baja de hormigón: cobertura rápida." },
+  turret: { name: "Torreta", hint: "Torreta fija: no se mueve, pero dispara ráfagas rápidas desde lejos. 6 de vida." },
+  drone: { name: "Dron", hint: "Dron volador: cruza muros y te persigue sin descanso. 2 de vida." },
   bandit: { name: "Bandido", hint: "Pistolero del oeste: se cubre a distancia y dispara con su revólver. 3 de vida." },
   grenadier: { name: "Granadero", hint: "Soldado enemigo: lanza granadas en parábola que explotan al caer. 3 de vida." },
   tank: { name: "Tanque (jefe)", hint: "Jefe: 25 de vida, dispara obuses en abanico y se enfurece a media vida." },
@@ -185,14 +207,14 @@ export const KIND_INFO: Record<Kind, { name: string; hint: string }> = {
 export const CHARACTER_KINDS: readonly Kind[] = ["villager", "knight", "wizard", "ally", "guard"];
 export const ENEMY_KINDS: readonly Kind[] = [
   "enemy", "bat", "spider", "ghost", "brute", "marksman", "necromancer", "demon", "mimic", "rat",
-  "soldier", "grenadier", "tank", "artillery", "legionary", "captain", "bandit",
+  "soldier", "grenadier", "tank", "artillery", "legionary", "captain", "bandit", "turret", "drone",
 ];
 export const WEAPON_KINDS: readonly Kind[] = [
   "sword", "axe", "wand", "bow", "dagger", "hammer", "spear", "staff",
   "pistol", "rifle", "shotgun", "smg", "sniper", "launcher", "grenade",
 ];
 /** Ground drawn under everything, with no body. */
-export const GROUND_KINDS: readonly Kind[] = ["path", "sand", "bridge", "road", "boardwalk", "dirt"];
+export const GROUND_KINDS: readonly Kind[] = ["path", "sand", "bridge", "road", "boardwalk", "dirt", "metalfloor", "hazard"];
 
 export function isGround(kind: Kind): boolean {
   return GROUND_KINDS.includes(kind);
@@ -220,6 +242,7 @@ export const CATEGORIES: readonly { id: string; name: string; kinds: readonly Ki
   { id: "items", name: "Objetos", kinds: ["coin", "chest", "potion", "medkit", "sword", "axe", "wand", "bow", "dagger", "hammer", "spear", "staff"] },
   { id: "firearms", name: "Armas de fuego", kinds: ["pistol", "rifle", "shotgun", "smg", "sniper", "launcher", "grenade"] },
   { id: "western", name: "Oeste", kinds: ["bandit", "saloon", "cabin", "wagon", "hay", "crates", "trough", "cactus", "lamp", "boardwalk", "dirt"] },
+  { id: "industrial", name: "Industrial", kinds: ["turret", "drone", "reactor", "steelwall", "container", "pipes", "barrier", "beacon", "metalfloor", "hazard"] },
   { id: "war", name: "Guerra", kinds: ["legionary", "captain", "soldier", "grenadier", "artillery", "tank", "ally", "guard", "sandbag", "barricade", "hedgehog", "bunker", "tower", "flag", "banner", "rock", "road", "explosive"] },
 ];
 

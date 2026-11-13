@@ -12,6 +12,7 @@
 [data-category="items"] { --tone: 255, 214, 92; --tone-solid: #ffd65c; }
 [data-category="firearms"] { --tone: 160, 180, 205; --tone-solid: #a0b4cd; }
 [data-category="war"] { --tone: 120, 220, 120; --tone-solid: #78dc78; }
+[data-category="industrial"] { --tone: 94, 227, 255; --tone-solid: #5ee3ff; }
 [data-category="western"] { --tone: 222, 160, 90; --tone-solid: #dea05a; }
 
 /* ---------- head: search, filter, count ---------- */
