@@ -63,8 +63,10 @@ export class LoginScreen {
   private readonly touched = new Set<FieldName>();
   private readonly onLoggedIn: (user: UserDto) => Promise<void>;
 
-  constructor(onLoggedIn: (user: UserDto) => Promise<void>) {
+  constructor(onLoggedIn: (user: UserDto) => Promise<void>, onDemo: () => void) {
     this.onLoggedIn = onLoggedIn;
+    byId("demo-start").addEventListener("click", onDemo);
+    byId("demo-start-link").addEventListener("click", onDemo);
     this.living = new LivingLogo(byId("login-art"), byId<HTMLCanvasElement>("login-scene"), byId<HTMLCanvasElement>("login-fx"), byId("login-emblem"), byId("wizard-spot"));
     byId("tab-login").addEventListener("click", () => this.setMode("login"));
     byId("tab-register").addEventListener("click", () => this.setMode("register"));
@@ -284,7 +286,14 @@ export class LoginScreen {
     this.screen.hidden = false;
     this.setMessage(note, note !== "");
     this.living.start();
-    this.inputs.email.focus();
+    // On a phone the page starts at the top (brand, features, demo), not scrolled down to the field.
+    if (!window.matchMedia("(max-width: 900px)").matches) this.inputs.email.focus({ preventScroll: true });
+  }
+
+  /** Open on "Crear cuenta" (coming from the demo's "Crear cuenta gratis"). */
+  openRegister(): void {
+    this.setMode("register");
+    this.inputs.username.focus();
   }
 
   hide(): void {

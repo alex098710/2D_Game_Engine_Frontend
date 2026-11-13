@@ -3,6 +3,7 @@ import type { GameObject } from "../model/GameObject";
 import { HttpClient } from "./http";
 import { TokenStore, type TokenPair } from "./tokens";
 import { TTL, cached, forgetAll, remember } from "./cache";
+import { DEMO_USER, DemoServer } from "../demo/DemoServer";
 
 export { ApiError } from "./http";
 
@@ -54,12 +55,52 @@ export async function logIn(email: string, password: string): Promise<void> {
   http.tokens.save(pair);
 }
 
+// --- Demo: try the engine without an account --------------------------------------------------
+
+let demo: DemoServer | null = null;
+
+/**
+ * Start the demo: from now on every request is answered inside the browser
+ * (DemoServer), so nothing reaches the real server and no account is touched.
+ * Any session tokens are forgotten first, so the demo can never act as a real user.
+ */
+export function startDemo(): UserDto {
+  http.tokens.clear();
+  forgetAll();
+  demo = new DemoServer();
+  http.useDemo(demo);
+  return DEMO_USER;
+}
+
+/** A demo left running in this tab (the page was reloaded): pick it up again. */
+export function resumeDemo(): boolean {
+  if (demo !== null || !DemoServer.saved()) return demo !== null;
+  startDemo();
+  return true;
+}
+
+export function isDemo(): boolean {
+  return demo !== null;
+}
+
+/** Leave the demo and erase everything it created. */
+function stopDemo(): void {
+  demo?.wipe();
+  demo = null;
+  http.useDemo(null);
+  forgetAll();
+}
+
 export function getMe(): Promise<UserDto> {
   return http.request<UserDto>("/auth/me");
 }
 
 /** Revoke both tokens on the backend, then forget them here too. */
 export async function logOut(): Promise<void> {
+  if (demo !== null) {
+    stopDemo();
+    return;
+  }
   const refresh = http.tokens.refresh;
   try {
     if (http.tokens.access !== null) {
@@ -73,7 +114,7 @@ export async function logOut(): Promise<void> {
 }
 
 export function hasSession(): boolean {
-  return http.tokens.refresh !== null;
+  return http.tokens.refresh !== null || demo !== null;
 }
 
 export function listProjects(): Promise<ProjectDto[]> {

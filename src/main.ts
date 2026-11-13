@@ -12,6 +12,9 @@ import {
   getCharacterLines,
   getMe,
   hasSession,
+  isDemo,
+  resumeDemo,
+  startDemo,
   http,
   logOut,
   renameProject,
@@ -562,7 +565,18 @@ const idle = new IdleTimer({
 
 // --- Session ------------------------------------------------------------------------------
 
-const login = new LoginScreen((user) => enterApp(user, true));
+const login = new LoginScreen(
+  (user) => enterApp(user, true),
+  () => void attempt(async () => enterApp(startDemo(), true)),
+);
+
+// "Crear cuenta gratis" in the demo: leave it (it is erased) and open the register form.
+document.addEventListener("click", (event) => {
+  if ((event.target as HTMLElement).closest("[data-demo-signup]") === null) return;
+  void leaveApp(true).then(() => {
+    if (currentUser === null) login.openRegister();
+  });
+});
 const intro = new Intro();
 const home = new HomeScreen(
   (to, project) => void attempt(async () => go(to, project)),
@@ -632,6 +646,7 @@ function applyRules(balance: BalanceDto, creations: CreationDto[]): void {
 async function enterApp(user: UserDto, withIntro: boolean): Promise<void> {
   currentUser = user;
   login.hide();
+  document.body.classList.toggle("is-demo", isDemo());
   byId("user-name").textContent = user.username;
   byId("user-avatar").textContent = user.username.slice(0, 1).toUpperCase();
   // The workspace loads while the intro plays; the menu opens when both are done.
@@ -665,7 +680,8 @@ async function enterApp(user: UserDto, withIntro: boolean): Promise<void> {
 }
 
 async function leaveApp(callBackend: boolean, note = ""): Promise<void> {
-  if (callBackend) {
+  if (callBackend && isDemo() && !window.confirm("Al salir de la demo se borra todo lo que creaste en ella. ¿Salir?")) return;
+  if (callBackend && !isDemo()) {
     // An idle timeout cannot wait for an answer: nobody is there to give it.
     if (note === "" && isDirty() && !window.confirm("Hay cambios sin guardar. ¿Salir igualmente?")) return;
     await logOut();
@@ -686,6 +702,8 @@ async function leaveApp(callBackend: boolean, note = ""): Promise<void> {
   admin.hide();
   // Another account may log in next: its rules are loaded after login.
   applyRules({ heroes: {}, enemies: {} }, []);
+  if (callBackend && isDemo()) await logOut();
+  document.body.classList.remove("is-demo");
   setStage("auth");
   login.show(note);
 }
@@ -723,6 +741,7 @@ async function resumeSession(): Promise<UserDto | null> {
 
 async function boot(): Promise<void> {
   showLoader("Cargando motor…");
+  resumeDemo(); // a demo running in this tab survives a reload
   requestAnimationFrame(watchModel);
   if (hasSession()) {
     const me = await resumeSession();

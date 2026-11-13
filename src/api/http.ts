@@ -60,17 +60,33 @@ type Fetch = typeof fetch;
  * when the backend answers 401, refreshes the tokens once and retries.
  * Concurrent requests share a single refresh.
  */
+/** Something that answers the app's requests without the network (the demo, see src/demo). */
+export interface DemoHandler {
+  handle(path: string, method: string, body: unknown): Promise<unknown>;
+}
+
 export class HttpClient {
   readonly tokens: TokenStore;
   private readonly baseUrl: string;
   private readonly fetcher: Fetch;
   private refreshing: Promise<boolean> | null = null;
   private onSessionLost: () => void = () => {};
+  /** The demo's server in the browser: while set, no request reaches the network. */
+  private demo: DemoHandler | null = null;
 
   constructor(baseUrl: string, tokens: TokenStore, fetcher: Fetch = (...args) => fetch(...args)) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
     this.fetcher = fetcher;
+  }
+
+  /** Answer every request with the demo's own server (null: back to the real one). */
+  useDemo(handler: DemoHandler | null): void {
+    this.demo = handler;
+  }
+
+  get inDemo(): boolean {
+    return this.demo !== null;
   }
 
   /** Called when the session cannot be refreshed any more (user must log in again). */
@@ -102,6 +118,7 @@ export class HttpClient {
 
   /** Exchange the refresh token for a new pair. Only one refresh runs at a time. */
   refreshTokens(): Promise<boolean> {
+    if (this.demo !== null) return Promise.resolve(false);
     if (this.refreshing === null) {
       this.refreshing = this.doRefresh().finally(() => {
         this.refreshing = null;
@@ -160,6 +177,7 @@ export class HttpClient {
    * server), it asks for a new one once.
    */
   async sealedRequest<T>(path: string, payload: unknown): Promise<T> {
+    if (this.demo !== null) return this.request<T>(path, { method: "POST", body: JSON.stringify(payload) });
     for (let attempt = 0; ; attempt++) {
       const sealed = await this.sealBody(payload);
       if (sealed === null) return this.request<T>(path, { method: "POST", body: JSON.stringify(payload) });
@@ -174,6 +192,10 @@ export class HttpClient {
   }
 
   async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    if (this.demo !== null) {
+      const body = typeof init.body === "string" && init.body !== "" ? JSON.parse(init.body) : undefined;
+      return (await this.demo.handle(path, init.method ?? "GET", body)) as T;
+    }
     if (this.tokens.access !== null && this.tokens.expiresSoon(15_000)) {
       await this.refreshTokens();
     }

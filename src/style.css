@@ -17,4 +17,5 @@
 @import "./styles/overlays.css";
 @import "./styles/game.css";
 @import "./styles/touch.css";
+@import "./styles/demo.css";
 @import "./styles/perf.css";

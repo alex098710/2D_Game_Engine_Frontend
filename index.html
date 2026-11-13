@@ -44,6 +44,10 @@
             <li><span class="feature-icon"><img src="/textures/tank.png" alt="" /></span><b>Batallas y física</b><small>15 armas, tanques, explosiones y 11 héroes.</small></li>
             <li><span class="feature-icon"><img src="/textures/wizard.png" alt="" /></span><b>IA que aprende</b><small>Crea mapas con palabras y ajusta la dificultad.</small></li>
           </ul>
+          <div class="demo-cta">
+            <button id="demo-start" class="btn-demo" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12a4 4 0 0 1 4 4v3a3 3 0 0 1-5.2 2L15 15H9l-1.8 2A3 3 0 0 1 2 15v-3a4 4 0 0 1 4-4z" /><path d="M7 11v3M5.5 12.5h3" /><circle cx="16" cy="11.5" r=".6" /><circle cx="17.8" cy="13.5" r=".6" /></svg><span>Probar la demo</span><svg class="btn-demo-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
+            <small>Sin cuenta · nada se guarda en el servidor</small>
+          </div>
         </div>
         <div id="wizard-spot" class="wizard-spot" aria-hidden="true"></div>
         <p class="login-motto" aria-hidden="true"><span>//</span> Crea <i>•</i> Juega <i>•</i> Comparte <span>//</span></p>
@@ -156,7 +160,7 @@
             <h2 id="auth-success-title">¡Bienvenido!</h2>
             <p>Preparando tu forja…</p>
           </div>
-          <p class="form-foot"><span id="auth-switch-text">¿No tienes cuenta?</span> <button id="auth-switch" class="link" type="button">Crea una</button></p>
+          <p class="form-foot"><span id="auth-switch-text">¿No tienes cuenta?</span> <button id="auth-switch" class="link" type="button">Crea una</button> <span class="form-foot-or">o</span> <button id="demo-start-link" class="link" type="button">prueba la demo</button></p>
           <ul class="trust" aria-label="Seguridad">
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg>Conexión cifrada</li>
             <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></svg>Sesión que se renueva</li>
@@ -225,6 +229,11 @@
         <div class="userchip"><span class="avatar" id="home-avatar" aria-hidden="true">?</span><span id="home-user" class="userchip-name"></span><button id="home-logout" class="btn btn-ghost btn-small" type="button">Salir</button></div>
       </header>
       <div class="home-body">
+        <div class="demo-banner demo-only" role="status">
+          <span class="demo-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12a4 4 0 0 1 4 4v3a3 3 0 0 1-5.2 2L15 15H9l-1.8 2A3 3 0 0 1 2 15v-3a4 4 0 0 1 4-4z" /><path d="M7 11v3M5.5 12.5h3" /><circle cx="16" cy="11.5" r=".6" /><circle cx="17.8" cy="13.5" r=".6" /></svg>Demo</span>
+          <p><b>Estás probando PixelForge.</b> Todo funciona, pero nada se guarda en el servidor y se borra al salir.</p>
+          <button class="btn-demo-signup" type="button" data-demo-signup>Crear cuenta gratis</button>
+        </div>
         <!-- Welcome banner: a centred greeting over a living background, then four
              stat cards that count up when the home opens. -->
         <div class="welcome">
@@ -534,6 +543,7 @@
             <svg viewBox="0 0 24 24" class="icon icon-filled" aria-hidden="true"><path d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.5.42l-.36 2.54c-.58.24-1.12.55-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.39 1.04.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.8c.25 0 .45-.18.5-.42l.36-2.54c.58-.24 1.12-.55 1.62-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" /></svg>
           </button>
           <div class="user">
+            <button class="demo-tag demo-only" type="button" data-demo-signup title="Estás en la demo: crea una cuenta para guardar tu trabajo">Demo</button>
             <span class="avatar" id="user-avatar" aria-hidden="true">?</span>
             <span id="user-name" class="user-name"></span>
             <button id="btn-logout" class="btn btn-ghost btn-small">Salir</button>
