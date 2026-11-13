@@ -1,5 +1,6 @@
 import { byId } from "./dom";
 import { LogoFx, prefersReducedMotion } from "./fx";
+import { NightScene } from "./NightScene";
 import { PixelAssembly } from "./PixelAssembly";
 
 export const INTRO_MS = 5200;
@@ -8,10 +9,11 @@ const STEPS = ["Forjando el mundo…", "Cargando texturas…", "Reuniendo a los 
 /**
  * The intro that plays once after logging in or registering, before the menu.
  *
- * Five beats: pixels fly in and forge the emblem (PixelAssembly); a flash, a
- * shockwave and a lightning strike reveal it; the wordmark and the tagline come
- * in; the army marches along the grid while the systems check in; then the
- * camera pushes in and fades to the menu. The bar follows the real loading of
+ * It happens in the night of the access screen (NightScene): the wizard on
+ * his cliff strikes the centre of the sky with lightning and pixels fly in to
+ * forge the emblem (PixelAssembly); a second strike, a flash and a ring reveal
+ * it; the wordmark, the tag and the motto come in while the HUD checks the
+ * systems; then everything fades to the menu. The bar follows the real loading of
  * the workspace, not only the clock. Any key, a click on "Saltar" or the end of
  * the animation closes it (never before the workspace is ready).
  */
@@ -19,6 +21,7 @@ export class Intro {
   private readonly screen = byId("intro");
   private readonly fx = new LogoFx(byId<HTMLCanvasElement>("intro-fx"), byId("intro"), byId("intro-emblem"));
   private readonly pixels = new PixelAssembly(byId<HTMLCanvasElement>("intro-pixels"));
+  private readonly scene = new NightScene(byId<HTMLCanvasElement>("intro-scene"), byId("intro-castle"), byId("intro-wizard-spot"));
   private timers: number[] = [];
   private finish: (() => void) | null = null;
 
@@ -37,6 +40,7 @@ export class Intro {
     void screen.offsetWidth; // restart the CSS animations
     screen.classList.add("is-playing");
     this.fx.start();
+    this.scene.start();
 
     let workDone = false;
     let clockShare = 0;
@@ -60,12 +64,21 @@ export class Intro {
     progress();
 
     // Beat 1-2: forge the emblem from flying pixels, then reveal it with a flash.
+    const emblem = byId<HTMLImageElement>("intro-emblem");
+    const strikeEmblem = () => {
+      const box = emblem.getBoundingClientRect();
+      this.scene.castAt(box.left + box.width / 2, box.top + box.height / 2);
+    };
     const forge = () => {
       screen.classList.add("is-forged");
       this.fx.strikeNow();
+      if (!reduced) strikeEmblem();
     };
     if (reduced) forge();
-    else at(380, () => void this.pixels.play(byId<HTMLImageElement>("intro-emblem"), 1100).then(forge));
+    else {
+      at(260, strikeEmblem);
+      at(380, () => void this.pixels.play(emblem, 1100).then(forge));
+    }
 
     // Beat 4: the status line and the systems log.
     const text = byId("intro-text");
@@ -73,8 +86,8 @@ export class Intro {
     const lines = [...byId("intro-log").querySelectorAll("li")];
     lines.forEach((line) => line.classList.remove("is-shown", "is-done"));
     lines.forEach((line, i) => {
-      at(1500 + i * 650, () => line.classList.add("is-shown"));
-      at(1900 + i * 650, () => line.classList.add("is-done"));
+      at(900 + i * 800, () => line.classList.add("is-shown"));
+      at(1400 + i * 800, () => line.classList.add("is-done"));
     });
 
     const shown = new Promise<void>((resolve) => {
@@ -95,8 +108,9 @@ export class Intro {
     this.timers = [];
     this.pixels.stop();
     this.screen.classList.add("is-forged", "is-leaving");
-    await new Promise((resolve) => window.setTimeout(resolve, 700));
+    await new Promise((resolve) => window.setTimeout(resolve, 480));
     this.fx.stop();
+    this.scene.stop();
     this.screen.hidden = true;
     this.screen.classList.remove("is-playing", "is-forged", "is-leaving");
   }

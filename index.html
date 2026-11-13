@@ -169,30 +169,35 @@
 
     <!-- Intro: plays once after logging in or registering, before the menu -->
     <section id="intro" class="intro" hidden aria-label="Intro de PixelForge">
-      <div class="intro-floor" aria-hidden="true"></div>
-      <div class="intro-beam" aria-hidden="true"></div>
+      <canvas id="intro-scene" class="night" aria-hidden="true"></canvas>
+      <div class="intro-shade" aria-hidden="true"></div>
+      <div id="intro-castle" class="intro-castle" aria-hidden="true"></div>
+      <div id="intro-wizard-spot" class="intro-wizard-spot" aria-hidden="true"></div>
       <canvas id="intro-pixels" class="intro-pixels" aria-hidden="true"></canvas>
       <canvas id="intro-fx" class="fx" aria-hidden="true"></canvas>
+
       <div class="intro-logo">
         <div class="emblem-wrap"><img id="intro-emblem" class="emblem" src="/brand/emblem.png" alt="" width="300" height="211" /><i class="intro-ring" aria-hidden="true"></i></div>
-        <div class="wordmark-wrap"><img class="wordmark" src="/brand/wordmark.png" alt="PixelForge · 2D Game Engine" width="560" height="101" /><i class="glint" aria-hidden="true"></i></div>
-        <p class="intro-tagline">Crea <b>·</b> Juega <b>·</b> Conquista</p>
+        <div class="wordmark-wrap"><img class="wordmark" src="/brand/wordmark.png" alt="PixelForge" width="560" height="101" /><i class="glint" aria-hidden="true"></i></div>
+        <p class="intro-tag"><span>2D Game Engine</span></p>
+        <p class="intro-tagline"><span>//</span> Crea <b>•</b> Juega <b>•</b> Comparte <span>//</span></p>
       </div>
-      <div class="intro-parade" aria-hidden="true">
-        <img src="/textures/hero-knight.png" alt="" /><img src="/textures/ally.png" alt="" /><img src="/textures/guard.png" alt="" />
-        <img src="/textures/tank-blue.png" alt="" class="is-big" /><img src="/textures/hero-wizard.png" alt="" /><img src="/textures/hero-archer.png" alt="" />
-        <img src="/textures/jeep-blue.png" alt="" class="is-big" /><img src="/textures/flag.png" alt="" />
-      </div>
-      <ol id="intro-log" class="intro-log" aria-hidden="true">
-        <li>Motor de físicas</li><li>Texturas y sonidos</li><li>Ejércitos y armas</li><li>Inteligencia artificial</li>
-      </ol>
-      <button id="intro-skip" class="btn btn-ghost intro-skip" type="button">Saltar ›</button>
-      <div class="intro-boot">
-        <div class="intro-bar"><i id="intro-bar"></i></div>
-        <div class="intro-row"><span id="intro-text">Forjando el mundo…</span><span id="intro-percent">0%</span></div>
+
+      <button id="intro-skip" class="intro-skip" type="button">Saltar <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 6 6-6 6M13 6l6 6-6 6" /></svg></button>
+
+      <div class="intro-hud">
+        <div class="intro-hud-inner">
+          <div class="intro-row">
+            <span class="intro-status"><i class="intro-dot" aria-hidden="true"></i><span id="intro-text">Forjando el mundo…</span></span>
+            <span id="intro-percent" class="intro-percent">0%</span>
+          </div>
+          <div class="intro-bar" aria-hidden="true"><i id="intro-bar"></i></div>
+          <ol id="intro-log" class="intro-log" aria-hidden="true">
+            <li>Físicas</li><li>Texturas</li><li>Ejércitos</li><li>IA</li>
+          </ol>
+        </div>
       </div>
       <div class="intro-flash" aria-hidden="true"></div>
-      <div class="intro-vignette" aria-hidden="true"></div>
     </section>
 
     <!-- Home: the menu of the engine, only after the intro -->

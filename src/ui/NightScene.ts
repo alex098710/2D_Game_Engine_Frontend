@@ -138,6 +138,16 @@ export class NightScene {
     this.nextCast = 0;
   }
 
+  /** The wizard strikes a point of the screen (CSS px from the canvas corner) with lightning. */
+  castAt(cssX: number, cssY: number): void {
+    const place = this.wizardPlace();
+    if (place.scale === 0 || this.w === 0) return;
+    const [ox, oy] = this.orb(place, 4);
+    this.castUntil = this.time + 800;
+    this.nextCast = 2800;
+    this.strike(ox, oy, cssX / this.px, cssY / this.px);
+  }
+
   // ---------------------------------------------------------------- layout
 
   private resize(): void {
