@@ -41,8 +41,10 @@ test("HttpClient refreshes on 401 and retries with the new token", async () => {
     return auth === "Bearer new-access" ? json(200, { id: 1 }) : json(401, { detail: "Invalid or missing token" });
   });
   expect(await client.request("/projects")).toEqual({ id: 1 });
-  expect(calls.map((c) => c.url)).toEqual(["https://api.test/projects", "https://api.test/auth/refresh", "https://api.test/projects"]);
-  expect(calls[1].body).toEqual({ refresh_token: "old-refresh" });
+  // The refresh first asks for a seal challenge; this fake server has none, so it goes plain.
+  const real = calls.filter((c) => !c.url.endsWith("/auth/challenge"));
+  expect(real.map((c) => c.url)).toEqual(["https://api.test/projects", "https://api.test/auth/refresh", "https://api.test/projects"]);
+  expect(real[1].body).toEqual({ refresh_token: "old-refresh" });
   expect(tokens.refresh).toBe("new-refresh");
 });
 
@@ -77,8 +79,9 @@ test("HttpClient refreshes before a request when the access token is about to ex
   );
   tokens.save({ access_token: "stale", refresh_token: "r1", token_type: "bearer", expires_in: 5 });
   await client.request("/projects");
-  expect(calls.map((c) => c.url.split("/").pop())).toEqual(["refresh", "projects"]);
-  expect(calls[1].auth).toBe("Bearer fresh");
+  const real = calls.filter((c) => !c.url.endsWith("/auth/challenge"));
+  expect(real.map((c) => c.url.split("/").pop())).toEqual(["refresh", "projects"]);
+  expect(real[1].auth).toBe("Bearer fresh");
 });
 
 test("HttpClient turns backend errors into Spanish messages", async () => {

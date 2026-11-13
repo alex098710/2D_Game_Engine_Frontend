@@ -43,13 +43,13 @@ export interface VersionDto {
 }
 
 export function registerAccount(username: string, email: string, password: string): Promise<UserDto> {
-  return http.request<UserDto>("/auth/register", { method: "POST", body: JSON.stringify({ username, email, password }) });
+  return http.sealedRequest<UserDto>("/auth/register", { username, email, password });
 }
 
 /** Log in and keep the access and refresh tokens. */
 export async function logIn(email: string, password: string): Promise<void> {
   forgetAll();
-  const pair = await http.request<TokenPair>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+  const pair = await http.sealedRequest<TokenPair>("/auth/login", { email, password });
   http.tokens.save(pair);
 }
 
@@ -227,10 +227,7 @@ export interface ActivityDto {
 
 /** Change the password; the backend ends every other session of the account. */
 export function changePassword(currentPassword: string, newPassword: string): Promise<void> {
-  return http.request<void>("/auth/password", {
-    method: "POST",
-    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-  });
+  return http.sealedRequest<void>("/auth/password", { current_password: currentPassword, new_password: newPassword });
 }
 
 /** Revoke every refresh token of the account (all devices), then forget ours. */

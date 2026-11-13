@@ -1,3 +1,4 @@
+import { seal, sealingAvailable, type Challenge } from "./seal";
 import { TokenStore, type TokenPair } from "./tokens";
 
 export class ApiError extends Error {
@@ -33,7 +34,10 @@ const MESSAGES: Record<string, string> = {
   "Unknown template": "Esa plantilla no existe.",
   "Run not found or already finished": "La partida ya había terminado.",
   "Internal server error": "Error interno del servidor. Inténtalo de nuevo.",
+  "Sealed request invalid or expired": "La conexión segura caducó. Inténtalo de nuevo.",
 };
+
+const SEAL_EXPIRED = "Sealed request invalid or expired";
 
 /** Spanish text for an error. The backend speaks English; the user never sees it. */
 export function friendlyMessage(status: number, detail: string): string {
@@ -127,16 +131,46 @@ export class HttpClient {
   private async refreshNow(): Promise<boolean> {
     const refresh = this.tokens.refresh;
     if (refresh === null) return false;
-    const response = await this.send("/auth/refresh", { method: "POST", body: JSON.stringify({ refresh_token: refresh }) }, null)
-      .catch(() => null);
+    // The refresh token goes sealed and the new pair comes back sealed (see seal.ts).
+    const sealed = await this.sealBody({ refresh_token: refresh }).catch(() => null);
+    const body = sealed?.body ?? JSON.stringify({ refresh_token: refresh });
+    const response = await this.send("/auth/refresh", { method: "POST", body }, null).catch(() => null);
     if (response === null || !response.ok) {
-      // Only a rejected refresh token ends the session. A sleeping server (502/503), a rate limit
-      // or no network keeps the tokens, so the next attempt can still succeed.
-      if (response !== null && [400, 401, 403].includes(response.status)) this.tokens.clear();
+      // Only a rejected refresh token ends the session. A sleeping server (502/503), a rate limit,
+      // an expired seal (400 with its own message) or no network keeps the tokens.
+      if (response !== null && [401, 403].includes(response.status)) this.tokens.clear();
       return false;
     }
-    this.tokens.save((await response.json()) as TokenPair);
+    const answer: unknown = await response.json();
+    this.tokens.save(sealed ? await sealed.open<TokenPair>(answer) : (answer as TokenPair));
     return true;
+  }
+
+  /** Seal a body for one request, or null when the browser cannot (then it goes plain, over HTTPS). */
+  private async sealBody(payload: unknown) {
+    if (!sealingAvailable()) return null;
+    const response = await this.send("/auth/challenge", { method: "GET" }, null);
+    if (!response.ok) throw await HttpClient.errorOf(response);
+    return seal(payload, (await response.json()) as Challenge);
+  }
+
+  /**
+   * POST an account request (login, register, password) as one encrypted block and open the
+   * encrypted answer. If the one-time challenge expired on the way (a slow phone, a restarted
+   * server), it asks for a new one once.
+   */
+  async sealedRequest<T>(path: string, payload: unknown): Promise<T> {
+    for (let attempt = 0; ; attempt++) {
+      const sealed = await this.sealBody(payload);
+      if (sealed === null) return this.request<T>(path, { method: "POST", body: JSON.stringify(payload) });
+      try {
+        const answer = await this.request<unknown>(path, { method: "POST", body: sealed.body });
+        return await sealed.open<T>(answer);
+      } catch (error) {
+        const expired = error instanceof ApiError && error.status === 400 && error.message === friendlyMessage(400, SEAL_EXPIRED);
+        if (!expired || attempt >= 1) throw error;
+      }
+    }
   }
 
   async request<T>(path: string, init: RequestInit = {}): Promise<T> {
