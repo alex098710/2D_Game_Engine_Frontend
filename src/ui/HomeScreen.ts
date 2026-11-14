@@ -1,12 +1,13 @@
 import { myAchievements, myStats, type ProjectDto, type UserDto } from "../api/client";
 import { iconUrl, TEXTURE_BASE } from "../game/assets";
-import { playableHeroes } from "../game/balance";
+import { currentBalance, currentCreations, playableEnemy, playableHero, playableHeroes } from "../game/balance";
 import { spriteUrl } from "../game/sprites";
 import { isEnemy, type Kind } from "../model/GameObject";
 import { byId, make } from "./dom";
 import { NightScene } from "./NightScene";
 import { QuickAccess, type QuickSettings } from "./QuickAccess";
 import { remembered } from "./HeroDialog";
+import { drawLevel } from "./levelPreview";
 import { relativeTime } from "./ProjectList";
 
 export type Destination = "home" | "editor" | "play" | "projects" | "settings" | "admin";
@@ -122,7 +123,7 @@ export class HomeScreen {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
     this.screen.addEventListener("pointermove", (event) => {
       if (event.pointerType !== "mouse") return;
-      const target = (event.target as HTMLElement).closest<HTMLElement>(".option, .recent-row, .qa-card");
+      const target = (event.target as HTMLElement).closest<HTMLElement>(".option, .recent-card, .qa-card");
       if (target === null) return;
       const box = target.getBoundingClientRect();
       const x = (event.clientX - box.left) / box.width;
@@ -160,6 +161,7 @@ export class HomeScreen {
     byId("option-editor-go").textContent = projects[0] ? `Continuar con “${projects[0].name}”` : "Crear mi primer nivel";
     byId("option-projects-go").textContent = projects.length > 0 ? `Ver los ${projects.length} proyectos` : "Crear un proyecto";
     this.renderRecent(projects);
+    this.renderAdmin();
     this.quick.show(projects);
     this.screen.hidden = false;
     this.screen.classList.remove("is-entering");
@@ -180,6 +182,7 @@ export class HomeScreen {
     return !this.screen.hidden;
   }
 
+  /** The recent projects as cards: a real thumbnail of the map, the name, when, the size and "Abrir". */
   private renderRecent(projects: ProjectDto[]): void {
     const list = byId("recent-projects");
     list.replaceChildren();
@@ -190,25 +193,26 @@ export class HomeScreen {
       const image = make("img");
       image.src = iconUrl("chest");
       image.alt = "";
-      const go = make("button", "btn-outline", "Crear mi primer nivel →");
+      const go = make("button", "qa-cta recent-empty-cta");
       go.type = "button";
       go.dataset.go = "editor";
-      empty.append(image, make("b", "", "Aún no tienes proyectos"), make("span", "", "Abre el editor y crea el primero en segundos."), go);
+      go.append(make("span", "", "Crear mi primer nivel"), make("i", "", "→"));
+      empty.append(image, make("b", "", "Aún no tienes proyectos"), make("span", "", "Abre el editor y crea el primero en segundos, desde una plantilla o con la IA."), go);
       list.append(empty);
       return;
     }
-    // The size bar compares each project with the biggest one in the list.
     const biggest = Math.max(1, ...recent.map((project) => project.scene.length));
     recent.forEach((project, index) => {
-      const row = make("li");
-      row.classList.add(`row-${index + 1}`);
-      const button = make("button", "recent-row");
-      button.type = "button";
+      const row = make("li", `recent-item row-${index + 1}`);
+      const card = make("button", "recent-card");
+      card.type = "button";
+      card.setAttribute("aria-label", `Abrir «${project.name}»`);
       const thumb = make("span", "recent-thumb");
-      const icon = make("img");
-      icon.src = iconUrl(projectIcon(project));
-      icon.alt = "";
-      thumb.append(icon);
+      const canvas = make("canvas") as HTMLCanvasElement;
+      canvas.width = 320;
+      canvas.height = 192;
+      void drawLevel(canvas, project.scene);
+      thumb.append(canvas, make("span", "recent-index", String(index + 1).padStart(2, "0")));
       const text = make("span", "recent-text");
       const name = make("b", "", project.name);
       name.title = project.name;
@@ -216,16 +220,30 @@ export class HomeScreen {
       const size = make("span", "recent-size");
       const bar = make("span", "recent-bar");
       const fill = make("i");
-      fill.style.width = `${Math.max(4, (project.scene.length / biggest) * 100)}%`;
+      fill.style.setProperty("--size", String(Math.max(0.04, project.scene.length / biggest)));
       bar.append(fill);
       size.append(make("small", "", objectCount(project.scene.length)), bar);
       const open = make("span", "recent-open");
       open.append(make("span", "", "Abrir"), make("i", "", "→"));
-      button.append(make("span", "recent-index", String(index + 1).padStart(2, "0")), thumb, text, size, open);
-      button.addEventListener("click", () => this.onGo("editor", project));
-      row.append(button);
+      card.append(thumb, text, size, open);
+      card.addEventListener("click", () => this.onGo("editor", project));
+      row.append(card);
       list.append(row);
     });
+  }
+
+  /** The admin console: what this account adjusted, and a duel with its own numbers. */
+  private renderAdmin(): void {
+    const balance = currentBalance();
+    byId("home-adm-heroes").textContent = String(Object.keys(balance.heroes).length);
+    byId("home-adm-enemies").textContent = String(Object.keys(balance.enemies).length);
+    byId("home-adm-creations").textContent = String(currentCreations().length);
+    const hero = playableHero(remembered());
+    const enemy = playableEnemy("brute");
+    byId<HTMLImageElement>("duel-hero").src = spriteUrl(hero.spriteId) ?? `${TEXTURE_BASE}${hero.texture}.png`;
+    byId<HTMLImageElement>("duel-enemy").src = spriteUrl(enemy.spriteId) ?? `${TEXTURE_BASE}${enemy.texture}.png`;
+    byId("duel-hero-stats").textContent = `♥ ${hero.maxHealth} · ⚔ ${hero.damage}`;
+    byId("duel-enemy-stats").textContent = `♥ ${enemy.health} · ⚔ ${enemy.damage}`;
   }
 
   /** The rank card: level, name, the bar to the next rank and what is left. */

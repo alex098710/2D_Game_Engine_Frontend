@@ -385,17 +385,43 @@
             </div>
           </article>
         </div>
+        <!-- The admin panel as a console: what is adjusted, a duel with the
+             account's own numbers, and the way in. HomeScreen fills it. -->
         <div class="menu menu-admin">
-          <button class="option option-admin tone-red" type="button" data-go="admin">
-            <span class="option-glow" aria-hidden="true"></span>
-            <span class="option-art" aria-hidden="true"><img src="/textures/ally.png" alt="" /><img src="/textures/brute.png" alt="" /><img src="/textures/potion.png" alt="" class="is-small" /></span>
-            <span class="option-body">
-              <span class="option-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /></svg></span>
-              <h3>Panel de administración</h3>
-              <p>Ajusta la vida y el daño de héroes y enemigos, y crea los tuyos propios.</p>
-              <span class="go"><span>Abrir el panel</span><i aria-hidden="true">→</i></span>
-            </span>
-          </button>
+          <article class="qa-card admin-card tone-red">
+            <div class="admin-card-info">
+              <span class="qa-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg></span>
+              <div class="admin-card-text">
+                <h3>Panel de administración</h3>
+                <p>Ajusta la vida y el daño de héroes y enemigos, y crea los tuyos propios con tus imágenes.</p>
+              </div>
+            </div>
+            <ul class="admin-stats" aria-label="Lo que has ajustado">
+              <li><b id="home-adm-heroes">0</b><small>Héroes ajustados</small></li>
+              <li><b id="home-adm-enemies">0</b><small>Enemigos ajustados</small></li>
+              <li><b id="home-adm-creations">0</b><small>Creaciones propias</small></li>
+            </ul>
+            <!-- A duel with the account's own numbers: the hero strikes, the enemy's life drops and comes back. -->
+            <div class="admin-duel" aria-hidden="true">
+              <div class="duel-side is-hero">
+                <span class="duel-bar"><i></i></span>
+                <img id="duel-hero" class="duel-sprite" src="/textures/hero-knight-idle.png" alt="" />
+                <small id="duel-hero-stats">♥ 6 · ⚔ 2</small>
+              </div>
+              <span class="duel-vs">VS</span>
+              <span class="duel-spark"><i></i><i></i><i></i><i></i></span>
+              <div class="duel-side is-enemy">
+                <span class="duel-bar"><i></i></span>
+                <img id="duel-enemy" class="duel-sprite" src="/textures/brute.png" alt="" />
+                <small id="duel-enemy-stats">♥ 8 · ⚔ 2</small>
+              </div>
+            </div>
+            <button class="qa-cta admin-cta" type="button" data-go="admin">
+              <svg class="qa-cta-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z" /></svg>
+              <span>Abrir el panel</span>
+              <svg class="qa-cta-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+          </article>
         </div>
 
         <div class="recent">
