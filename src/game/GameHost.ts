@@ -33,7 +33,23 @@ export class GameHost {
       physics: { default: "arcade", arcade: { gravity: { x: 0, y: 0 }, debug: false } },
       scene: [this.editor, this.playScene],
     });
+    // The engine draws 60 times a second; while the workspace is hidden (home,
+    // admin panel, intro) nobody sees it, so it sleeps and saves battery and
+    // keeps the scroll of the other screens smooth on phones.
+    const game = this.game;
+    game.events.once(Phaser.Core.Events.READY, () => {
+      if (typeof IntersectionObserver === "undefined") return;
+      this.visibility = new IntersectionObserver((entries) => {
+        const visible = entries.some((entry) => entry.isIntersecting);
+        // sleep() and wake() do nothing when the loop is already in that state.
+        if (visible) game.loop.wake(true);
+        else game.loop.sleep();
+      });
+      this.visibility.observe(this.parent);
+    });
   }
+
+  private visibility: IntersectionObserver | null = null;
 
   play(difficulty: number, hero: string): void {
     this.game?.scene.stop("editor");
@@ -60,6 +76,8 @@ export class GameHost {
   }
 
   destroy(): void {
+    this.visibility?.disconnect();
+    this.visibility = null;
     this.game?.destroy(true);
     this.game = null;
   }

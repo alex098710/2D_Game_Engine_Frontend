@@ -224,8 +224,10 @@ export class PlayScene extends Phaser.Scene {
   }
 
   preload(): void {
+    // Only the pictures hold up the start; the sounds (about 900 KB) come in the
+    // background from create(), so on a phone the game starts at once. Until a
+    // sound arrives playEffect() simply skips it; after the first run they are cached.
     loadTextures(this);
-    loadSounds(this);
   }
 
   create(): void {
@@ -259,6 +261,8 @@ export class PlayScene extends Phaser.Scene {
     this.setupKeys();
     this.setupCamera();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.releaseKeys());
+    loadSounds(this);
+    if (this.load.list.size > 0) this.load.start();
   }
 
   private spawn(object: GameObject): void {
